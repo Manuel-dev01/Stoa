@@ -1,0 +1,14 @@
+{
+  "name": "stoa",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter @stoa/shared build && pnpm --filter @stoa/sdk build && pnpm --filter web build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
