@@ -27,7 +27,7 @@
 
 ## Receipts
 
-- Commit: `chore: stoa skeleton, day 1` (pending push)
+- Commit: `f4c74e0` — `chore: stoa skeleton, day 1`
 - GitHub: https://github.com/Manuel-dev01/Stoa
 - Deploy: n/a (testnet deployment is Day 2)
 
