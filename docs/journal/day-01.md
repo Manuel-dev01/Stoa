@@ -5,6 +5,7 @@
 ## What shipped
 
 - Monorepo skeleton: pnpm workspaces, root `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `.env.example`
+- `arc-canteen` CLI installed (v0.1.11) — binary is `arc-canteen`, not `arc-cli`. Run `arc-canteen login` before Phase 1 contract deployment to get the Arc testnet RPC URL.
 - `apps/web`: Next.js 15 (App Router), TypeScript strict, Tailwind, shadcn/ui utility (`cn`), placeholder page at `/` showing "Stoa" and "the reasoning is the product"
 - `packages/contracts`: Foundry project structure with `StoaRegistry.sol` stub (event signature + `publishTrace`/`registerAgent` function stubs that revert), `StoaTreasury.sol` placeholder, `Deploy.s.sol` script skeleton
 - `apps/agent`: Python 3.11+ project via `uv`, FastAPI with `/health` endpoint, `tradingagents` in `pyproject.toml` dependencies, error class hierarchy (`StoaError`, `IrysUploadError`, `ArcSubmitError`, `TradingAgentsInferenceError`)
