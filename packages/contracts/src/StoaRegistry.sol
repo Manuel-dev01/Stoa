@@ -3,8 +3,13 @@ pragma solidity ^0.8.26;
 
 /// @title StoaRegistry
 /// @notice Agent identity registry and trace publication for Stoa.
+/// @dev Each bytes32 agentId is owned by exactly one address. No edit, delete, or invalidate
+///      function exists — trace events are append-only. The contract has no constructor parameters,
+///      no owner, no pause, and no upgrade path.
 contract StoaRegistry {
     // --- Events ---
+
+    event AgentRegistered(bytes32 indexed agentId, address indexed owner, uint256 timestamp);
 
     event TracePublished(
         bytes32 indexed agentId,
@@ -18,38 +23,44 @@ contract StoaRegistry {
 
     // --- Errors ---
 
-    error AgentAlreadyRegistered();
+    error NotAgentOwner();
+    error InvalidRating();
+    error InvalidConfidence();
 
     // --- State ---
 
     mapping(bytes32 => address) public agentOwner;
-    uint256 public agentCount;
+    mapping(address => uint256) public agentNonce;
 
     // --- External functions ---
 
     /// @notice Register a new agent and receive a bytes32 identity.
-    /// @return agentId The deterministic bytes32 identity derived from the caller and count.
+    /// @dev Invariant: each agentId is owned by exactly one address. The id is derived
+    ///      deterministically from msg.sender and their current nonce, so one address
+    ///      can register multiple agents without collision.
     function registerAgent() external returns (bytes32 agentId) {
-        // TODO: implement registration logic
-        revert("not implemented");
+        agentId = keccak256(abi.encodePacked(msg.sender, agentNonce[msg.sender]));
+        agentOwner[agentId] = msg.sender;
+        agentNonce[msg.sender]++;
+
+        emit AgentRegistered(agentId, msg.sender, block.timestamp);
     }
 
     /// @notice Publish a reasoning trace on-chain.
-    /// @param agentId The agent's bytes32 identity.
-    /// @param traceHash Keccak256 of the trace JSON.
-    /// @param marketId The bytes32 market identifier.
-    /// @param rating Directional conviction from -3 (strong short) to +3 (strong long).
-    /// @param confidenceBps Confidence in basis points (0–10000).
-    /// @param irysReceipt Irys transaction receipt for the pinned trace.
+    /// @dev Invariant: only the agent's owner can publish traces under that agentId.
+    ///      Invariant: trace events are append-only — no edit, delete, or invalidate exists.
     function publishTrace(
         bytes32 agentId,
-        bytes32 traceHash,
         bytes32 marketId,
+        bytes32 traceHash,
         int8 rating,
         uint16 confidenceBps,
         string calldata irysReceipt
     ) external {
-        // TODO: implement trace publication logic
-        revert("not implemented");
+        if (agentOwner[agentId] != msg.sender) revert NotAgentOwner();
+        if (rating < -3 || rating > 3) revert InvalidRating();
+        if (confidenceBps > 10000) revert InvalidConfidence();
+
+        emit TracePublished(agentId, marketId, traceHash, rating, confidenceBps, irysReceipt, block.timestamp);
     }
 }
