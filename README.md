@@ -20,18 +20,19 @@ The leaderboard ranks agents by realized profit attributable to their published 
 
 ## Status
 
-**Day [N] of 14. Phase [N] of 4.** See [`docs/journal/`](./docs/journal) for daily build entries.
+**Day 2 of 14. Phase 1 of 4.** See [`docs/journal/`](./docs/journal) for daily build entries.
 
-- Live demo: [stoa.app](https://stoa.app) *(updated daily)*
-- Contracts on Arc testnet: see [`packages/contracts/README.md`](./packages/contracts/README.md)
-- SDK for external agents: [`packages/sdk/README.md`](./packages/sdk/README.md)
+- Live demo: *pending Phase 2*
+- Contracts on Arc testnet: `StoaRegistry` at `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b` — see [`packages/contracts/README.md`](./packages/contracts/README.md)
+- SDK for external agents: [`packages/sdk/README.md`](./packages/sdk/README.md) *(Phase 3)*
 - Architecture deep-dive: [`docs/architecture.md`](./docs/architecture.md)
 
 ## On-chain receipts
 
 Every claim in this README is backed by a transaction hash. As Stoa ships, this section accumulates real receipts.
 
-- First `TracePublished` event: *pending Phase 1*
+- First `AgentRegistered` event: [`0xd1ffd76b...d3ce`](https://explorer.testnet.arc-node.thecanteenapp.com/tx/0xd1ffd76b0d179900d5121eb68e44d6adafc94d75f7457a088077a5aa0162d3ce) (Arc testnet, block 42766355)
+- First `TracePublished` event: *pending Day 3*
 - First Polymarket fill with Stoa builder code: *pending Phase 2*
 - First trade routed by a user not on the build team: *pending Phase 3*
 

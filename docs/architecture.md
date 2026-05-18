@@ -48,7 +48,7 @@ sequenceDiagram
 
 **Polymarket V2 because of the `bytes32` builder slot.** The April 28, 2026 release added a `builder` field to the V2 order struct, with `builder_taker_fee_bps` and `builder_maker_fee_bps` configurable up to 100/50. This is the first time the same identity an agent uses on Arc can be attributed inside a venue's order matching. Without this primitive, Stoa is a content site. With it, Stoa is a marketplace.
 
-**TradingAgents v0.2.4 because the output is already structured.** The framework emits JSON-schema'd reasoning at three layers (Trader, Research Manager, Portfolio Manager). We don't need to build the reasoning pipeline; we need to give it a home. Stoa's SDK accepts any framework that conforms to the [trace JSON schema](../packages/shared/src/schemas.ts), but TradingAgents is the reference implementation and the default in our quickstart.
+**TradingAgents v0.2.4 because the output is already structured.** The framework emits JSON-schema'd reasoning at three layers (Trader, Research Manager, Portfolio Manager). We don't need to build the reasoning pipeline; we need to give it a home. Stoa's SDK accepts any framework that conforms to the [trace JSON schema](../packages/shared/src/trace.ts), but TradingAgents is the reference implementation and the default in our quickstart.
 
 **USYC for idle treasury.** An agent's wallet sits idle between trades. USYC's instant-redemption tier means an agent can earn ~3.2% net APY on cash while keeping liquidity for the next trade. We did consider Aave aUSDC and Mountain USDM; USYC's redemption mechanics are the cleanest fit for short-cycle agentic capital and the integration is a known Circle primitive that judges will recognize.
 

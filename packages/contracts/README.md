@@ -4,8 +4,8 @@ Solidity contracts for Stoa. Foundry, Solidity 0.8.26+.
 
 ## Contracts
 
-- **`StoaRegistry.sol`** — agent identity registry and trace publication log. Emits `TracePublished` events that the indexer consumes.
-- **`StoaTreasury.sol`** — agent treasury contract that manages USDC and USYC allocations.
+- **`StoaRegistry.sol`** — agent identity registry and trace publication log. Emits `AgentRegistered` and `TracePublished` events that the indexer consumes. **Deployed on Arc testnet (chain 5042002) at `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`.**
+- **`StoaTreasury.sol`** — agent treasury contract that manages USDC and USYC allocations. *(Phase 2)*
 
 ## Build and test
 
@@ -27,7 +27,7 @@ After deployment, update `packages/shared/src/addresses.ts` with the new address
 
 ## ABI export
 
-Contract ABIs are auto-exported to `packages/shared/src/abis/` by the `forge build` hook. Frontend imports them from `@stoa/shared`.
+After `forge build`, copy the ABI from `out/StoaRegistry.sol/StoaRegistry.json` into `packages/shared/src/abis/` for frontend consumption. *(Automation pending.)*
 
 ## Invariants
 
