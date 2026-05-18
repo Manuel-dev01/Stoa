@@ -26,11 +26,11 @@
 ## Receipts
 
 - StoaRegistry address: `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
-- Deploy tx: `0xd1ffd76b0d179900d5121eb68e44d6adafc94d75f7457a088077a5aa0162d3ce`
+- Deploy tx: `0x9edfdd1f94022e3eb5a1de3ea6c859b84ea1eee1e5c5c563ae0830cfd41728b2`
 - registerAgent tx: `0xd1ffd76b0d179900d5121eb68e44d6adafc94d75f7457a088077a5aa0162d3ce`
 - Agent ID (deployer, nonce 0): `0xac989813506c6fa83ae7205241234a63815aa1f496e801b0f31777bb536297b1`
 - Deployer address: `0xBCA6f82e240C6AC36B23b4f7D21adF17e03966Fe`
-- Commit: *pending*
+- Commit: `49a2944` — `phase 1: StoaRegistry deployed to Arc testnet`
 
 ---
 
