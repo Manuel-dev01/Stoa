@@ -37,3 +37,4 @@ packages/contracts/broadcast/
 *.log
 
 .claude
+CLAUDE.md
