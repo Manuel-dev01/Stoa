@@ -36,13 +36,44 @@ The timeout is specific to TradingAgents' multi-agent pipeline calls via litellm
 
 **Not yet investigated:** Whether setting `timeout` in `TradingAgentsConfig` or via litellm environment variables would help. Whether the `OPENAI_API_KEY` substitution on line 44 of `runner.py` causes litellm to route through OpenAI's proxy instead of directly to DeepSeek.
 
+## Bug fixes (second attempt)
+
+Three bugs fixed:
+
+### Bug 1: Gamma API `condition_id` filter silently ignored
+
+`get_market()` passed `condition_id` as a query param to `/markets?condition_id=...`. The API ignored it and returned the first market in default ordering. Fixed by fetching up to 500 markets (5 pages of 100) and filtering client-side by `condition_id`. Also extracted `_parse_market()` helper to deduplicate the parsing logic.
+
+### Bug 2: DeepSeek 600s timeout — wrong env var
+
+`runner.py` line 44 set `OPENAI_API_KEY` to the DeepSeek key. litellm with `deepseek/deepseek-chat` prefix looks for `DEEPSEEK_API_KEY`. Finding none, it fell back to OpenAI's endpoint with the wrong model, hanging until 600s timeout. Fixed by changing `OPENAI_API_KEY` → `DEEPSEEK_API_KEY` in all three entry points (`runner.py`, `cli.py`, `api.py`).
+
+### Bug 3: Recursion limit too low
+
+TradingAgents hit LangGraph's recursion limit of 50 on complex markets. Bumped `max_recur_limit` from 50 to 100 in `runner.py`.
+
+### Additional fix: Integrity assertion
+
+Added `MarketIdMismatchError` check after `get_market()` in both `cli.py` and `api.py` — verifies the returned market's `condition_id` matches the requested one.
+
+## Smoke test results (second attempt)
+
+Three markets, three categories, all end-to-end:
+
+| # | Category | Market | Rating | Confidence | Irys Receipt | Arc Tx |
+|---|----------|--------|--------|------------|--------------|--------|
+| 1 | Politics | Trump out as President before GTA VI? | -2 (SELL) | 65% | `3g2LLiGPbATKPVMfBasogy86XAfkvkrv4xSrNhu8dgas` | `79fa0395...` |
+| 2 | Crypto | Will MegaETH perform an airdrop by June 30? | 0 (HOLD) | 65% | `3vf4qQtpSUfX93CFu7vasb1XMHrHk7ZwVjvjkk1rerci` | `c10eb260...` |
+| 3 | Sports | Will England win the 2026 FIFA World Cup? | 0 (HOLD) | 75% | `4vf8fzHpANbZipU5n28FxJXb1A5cNXvDSkV9Cm14dYNH` | `4feaa344...` |
+
+All three passed: Gamma API fetch → DeepSeek inference → Irys upload → Arc publish. Pipeline is stable.
+
 ## What's next
 
-Both blockers need fixing before the smoke test can succeed:
-1. Fix `gamma.py` to filter markets client-side (fetch all, match by condition_id)
-2. Investigate DeepSeek timeout — try `litellm.request_timeout=900` env var, check if the `OPENAI_API_KEY` substitution in `runner.py` line 44 interferes with litellm's DeepSeek routing
+Both bugs are fixed and the pipeline is confirmed stable across 3 markets. Next session: frontend skeleton, leaderboard page, wire up trace-publish flow.
 
 ## Receipts
 
 - Doc reconciliation commit: `4cb774e`
+- Bug fix commit: (this commit)
 - Pushed to: `master` on `github.com/Manuel-dev01/Stoa`
