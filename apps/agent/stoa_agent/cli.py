@@ -1,0 +1,139 @@
+from __future__ import annotations
+
+import argparse
+import asyncio
+import json
+import os
+import sys
+from datetime import datetime, timezone
+
+
+def cmd_register(args: argparse.Namespace) -> None:
+    from stoa_agent.chain.client import ArcClient
+    from stoa_agent.config import load_settings
+
+    settings = load_settings()
+    client = ArcClient(settings)
+    agent_id = client.register_agent()
+    print(f"Agent ID: {agent_id}")
+    print("Copy this into .env.local as AGENT_ID, then restart the service.")
+
+
+def cmd_publish_trace(args: argparse.Namespace) -> None:
+    from stoa_agent.chain.client import ArcClient
+    from stoa_agent.config import load_settings
+    from stoa_agent.errors import GammaApiError, IrysUploadError, ArcSubmitError, TradingAgentsInferenceError
+    from stoa_agent.polymarket.gamma import get_market
+    from stoa_agent.reasoning.runner import run_inference
+    from stoa_agent.schemas import (
+        Trace, TraceDecision, TraceMarket, TraceModelMetadata, TraceReasoning,
+    )
+    from stoa_agent.storage.irys import compute_trace_hash, upload_trace
+
+    settings = load_settings()
+    os.environ["OPENAI_API_KEY"] = settings.openai_api_key or settings.deepseek_api_key
+
+    if settings.agent_id is None:
+        print("Error: AGENT_ID not set in .env.local. Run 'register' first.", file=sys.stderr)
+        sys.exit(1)
+
+    market_id = args.market_id
+
+    # 1. Fetch market
+    print(f"Fetching market {market_id}...")
+    try:
+        market = asyncio.run(get_market(market_id))
+    except GammaApiError as e:
+        print(f"Error fetching market: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Market: {market.question}")
+    print(f"Outcomes: {market.outcomes}, Liquidity: ${market.liquidity:,.0f}")
+
+    # 2. Run inference
+    print("Running TradingAgents inference...")
+    try:
+        inference = run_inference(market)
+    except TradingAgentsInferenceError as e:
+        print(f"Error running inference: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Rating: {inference['rating']:+d}, Confidence: {inference['confidence_bps'] / 100:.0f}%")
+    print(f"Synthesis: {inference['synthesis'][:200]}...")
+
+    # 3. Build trace
+    trace = Trace(
+        agent_id=settings.agent_id,
+        market_id=market_id,
+        generated_at=datetime.now(timezone.utc),
+        market=TraceMarket(question=market.question, resolution_at=None),
+        reasoning=TraceReasoning(
+            bull=inference["bull"],
+            bear=inference["bear"],
+            synthesis=inference["synthesis"],
+        ),
+        decision=TraceDecision(
+            rating=inference["rating"],
+            confidence_bps=inference["confidence_bps"],
+        ),
+        model_metadata=TraceModelMetadata(),
+    )
+    trace_dict = trace.model_dump(mode="json")
+
+    # 4. Upload to Irys
+    print("Uploading trace to Irys...")
+    try:
+        irys_receipt = asyncio.run(upload_trace(trace_dict, settings))
+    except IrysUploadError as e:
+        print(f"Error uploading to Irys: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Irys receipt: {irys_receipt}")
+
+    # 5. Hash
+    trace_hash = compute_trace_hash(trace_dict)
+    print(f"Trace hash: {trace_hash}")
+
+    # 6. Publish to Arc
+    print("Publishing to Arc...")
+    arc_client = ArcClient(settings)
+    try:
+        arc_tx_hash = arc_client.publish_trace(
+            agent_id=settings.agent_id,
+            market_id=market_id,
+            trace_hash=trace_hash,
+            rating=inference["rating"],
+            confidence_bps=inference["confidence_bps"],
+            irys_receipt=irys_receipt,
+        )
+    except ArcSubmitError as e:
+        print(f"Error publishing to Arc: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Arc tx hash: {arc_tx_hash}")
+    print("\n--- Receipt ---")
+    print(f"trace_hash: {trace_hash}")
+    print(f"irys_receipt: {irys_receipt}")
+    print(f"arc_tx_hash: {arc_tx_hash}")
+    print(f"irys_url: https://gateway.irys.xyz/{irys_receipt}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Stoa agent CLI")
+    sub = parser.add_subparsers(dest="command")
+
+    sub.add_parser("register", help="Register the agent on StoaRegistry")
+
+    publish_parser = sub.add_parser("publish-trace", help="Publish a trace for a market")
+    publish_parser.add_argument("--market-id", required=True, help="Polymarket condition_id (0x...)")
+
+    args = parser.parse_args()
+
+    if args.command == "register":
+        cmd_register(args)
+    elif args.command == "publish-trace":
+        cmd_publish_trace(args)
+    else:
+        parser.print_help()
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

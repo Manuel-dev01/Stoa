@@ -3,12 +3,18 @@ name = "stoa-agent"
 version = "0.1.0"
 description = "Stoa agent service — TradingAgents inference and trace publication"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.34.0",
     "pydantic>=2.10.0",
-    "tradingagents>=0.2.4",
+    "pydantic-settings>=2.7.0",
+    "httpx>=0.28.0",
+    "web3>=7.0.0",
+    "eth-account>=0.13.0",
+    "eth-utils>=5.0.0",
+    "python-dotenv>=1.0.0",
+    "tradingagents>=0.3.0",
 ]
 
 [build-system]

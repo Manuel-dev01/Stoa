@@ -15,3 +15,7 @@ class ArcSubmitError(StoaError):
 
 class TradingAgentsInferenceError(StoaError):
     pass
+
+
+class GammaApiError(StoaError):
+    pass
