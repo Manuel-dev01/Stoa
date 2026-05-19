@@ -22,7 +22,7 @@ def cmd_register(args: argparse.Namespace) -> None:
 def cmd_publish_trace(args: argparse.Namespace) -> None:
     from stoa_agent.chain.client import ArcClient
     from stoa_agent.config import load_settings
-    from stoa_agent.errors import GammaApiError, IrysUploadError, ArcSubmitError, TradingAgentsInferenceError
+    from stoa_agent.errors import GammaApiError, IrysUploadError, ArcSubmitError, TradingAgentsInferenceError, MarketIdMismatchError, MarketNotFoundError
     from stoa_agent.polymarket.gamma import get_market
     from stoa_agent.reasoning.runner import run_inference
     from stoa_agent.schemas import (
@@ -31,7 +31,7 @@ def cmd_publish_trace(args: argparse.Namespace) -> None:
     from stoa_agent.storage.irys import compute_trace_hash, upload_trace
 
     settings = load_settings()
-    os.environ["OPENAI_API_KEY"] = settings.openai_api_key or settings.deepseek_api_key
+    os.environ["DEEPSEEK_API_KEY"] = settings.deepseek_api_key
 
     if settings.agent_id is None:
         print("Error: AGENT_ID not set in .env.local. Run 'register' first.", file=sys.stderr)
@@ -43,8 +43,11 @@ def cmd_publish_trace(args: argparse.Namespace) -> None:
     print(f"Fetching market {market_id}...")
     try:
         market = asyncio.run(get_market(market_id))
-    except GammaApiError as e:
+    except (GammaApiError, MarketNotFoundError) as e:
         print(f"Error fetching market: {e}", file=sys.stderr)
+        sys.exit(1)
+    if market.condition_id.lower() != market_id.lower():
+        print(f"Error: market ID mismatch: requested {market_id}, got {market.condition_id}", file=sys.stderr)
         sys.exit(1)
     print(f"Market: {market.question}")
     print(f"Outcomes: {market.outcomes}, Liquidity: ${market.liquidity:,.0f}")

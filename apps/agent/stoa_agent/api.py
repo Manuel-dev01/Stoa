@@ -21,8 +21,7 @@ arc_client: ArcClient
 async def lifespan(app: FastAPI):
     global settings, arc_client
     settings = load_settings()
-    # Set OPENAI_API_KEY for TradingAgents
-    os.environ["OPENAI_API_KEY"] = settings.openai_api_key or settings.deepseek_api_key
+    os.environ["DEEPSEEK_API_KEY"] = settings.deepseek_api_key
     arc_client = ArcClient(settings)
     yield
 
@@ -42,6 +41,12 @@ async def create_trace(req: GenerateTraceRequest) -> GenerateTraceResponse:
         market = await get_market(req.market_id)
     except GammaApiError as e:
         raise HTTPException(status_code=502, detail=f"gamma: {e}")
+
+    if market.condition_id.lower() != req.market_id.lower():
+        raise HTTPException(
+            status_code=400,
+            detail=f"market ID mismatch: requested {req.market_id}, got {market.condition_id}",
+        )
 
     # 2. Run TradingAgents inference
     try:

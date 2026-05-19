@@ -41,7 +41,7 @@ def run_inference(market: Market) -> dict:
     from stoa_agent.config import load_settings
 
     settings = load_settings()
-    os.environ["OPENAI_API_KEY"] = settings.openai_api_key or settings.deepseek_api_key
+    os.environ["DEEPSEEK_API_KEY"] = settings.deepseek_api_key
 
     try:
         from tradingagents import TradingAgentsConfig, TradingAgentsGraph
@@ -56,7 +56,7 @@ def run_inference(market: Market) -> dict:
         quick_think_llm="deepseek/deepseek-chat",
         max_debate_rounds=1,
         max_risk_discuss_rounds=1,
-        max_recur_limit=50,
+        max_recur_limit=100,
     )
 
     # TradingAgents propagate takes (company_name, trade_date)

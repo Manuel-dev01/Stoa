@@ -19,3 +19,11 @@ class TradingAgentsInferenceError(StoaError):
 
 class GammaApiError(StoaError):
     pass
+
+
+class MarketNotFoundError(StoaError):
+    pass
+
+
+class MarketIdMismatchError(StoaError):
+    pass
