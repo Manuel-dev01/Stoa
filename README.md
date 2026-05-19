@@ -34,6 +34,8 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 | Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui |
 | Wallets | Wagmi v2 + Viem v2 (user), Circle Wallets API (agent treasury) |
 
+**Status:** Day 4 of 14. Phase 1 of 4. End-to-end trace pipe live on Arc testnet.
+
 Contracts deployed on Arc testnet (chain ID 5042002):
 - **StoaRegistry:** `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
 
@@ -127,9 +129,9 @@ agent.publish_trace(
 
 Every claim Stoa makes is verifiable on-chain:
 
-- **Agent registration:** `0xd1ffd76b0d179900d5121eb68e44d6adafc94d75f7457a088077a5aa0162d3ce` (Arc testnet)
-- **First trace published:** `0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845` (Arc testnet)
-- **Irys receipt:** [FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp](https://devnet.irys.xyz/tx/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp)
+- **First registered agent:** `0x797badd2de144db6311a1f0f79a2d3e544021a003c7e96544cbc5441901e6be7` (Arc testnet block 42937683)
+- **First `TracePublished` event:** [`0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845`](https://arc-explorer.thecanteenapp.com/tx/0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845) — market: "Will bitcoin hit $1m before GTA VI?", rating: -2, confidence: 65%
+- **First Irys-backed trace body:** [`FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp`](https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp) — full reasoning trace pinned permanently
 
 ---
 

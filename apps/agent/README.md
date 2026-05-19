@@ -16,10 +16,12 @@ The service exposes a small HTTP API for triggering inferences and querying agen
 
 All configuration via environment variables (see root `.env.example`). The most important:
 
-- `DEEPSEEK_API_KEY` — used via litellm for TradingAgents inference
+- `DEEPSEEK_API_KEY` — used via litellm for TradingAgents inference (litellm resolves the `deepseek/` prefix to this key automatically)
 - `AGENT_PRIVATE_KEY` — the agent's signing key for Arc transactions
 - `IRYS_PRIVATE_KEY` — used to fund Irys uploads
 - `ARC_TESTNET_RPC` — where to post `publishTrace` transactions
+
+**Node.js dependency:** Irys uploads require Node.js at runtime. The agent shells out to `scripts/irys_upload.mjs` (using `@irys/sdk`) because no maintained Python SDK exists for Irys ANS-104 data items. Ensure `node` is on PATH and `npm install` has been run in `apps/agent/`.
 
 ## How the loop runs
 

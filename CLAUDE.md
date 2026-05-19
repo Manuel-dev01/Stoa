@@ -81,15 +81,16 @@ stoa/
 
 - Python 3.12+, `uv` for deps
 - TradingAgents v0.6.0 (`pip install tradingagents`) — **API differs from v0.2.4**: `TradingAgentsConfig` is a Pydantic model, `propagate()` returns `(AgentState, TradeRecommendation)` not a dict, LLM provider is `litellm` (not `openai` with `backend_url`)
+- DeepSeek is called via `litellm` with the `deepseek/deepseek-chat` provider prefix and `DEEPSEEK_API_KEY`. Do not substitute via `OPENAI_API_KEY` — litellm resolves the provider prefix to the correct key automatically.
 - FastAPI for the trace-publication endpoints
 - Polymarket Gamma API (`httpx`) for market data ingestion — not `polymarket-py-clob-client`
-- Irys upload via Node.js subprocess (`scripts/irys_upload.mjs` using `@irys/sdk`) — no Python SDK exists for Irys ANS-104 data items
+- Irys upload via Node.js subprocess (`scripts/irys_upload.mjs` using `@irys/sdk`) — no maintained Python Irys SDK exists. The tradeoff (extra runtime dependency on Node.js inside `apps/agent`) is accepted.
 - web3.py + eth-account for Arc chain interaction
 - Simple asyncio loop, not Celery. Cron-via-Railway or Vercel Cron for invocation.
 
 ### 5.5 Storage and indexing
 
-- Irys SDK (`@irys/sdk`) for trace text pinning (~$0.0001/trace, millisecond timestamps)
+- Irys for trace text pinning (~$0.0001/trace, millisecond timestamps). The Python agent shells out to `scripts/irys_upload.mjs` (Node.js, `@irys/sdk`) because there is no maintained Python SDK for Irys ANS-104 data items. This adds a Node.js runtime dependency inside `apps/agent`; accepted tradeoff.
 - Supabase Postgres (free tier) for off-chain event indexing
 - The chain is source of truth. Postgres is a read cache for the leaderboard.
 - No Redis. No Kafka. No custom indexer infrastructure.
@@ -182,7 +183,8 @@ SUPABASE_URL=
 SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 
-# LLM provider (TradingAgents uses OpenAI/Anthropic-compatible APIs)
+# LLM provider (TradingAgents uses litellm — prefix resolves to the correct key)
+DEEPSEEK_API_KEY=
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
 
@@ -446,7 +448,8 @@ import os
 from tradingagents import TradingAgentsConfig, TradingAgentsGraph
 
 def run_inference(market_question: str) -> dict:
-    os.environ["OPENAI_API_KEY"] = "your-key"  # litellm reads this
+    # DEEPSEEK_API_KEY is read from env by litellm automatically via the provider prefix
+    # Do NOT set OPENAI_API_KEY — litellm resolves deepseek/ prefix to DEEPSEEK_API_KEY
 
     config = TradingAgentsConfig(
         llm_provider="litellm",
@@ -699,10 +702,10 @@ The backfill script reads `TracePublished` and `Filled` events directly via viem
 | Arc RPC down | `connect ECONNREFUSED` in deploy/indexer | Fall back to a second RPC defined in env. If both fail, retry with exponential backoff up to 5min. |
 | Polymarket rate-limited (HTTP 429) | `429 Too Many Requests` in agent logs | Implement client-side backoff: 1s, 2s, 4s, 8s. Cap at 8s. Never hammer. |
 | Irys upload fails | `IrysUploadError` raised | One retry. Then skip this trace and log it as a deferred publication. Do not block the agent loop. |
-| TradingAgents inference takes > 60s | FastAPI timeout | Reduce `max_debate_rounds` to 1. If still slow, downgrade the deep-think model from `gpt-4o` to `gpt-4o-mini`. |
+| TradingAgents inference takes > 60s | FastAPI timeout | Reduce `max_debate_rounds` to 1. If still slow, downgrade the deep-think model from `deepseek-chat` to a lighter model. |
 | Polymarket order rejected (insufficient balance) | `INSUFFICIENT_USDC` error code | Frontend shows a clear "fund your wallet with USDC.e on Polygon" prompt with an App Kit Bridge component pre-filled. |
 | CCTP V2 attestation slow | User waiting > 90s on cross-chain deposit | Show a status bar with the expected ~13min hard fallback and explain the soft path is usually under 30s. |
-| LLM API down (OpenAI/Anthropic outage) | `502` from inference | Swap providers via env var. Both keys live in `.env.local`. |
+| LLM API down (DeepSeek/OpenAI/Anthropic outage) | `502` from inference | Swap providers via env var. DeepSeek is primary via `DEEPSEEK_API_KEY`; OpenAI/Anthropic are fallbacks. All keys live in `.env.local`. |
 | Vercel deploy fails | Build error in CI | Check that `packages/shared` and `packages/sdk` are built before `apps/web`. Add `"build": "pnpm --filter @stoa/shared build && pnpm --filter @stoa/sdk build && next build"` to `apps/web/package.json`. |
 | Supabase free-tier limit hit | `429` on indexer writes | Upgrade to the $25/month tier. This is the one paid service we accept during the hackathon. |
 
