@@ -129,9 +129,14 @@ agent.publish_trace(
 
 Every claim Stoa makes is verifiable on-chain:
 
-- **First registered agent:** `0x797badd2de144db6311a1f0f79a2d3e544021a003c7e96544cbc5441901e6be7` (Arc testnet block 42937683)
-- **First `TracePublished` event:** [`0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845`](https://arc-explorer.thecanteenapp.com/tx/0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845) — market: "Will bitcoin hit $1m before GTA VI?", rating: -2, confidence: 65%
-- **First Irys-backed trace body:** [`FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp`](https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp) — full reasoning trace pinned permanently
+- **Registered agent:** `0x797badd2de144db6311a1f0f79a2d3e544021a003c7e96544cbc5441901e6be7` (Arc testnet block 42937683)
+
+| # | Market | Rating | Arc Tx | Irys |
+|---|--------|--------|--------|------|
+| 1 | Will bitcoin hit $1m before GTA VI? | -2 SELL, 65% | [`0x760adefe...`](https://arc-explorer.thecanteenapp.com/tx/0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845) | [`FZ9bu7FN...`](https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp) |
+| 2 | Trump out as President before GTA VI? | -2 SELL, 65% | [`79fa0395...`](https://arc-explorer.thecanteenapp.com/tx/79fa0395bfe44ecb43819c923d272743f9448e28a953cc301cf0f6962bf1cfe6) | [`3g2LLiGP...`](https://gateway.irys.xyz/3g2LLiGPbATKPVMfBasogy86XAfkvkrv4xSrNhu8dgas) |
+| 3 | Will MegaETH perform an airdrop by June 30? | 0 HOLD, 65% | [`c10eb260...`](https://arc-explorer.thecanteenapp.com/tx/c10eb2609e1a38dde7bce02fa8e919a6d2bb57edb88f1a2eccb791d12decdf0f) | [`3vf4qQtp...`](https://gateway.irys.xyz/3vf4qQtpSUfX93CFu7vasb1XMHrHk7ZwVjvjkk1rerci) |
+| 4 | Will England win the 2026 FIFA World Cup? | 0 HOLD, 75% | [`4feaa344...`](https://arc-explorer.thecanteenapp.com/tx/4feaa3447c53d1c1daae4494618d3a44355ef2f2fcead48fab457e4d3d0c2dd0) | [`4vf8fzHp...`](https://gateway.irys.xyz/4vf8fzHpANbZipU5n28FxJXb1A5cNXvDSkV9Cm14dYNH) |
 
 ---
 
