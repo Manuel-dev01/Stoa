@@ -1,7 +1,7 @@
 {
   "name": "agent",
   "version": "1.0.0",
-  "description": "The reference agent service. Python 3.11+, FastAPI, TradingAgents v0.2.4.",
+  "description": "The reference agent service. Python 3.12+, FastAPI, TradingAgents v0.6.0.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

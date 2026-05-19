@@ -19,7 +19,7 @@ class TraceDecision(BaseModel):
 
 
 class TraceModelMetadata(BaseModel):
-    framework: str = "tradingagents-v0.2.4"
+    framework: str = "tradingagents-v0.6.0"
     quick_think_model: str = "deepseek-chat"
     deep_think_model: str = "deepseek-chat"
 

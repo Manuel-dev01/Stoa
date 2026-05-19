@@ -43,7 +43,7 @@ Write code for these readers.
 stoa/
 ├── apps/
 │   ├── web/                 # Next.js 15 (App Router), TypeScript, Tailwind, shadcn/ui
-│   └── agent/               # Python 3.11+ FastAPI + TradingAgents v0.2.4
+│   └── agent/               # Python 3.12+ FastAPI + TradingAgents v0.6.0
 ├── packages/
 │   ├── contracts/           # Foundry, Solidity 0.8.26+
 │   ├── sdk/                 # TypeScript SDK for external agent devs
@@ -79,10 +79,12 @@ stoa/
 
 ### 5.4 Agent service — `apps/agent`
 
-- Python 3.11+, `uv` for deps
-- TradingAgents v0.2.4 (`pip install tradingagents` or pinned git ref)
+- Python 3.12+, `uv` for deps
+- TradingAgents v0.6.0 (`pip install tradingagents`) — **API differs from v0.2.4**: `TradingAgentsConfig` is a Pydantic model, `propagate()` returns `(AgentState, TradeRecommendation)` not a dict, LLM provider is `litellm` (not `openai` with `backend_url`)
 - FastAPI for the trace-publication endpoints
-- `polymarket-py-clob-client` for market data ingestion
+- Polymarket Gamma API (`httpx`) for market data ingestion — not `polymarket-py-clob-client`
+- Irys upload via Node.js subprocess (`scripts/irys_upload.mjs` using `@irys/sdk`) — no Python SDK exists for Irys ANS-104 data items
+- web3.py + eth-account for Arc chain interaction
 - Simple asyncio loop, not Celery. Cron-via-Railway or Vercel Cron for invocation.
 
 ### 5.5 Storage and indexing
@@ -435,29 +437,43 @@ async def create_trace(req: GenerateTraceRequest) -> GenerateTraceResponse:
     )
 ```
 
-### 12.4 TradingAgents call (the canonical shape)
+### 12.4 TradingAgents call (the canonical shape — v0.6.0)
 
 ```python
 from __future__ import annotations
 
-from tradingagents.graph.trading_graph import TradingAgentsGraph
-from tradingagents.default_config import DEFAULT_CONFIG
+import os
+from tradingagents import TradingAgentsConfig, TradingAgentsGraph
 
-def run_inference(market_id: str, market_context: str) -> dict:
-    config = {
-        **DEFAULT_CONFIG,
-        "llm_provider": "openai",
-        "deep_think_llm": "gpt-4o",
-        "quick_think_llm": "gpt-4o-mini",
-        "max_debate_rounds": 1,
-        "online_tools": False,
-    }
-    graph = TradingAgentsGraph(debug=False, config=config)
-    final_state, decision = graph.propagate(market_id, market_context)
+def run_inference(market_question: str) -> dict:
+    os.environ["OPENAI_API_KEY"] = "your-key"  # litellm reads this
+
+    config = TradingAgentsConfig(
+        llm_provider="litellm",
+        deep_think_llm="deepseek/deepseek-chat",
+        quick_think_llm="deepseek/deepseek-chat",
+        max_debate_rounds=1,
+        max_risk_discuss_rounds=1,
+        max_recur_limit=50,
+    )
+
+    graph = TradingAgentsGraph(config=config)
+    # propagate() returns (AgentState, TradeRecommendation) — not a dict
+    state, recommendation = graph.propagate(market_question, "2026-05-19")
+
+    # AgentState is a Pydantic model with investment_debate_state, investment_plan, etc.
+    debate = state.investment_debate_state
+    bull = debate.bull_history if debate else ""
+    bear = debate.bear_history if debate else ""
+    synthesis = state.investment_plan or state.trader_investment_plan
+
+    # TradeRecommendation has .signal (BUY/SELL/HOLD), .confidence (0.0-1.0), .rationale
     return {
-        "decision": decision,
-        "trader_state": final_state["trader_state"],
-        "portfolio_state": final_state["portfolio_state"],
+        "bull": bull,
+        "bear": bear,
+        "synthesis": synthesis,
+        "signal": recommendation.signal,
+        "confidence": recommendation.confidence,
     }
 ```
 
@@ -521,7 +537,7 @@ export const TraceSchema = z.object({
     sizeUsdc: z.number().nonnegative(),
   }),
   modelMetadata: z.object({
-    framework: z.string(),  // "tradingagents-v0.2.4"
+    framework: z.string(),  // "tradingagents-v0.6.0"
     quickThinkModel: z.string(),
     deepThinkModel: z.string(),
   }),
@@ -538,7 +554,7 @@ create table agents (
   owner_address text not null,
   registered_at timestamptz not null default now(),
   display_handle text,
-  framework text                            -- "tradingagents-v0.2.4" etc.
+  framework text                            -- "tradingagents-v0.6.0" etc.
 );
 
 create table traces (
@@ -779,17 +795,20 @@ Before submission, confirm:
 *This section is the single most important page-of-truth for Claude Code at the start of every new session. Read it first. Trust the most recent entry over your prior assumptions.*
 
 ```
-### Day 1 — May 11
-Shipped: [pending]
-Blocked on: [pending]
-Next session goal: [pending]
+### Day 1 — May 16
+Shipped: Monorepo skeleton, all package stubs, Foundry project structure, FastAPI stub, Next.js placeholder, all docs
+Blocked on: Network (foundryup, pnpm install couldn't run)
+Next session goal: Install Foundry, implement StoaRegistry, deploy to Arc testnet
 
-### Day 2
-Shipped:
-Blocked on:
-Next session goal:
+### Day 2 — May 17
+Shipped: StoaRegistry.sol deployed to Arc testnet (0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b), 9 Foundry tests passing, registerAgent called on testnet
+Blocked on: Nothing
+Next session goal: Python agent emits a TradingAgents trace, pins to Irys, publishes to Arc
 
-[continue daily]
+### Day 3 — May 19
+Shipped: Full agent pipe end-to-end on testnet. TradingAgents v0.6.0 running via DeepSeek/litellm. Agent registered (0x797badd2...). Irys upload via Node.js subprocess. First live trace published (market: "Will bitcoin hit $1m before GTA VI?", rating: -2 SELL, confidence 65%). Irys: FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp. Arc tx: 0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845
+Blocked on: Nothing
+Next session goal: Frontend skeleton, leaderboard page, wire up trace-publish flow
 ```
 
 When starting a session, Claude Code's first action is to read the most recent Day N entry and confirm understanding before touching code.
@@ -802,7 +821,7 @@ If you have low confidence about a Circle/Arc primitive: read the doc in section
 
 If you have low confidence about a Polymarket V2 integration: check `Polymarket/agents` for prior art before writing from scratch.
 
-If you have low confidence about TradingAgents output schema: load v0.2.4, run one inference against a real market, inspect the JSON.
+If you have low confidence about TradingAgents output schema: load v0.6.0, run one inference against a real market, inspect the JSON. Note: `propagate()` returns `(AgentState, TradeRecommendation)` — AgentState is a Pydantic model, not a dict.
 
 If you have low confidence about the design: stop and ask Emmanuel. The cost of asking is 30 seconds. The cost of wrong direction at Day 8 is the hackathon.
 

@@ -1,6 +1,6 @@
 # @stoa/agent
 
-The reference agent service. Python 3.11+, FastAPI, TradingAgents v0.2.4.
+The reference agent service. Python 3.12+, FastAPI, TradingAgents v0.6.0.
 
 ## Run
 
@@ -16,7 +16,7 @@ The service exposes a small HTTP API for triggering inferences and querying agen
 
 All configuration via environment variables (see root `.env.example`). The most important:
 
-- `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` — TradingAgents calls one of these
+- `DEEPSEEK_API_KEY` — used via litellm for TradingAgents inference
 - `AGENT_PRIVATE_KEY` — the agent's signing key for Arc transactions
 - `IRYS_PRIVATE_KEY` — used to fund Irys uploads
 - `ARC_TESTNET_RPC` — where to post `publishTrace` transactions
@@ -25,7 +25,7 @@ All configuration via environment variables (see root `.env.example`). The most 
 
 1. Every N minutes (configurable, default 5), the agent polls Polymarket's Gamma API for active markets.
 2. Markets are filtered by liquidity threshold, time-to-resolution, and a configurable allowlist of categories.
-3. For each selected market, the agent calls TradingAgents v0.2.4 for a structured reasoning trace.
+3. For each selected market, the agent calls TradingAgents v0.6.0 for a structured reasoning trace.
 4. Traces above the confidence threshold (default 60%) are published; below-threshold traces are logged and skipped.
 5. Each published trace gets uploaded to Irys, hashed, and posted to Arc as a `TracePublished` event.
 

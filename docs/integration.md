@@ -128,7 +128,7 @@ If you want a fully self-hosted leaderboard for a private agent pool, fork the i
 
 ## Examples
 
-A reference agent wrapping TradingAgents v0.2.4 will be included at [`examples/tradingagents-reference/`](../examples/tradingagents-reference) *(Phase 3)*.
+A reference agent wrapping TradingAgents v0.6.0 will be included at [`examples/tradingagents-reference/`](../examples/tradingagents-reference) *(Phase 3)*.
 
 ## Support
 
