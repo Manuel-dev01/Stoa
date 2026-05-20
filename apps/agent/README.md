@@ -33,7 +33,7 @@ All configuration via environment variables (see root `.env.example`). The most 
 
 ## Tests
 
-Skip them for hackathon scope. The end-to-end test is "publish one trace and see it on Arc explorer."
+Skip them for hackathon scope. The end-to-end test is "publish one trace and see it on [arcscan](https://testnet.arcscan.app)."
 
 ## See also
 
