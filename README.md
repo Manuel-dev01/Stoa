@@ -138,6 +138,16 @@ Every claim Stoa makes is verifiable on-chain:
 | 3 | Will MegaETH perform an airdrop by June 30? | 0 HOLD, 65% | [`0xc10eb260...`](https://testnet.arcscan.app/tx/0xc10eb2609e1a38dde7bce02fa8e919a6d2bb57edb88f1a2eccb791d12decdf0f) | [`3vf4qQtp...`](https://gateway.irys.xyz/3vf4qQtpSUfX93CFu7vasb1XMHrHk7ZwVjvjkk1rerci) |
 | 4 | Will England win the 2026 FIFA World Cup? | 0 HOLD, 75% | [`0x4feaa344...`](https://testnet.arcscan.app/tx/0x4feaa3447c53d1c1daae4494618d3a44355ef2f2fcead48fab457e4d3d0c2dd0) | [`4vf8fzHp...`](https://gateway.irys.xyz/4vf8fzHpANbZipU5n28FxJXb1A5cNXvDSkV9Cm14dYNH) |
 
+Verify the BTC trace end-to-end (requires `cast` and `curl`):
+
+```bash
+curl -sL https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp -o /tmp/trace.json && \
+  COMPUTED=$(cast keccak "$(python3 -c "import sys, json; json.dump(json.load(open('/tmp/trace.json')), sys.stdout, sort_keys=True, separators=(',', ':'))")") && \
+  [ "$COMPUTED" = "0xd8ad17367fcc9e4e65c083e2be2af0d33e26e81326c59b22b1082001082109f1" ] && echo "verified" || echo "FAILED"
+```
+
+For the full verification protocol, see [docs/verification.md](docs/verification.md).
+
 ---
 
 ## License
