@@ -13,6 +13,10 @@
     "./addresses": {
       "types": "./dist/addresses.d.ts",
       "import": "./dist/addresses.js"
+    },
+    "./abis/stoaRegistry": {
+      "types": "./dist/abis/stoaRegistry.d.ts",
+      "import": "./dist/abis/stoaRegistry.js"
     }
   },
   "scripts": {
