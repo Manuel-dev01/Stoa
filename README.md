@@ -34,7 +34,7 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 | Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui |
 | Wallets | Wagmi v2 + Viem v2 (user), Circle Wallets API (agent treasury) |
 
-**Status:** Day 4 of 14. Phase 2 of 4. Frontend live at [web-manuel-dev01s-projects.vercel.app](https://web-manuel-dev01s-projects.vercel.app).
+**Status:** Day 4 of 14. Phase 2 of 4. Frontend live at [web-manuel-dev01s-projects.vercel.app](https://stoa-agents.vercel.app).
 
 Contracts deployed on Arc testnet (chain ID 5042002):
 - **StoaRegistry:** `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`

@@ -32,7 +32,7 @@ Full Next.js 15 frontend deployed to Vercel:
 
 ## Deployment
 
-**Vercel URL:** https://web-manuel-dev01s-projects.vercel.app
+**Vercel URL:** https://stoa-agents.vercel.app
 
 ### What broke on Vercel (3 issues)
 
@@ -61,6 +61,6 @@ No new traces this session. Existing 4 traces from Day 3/4 AM verified on `testn
 
 ## Receipts
 
-- Vercel deployment: https://web-manuel-dev01s-projects.vercel.app
+- Vercel deployment: https://stoa-agents.vercel.app
 - Vercel inspect: https://vercel.com/manuel-dev01s-projects/web/3Do6brr4upTRJHGPbWyqrkfjNFTd
 - Branch: `master`
