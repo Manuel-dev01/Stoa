@@ -35,3 +35,35 @@ A traction-serving legibility pass, not a redesign. No new fonts, no hero sectio
 ## Next session goal
 - Continue original roadmap: USYC treasury integration, further Circle primitives
 - OR more traction work per Emmanuel's call
+
+---
+
+## Design pass (same day, evening)
+
+### Direction
+"An editorial research journal for machine reasoning." Editorial serif for human reasoning, monospace for on-chain facts, warm amber accent, classical restraint.
+
+### Bug fixes
+- **Markdown rendering**: trace reasoning (bull/bear/synthesis) now renders through react-markdown + remark-gfm. No more literal asterisks. Editorial prose styling with proper heading scale, paragraph spacing, ~70ch measure.
+- **Wallet connect**: RainbowKit theme updated from indigo to amber (#d97706). Provider chain was already correct (WagmiProvider → QueryClientProvider → RainbowKitProvider). ConnectButton shows address in mono when connected.
+
+### Design system applied
+- **Palette**: near-black background (#0f0e0d), warm off-white text (#e8e4dc), amber/terracotta accent (#d97706), warm-muted secondary tones
+- **Typography**: Newsreader (serif display) for headers and wordmark, Inter (sans) for body, JetBrains Mono for all on-chain data
+- **Three registers**: editorial (the spine — serif headers, generous measure), terminal (mono data — hashes, addresses, timestamps), classical (amber accent, Aristotle line in footer)
+- **Aristotle line**: placed once in the footer, set in serif italic, muted. Not decorative — substantive.
+- **Components**: trace cards use serif question, mono metadata, amber primary button. Reasoning dialog uses prose-stoa class for editorial markdown rendering. Leaderboard uses mono for agent IDs and data. Badge variants tuned for dark theme (emerald-950, red-950 backgrounds).
+- **Hard constraints followed**: no purple/indigo gradients, no glassmorphism, no animation libraries, no hero section, no classical kitsch
+
+### Files changed
+- globals.css (palette, prose-stoa component class, mono-data utility)
+- layout.tsx (Newsreader + JetBrains Mono font imports, CSS variables)
+- tailwind.config.ts (font-sans, font-serif, font-mono families)
+- providers.tsx (RainbowKit amber theme)
+- navbar.tsx (serif wordmark)
+- page.tsx (serif headers, Aristotle footer, mono stat pills)
+- trace-detail-dialog.tsx (react-markdown, editorial prose, amber links)
+- trace-card.tsx (serif question, amber button, mono metadata)
+- leaderboard.tsx (amber agent links, mono data)
+- agents/[agentId]/page.tsx (serif stats, mono agent ID, amber accent)
+- badge.tsx (dark-theme variants)
