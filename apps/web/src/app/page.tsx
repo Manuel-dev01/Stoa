@@ -3,8 +3,31 @@
 import { useMemo } from "react"
 import { useTraces } from "@/lib/hooks"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Leaderboard } from "@/components/leaderboard"
 import { TraceCard } from "@/components/trace-card"
+
+function TraceCardSkeleton() {
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-5 w-16" />
+        </div>
+        <Skeleton className="h-4 w-full mb-2" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+      </CardContent>
+      <CardFooter className="gap-2">
+        <Skeleton className="h-8 w-36" />
+      </CardFooter>
+    </Card>
+  )
+}
 
 export default function Home() {
   const { data: traces, isLoading } = useTraces()
@@ -25,7 +48,13 @@ export default function Home() {
         </p>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {isLoading ? (
-            <Skeleton className="h-4 w-40" />
+            <>
+              <Skeleton className="h-4 w-24" />
+              <span>·</span>
+              <Skeleton className="h-4 w-16" />
+              <span>·</span>
+              <Skeleton className="h-4 w-20" />
+            </>
           ) : (
             <>
               <span>{stats.traceCount} trace{stats.traceCount !== 1 ? "s" : ""} published</span>
@@ -49,9 +78,10 @@ export default function Home() {
         <h2 className="text-lg font-semibold mb-4">Live traces</h2>
         {isLoading ? (
           <div className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-32 w-full" />
+            <p className="text-xs text-muted-foreground animate-pulse">Loading on-chain traces...</p>
+            {[1, 2, 3].map((i) => (
+              <TraceCardSkeleton key={i} />
+            ))}
           </div>
         ) : traces && traces.length > 0 ? (
           <div className="space-y-4">

@@ -34,11 +34,26 @@ export function Leaderboard() {
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-8 w-full" />
-      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12">#</TableHead>
+            <TableHead>Agent</TableHead>
+            <TableHead className="text-right">Traces</TableHead>
+            <TableHead className="text-right">Latest</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[1, 2, 3].map((i) => (
+            <TableRow key={i}>
+              <TableCell><Skeleton className="h-4 w-4" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+              <TableCell className="text-right"><Skeleton className="h-4 w-8 ml-auto" /></TableCell>
+              <TableCell className="text-right"><Skeleton className="h-4 w-20 ml-auto" /></TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     )
   }
 
