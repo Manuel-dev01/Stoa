@@ -3,14 +3,21 @@ import { http, createConfig } from "wagmi"
 import { connectorsForWallets } from "@rainbow-me/rainbowkit"
 import { injectedWallet, metaMaskWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets"
 
+const ARC_RPC = process.env.NEXT_PUBLIC_ARC_RPC
+if (!ARC_RPC) {
+  throw new Error(
+    "NEXT_PUBLIC_ARC_RPC is not set. Add it to .env.local or Vercel environment variables."
+  )
+}
+
+console.log("Arc RPC:", ARC_RPC.replace(/\/v2\/.+/, "/v2/***"))
+
 export const arcTestnet = defineChain({
   id: Number(process.env.NEXT_PUBLIC_ARC_CHAIN_ID) || 5042002,
   name: "Arc Testnet",
   nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 6 },
   rpcUrls: {
-    default: {
-      http: [process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.testnet.arc-node.thecanteenapp.com"],
-    },
+    default: { http: [ARC_RPC] },
   },
   testnet: true,
 })
@@ -36,7 +43,7 @@ export function getConfig() {
     chains: [arcTestnet],
     connectors,
     transports: {
-      [arcTestnet.id]: http(process.env.NEXT_PUBLIC_ARC_RPC || "https://rpc.testnet.arc-node.thecanteenapp.com"),
+      [arcTestnet.id]: http(ARC_RPC),
     },
   })
 
