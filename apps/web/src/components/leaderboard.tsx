@@ -74,13 +74,13 @@ export function Leaderboard() {
             <TableCell>
               <Link
                 href={`/agents/${agent.agentId}`}
-                className="font-mono text-sm hover:underline"
+                className="font-mono text-sm text-amber-500/80 hover:text-amber-400 transition-colors"
               >
                 {truncateAddress(agent.agentId)}
               </Link>
             </TableCell>
-            <TableCell className="text-right">{agent.traceCount}</TableCell>
-            <TableCell className="text-right text-muted-foreground">
+            <TableCell className="text-right font-mono text-sm">{agent.traceCount}</TableCell>
+            <TableCell className="text-right text-muted-foreground font-mono text-xs">
               {formatTimestamp(agent.latestTimestamp)}
             </TableCell>
           </TableRow>

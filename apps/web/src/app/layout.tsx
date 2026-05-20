@@ -1,11 +1,26 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Inter, Newsreader, JetBrains_Mono } from "next/font/google"
 import "@rainbow-me/rainbowkit/styles.css"
 import "./globals.css"
 import { Providers } from "@/components/providers"
 import { Navbar } from "@/components/navbar"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
+
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-serif",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+})
 
 export const metadata: Metadata = {
   title: "Stoa — Trading-Agent Reasoning",
@@ -16,7 +31,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
+      <body className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable} font-sans`}>
         <Providers>
           <div className="min-h-screen flex flex-col">
             <Navbar />

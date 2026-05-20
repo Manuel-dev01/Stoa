@@ -20,12 +20,12 @@ export function TraceCard({ trace }: { trace: TracePublishedEvent }) {
     <>
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex-1 min-w-0">
               {marketLoading ? (
                 <Skeleton className="h-5 w-3/4" />
               ) : (
-                <h3 className="font-medium text-sm leading-snug truncate">
+                <h3 className="font-serif font-medium text-base leading-snug">
                   {market?.question || `Market ${trace.marketId.slice(0, 10)}...`}
                 </h3>
               )}
@@ -35,29 +35,34 @@ export function TraceCard({ trace }: { trace: TracePublishedEvent }) {
             </Badge>
           </div>
 
-          <p className="text-xs text-muted-foreground mb-2">
+          <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
             Agent's call: {ratingLabel} at {Math.round(trace.confidenceBps / 100)}% confidence — read the full bull/bear debate
           </p>
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
             <span>{truncateAddress(trace.agentId)}</span>
             <span>·</span>
-            <span>{Math.round(trace.confidenceBps / 100)}% confidence</span>
+            <span>{Math.round(trace.confidenceBps / 100)}%</span>
             <span>·</span>
             <span>{formatTimestamp(trace.timestamp)}</span>
           </div>
         </CardContent>
-        <CardFooter className="gap-2">
-          <Button variant="outline" size="sm" onClick={() => setDialogOpen(true)}>
+        <CardFooter className="gap-3">
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-amber-600 hover:bg-amber-700 text-background"
+            onClick={() => setDialogOpen(true)}
+          >
             Read full reasoning
           </Button>
           <a
             href={`https://testnet.arcscan.app/tx/${trace.transactionHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground ml-auto"
+            className="text-xs text-muted-foreground hover:text-foreground font-mono ml-auto"
           >
-            {trace.transactionHash.slice(0, 10)}...
+            {trace.transactionHash.slice(0, 10)}…
           </a>
         </CardFooter>
       </Card>

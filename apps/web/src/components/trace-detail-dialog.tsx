@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -42,12 +44,12 @@ export function TraceDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-h-[80vh] overflow-y-auto max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-base leading-relaxed">
+          <DialogTitle className="text-lg font-serif leading-relaxed">
             {body?.market?.question || `Market ${marketId.slice(0, 10)}...`}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="font-mono text-xs">
             Agent {truncateAddress(agentId)} · Confidence {Math.round(confidenceBps / 100)}%
           </DialogDescription>
         </DialogHeader>
@@ -90,42 +92,48 @@ export function TraceDetailDialog({
             {/* Bull case */}
             {body.reasoning?.bull && (
               <div>
-                <h4 className="text-sm font-medium text-emerald-400 mb-1">Bull case</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {body.reasoning.bull}
-                </p>
+                <h4 className="text-sm font-medium text-emerald-500/80 mb-2 uppercase tracking-wider text-[11px]">Bull case</h4>
+                <div className="prose-stoa">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {body.reasoning.bull}
+                  </ReactMarkdown>
+                </div>
               </div>
             )}
 
             {/* Bear case */}
             {body.reasoning?.bear && (
               <div>
-                <h4 className="text-sm font-medium text-red-400 mb-1">Bear case</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {body.reasoning.bear}
-                </p>
+                <h4 className="text-sm font-medium text-red-400/80 mb-2 uppercase tracking-wider text-[11px]">Bear case</h4>
+                <div className="prose-stoa">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {body.reasoning.bear}
+                  </ReactMarkdown>
+                </div>
               </div>
             )}
 
             {/* Synthesis */}
             {body.reasoning?.synthesis && (
               <div>
-                <h4 className="text-sm font-medium mb-1">Synthesis</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                  {body.reasoning.synthesis}
-                </p>
+                <h4 className="text-sm font-medium text-amber-500/80 mb-2 uppercase tracking-wider text-[11px]">Synthesis</h4>
+                <div className="prose-stoa">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {body.reasoning.synthesis}
+                  </ReactMarkdown>
+                </div>
               </div>
             )}
 
             {/* Model metadata */}
             {body.modelMetadata && (
-              <div className="text-xs text-muted-foreground border-t border-border pt-3">
-                {body.modelMetadata.framework && <span>Framework: {body.modelMetadata.framework}</span>}
+              <div className="text-xs text-muted-foreground border-t border-border pt-3 font-mono">
+                {body.modelMetadata.framework && <span>{body.modelMetadata.framework}</span>}
                 {body.modelMetadata.quickThinkModel && (
-                  <span> · Quick: {body.modelMetadata.quickThinkModel}</span>
+                  <span> · {body.modelMetadata.quickThinkModel}</span>
                 )}
                 {body.modelMetadata.deepThinkModel && (
-                  <span> · Deep: {body.modelMetadata.deepThinkModel}</span>
+                  <span> · {body.modelMetadata.deepThinkModel}</span>
                 )}
               </div>
             )}
@@ -134,7 +142,7 @@ export function TraceDetailDialog({
             <div className="border-t border-border pt-3">
               {!routeResult && (
                 <Button
-                  className="w-full"
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-background"
                   disabled={!canRoute || routeOrder.isPending}
                   onClick={async () => {
                     const result = await routeOrder.mutateAsync({
@@ -155,8 +163,8 @@ export function TraceDetailDialog({
               {routeResult && (
                 <div className="space-y-2">
                   <Badge variant="positive" className="text-xs">Dry-run order signed</Badge>
-                  <p className="text-xs text-muted-foreground">
-                    Builder field: <code className="text-[11px]">{(routeResult.order as Record<string, unknown>)?.builder ? String((routeResult.order as Record<string, unknown>).builder).slice(0, 18) + "..." : "N/A"}</code>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    Builder: {(routeResult.order as Record<string, unknown>)?.builder ? String((routeResult.order as Record<string, unknown>).builder).slice(0, 10) + "..." : "N/A"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {routeResult.message as string}
@@ -170,38 +178,35 @@ export function TraceDetailDialog({
               )}
             </div>
 
-            {/* Links */}
-            <div className="text-xs text-muted-foreground border-t border-border pt-3 space-y-1">
+            {/* Links — mono, precise, evidence */}
+            <div className="text-xs text-muted-foreground border-t border-border pt-3 space-y-1.5 font-mono">
               <div>
-                Trace hash: <code className="text-[11px]">{traceHash.slice(0, 18)}...</code>
+                trace: <span className="text-[11px]">{traceHash.slice(0, 10)}…{traceHash.slice(-6)}</span>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <a
                   href={`https://gateway.irys.xyz/${irysReceipt}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-foreground"
+                  className="text-amber-500/80 hover:text-amber-400 transition-colors"
                 >
-                  View on Irys
+                  Irys ↗
                 </a>
-                {" · "}
                 <a
                   href={`https://testnet.arcscan.app/tx/${transactionHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-foreground"
+                  className="text-amber-500/80 hover:text-amber-400 transition-colors"
                 >
-                  View on Arc
+                  Arc ↗
                 </a>
-              </div>
-              <div>
                 <a
                   href="https://github.com/Manuel-dev01/Stoa/blob/master/docs/verification.md"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="underline hover:text-foreground"
+                  className="text-amber-500/80 hover:text-amber-400 transition-colors"
                 >
-                  Verify this trace yourself
+                  Verify yourself ↗
                 </a>
               </div>
             </div>

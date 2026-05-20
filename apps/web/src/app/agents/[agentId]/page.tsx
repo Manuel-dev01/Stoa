@@ -35,23 +35,23 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
   }, [agentTraces])
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-8 space-y-8 max-w-4xl">
       {/* Agent header */}
       <div>
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-lg font-semibold font-mono break-all">{fullAgentId}</h1>
+          <h1 className="text-lg font-mono break-all text-amber-500/90">{fullAgentId}</h1>
           <CopyButton text={fullAgentId} />
         </div>
         {agentLoading ? (
           <Skeleton className="h-4 w-48" />
         ) : agent ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground font-mono">
             Owner:{" "}
             <a
               href={`https://testnet.arcscan.app/address/${agent.owner}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono hover:underline"
+              className="text-amber-500/80 hover:text-amber-400 transition-colors"
             >
               {agent.owner}
             </a>
@@ -63,19 +63,19 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
-            <div className="text-2xl font-bold">{stats.count}</div>
+            <div className="text-2xl font-serif font-bold">{stats.count}</div>
             <div className="text-xs text-muted-foreground">Traces</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
-            <div className="text-2xl font-bold">{stats.avgConfidence}%</div>
+            <div className="text-2xl font-serif font-bold">{stats.avgConfidence}%</div>
             <div className="text-xs text-muted-foreground">Avg confidence</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-serif font-bold">
               {stats.latest > 0n ? formatTimestamp(stats.latest) : "—"}
             </div>
             <div className="text-xs text-muted-foreground">Latest trace</div>
@@ -85,7 +85,7 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
 
       {/* Trace list */}
       <section>
-        <h2 className="text-lg font-semibold mb-4">Traces</h2>
+        <h2 className="text-lg font-serif font-semibold mb-4">Traces</h2>
         {tracesLoading ? (
           <div className="space-y-4">
             <Skeleton className="h-28 w-full" />
@@ -116,22 +116,27 @@ function AgentTraceCard({ trace }: { trace: TracePublishedEvent }) {
     <>
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-start justify-between gap-4 mb-3">
-            <h3 className="font-medium text-sm leading-snug truncate flex-1">
+          <div className="flex items-start justify-between gap-4 mb-2">
+            <h3 className="font-serif font-medium text-base leading-snug flex-1">
               {market?.question || `Market ${trace.marketId.slice(0, 10)}...`}
             </h3>
             <Badge variant={ratingVariant} className="shrink-0">
               {trace.rating > 0 ? `+${trace.rating}` : trace.rating} {ratingLabel}
             </Badge>
           </div>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
             <span>{Math.round(trace.confidenceBps / 100)}% confidence</span>
             <span>·</span>
             <span>{formatTimestamp(trace.timestamp)}</span>
           </div>
         </CardContent>
         <div className="px-6 pb-6">
-          <Button variant="outline" size="sm" onClick={() => setDialogOpen(true)}>
+          <Button
+            variant="default"
+            size="sm"
+            className="bg-amber-600 hover:bg-amber-700 text-background"
+            onClick={() => setDialogOpen(true)}
+          >
             Read full reasoning
           </Button>
         </div>
@@ -158,14 +163,14 @@ function CopyButton({ text }: { text: string }) {
     <Button
       variant="ghost"
       size="icon"
-      className="h-6 w-6"
+      className="h-6 w-6 text-muted-foreground hover:text-foreground"
       onClick={() => {
         navigator.clipboard.writeText(text)
         setCopied(true)
         setTimeout(() => setCopied(false), 1500)
       }}
     >
-      {copied ? "✓" : "📋"}
+      {copied ? "✓" : "⧉"}
     </Button>
   )
 }
