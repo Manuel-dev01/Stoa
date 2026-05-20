@@ -8,7 +8,11 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "typescript": "^5.7.0"
+    "@polymarket/clob-client-v2": "^1.0.6",
+    "dotenv": "^17.4.2",
+    "tsx": "^4.22.3",
+    "typescript": "^5.7.0",
+    "viem": "^2.50.4"
   },
   "packageManager": "pnpm@9.15.0"
 }

@@ -56,6 +56,13 @@ cd apps/agent && uv sync && cd ../..
 cd packages/contracts && forge build && cd ../..
 ```
 
+### Derive Polymarket API keys
+
+```bash
+# Set POLYMARKET_PRIVATE_KEY in .env.local first, then:
+npx tsx scripts/setup-clob-keys.ts
+```
+
 ### Run the agent service
 
 ```bash
