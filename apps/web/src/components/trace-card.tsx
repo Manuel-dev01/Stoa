@@ -35,6 +35,10 @@ export function TraceCard({ trace }: { trace: TracePublishedEvent }) {
             </Badge>
           </div>
 
+          <p className="text-xs text-muted-foreground mb-2">
+            Agent's call: {ratingLabel} at {Math.round(trace.confidenceBps / 100)}% confidence — read the full bull/bear debate
+          </p>
+
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>{truncateAddress(trace.agentId)}</span>
             <span>·</span>

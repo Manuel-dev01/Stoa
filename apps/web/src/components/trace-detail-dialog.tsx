@@ -194,6 +194,16 @@ export function TraceDetailDialog({
                   View on Arc
                 </a>
               </div>
+              <div>
+                <a
+                  href="https://github.com/Manuel-dev01/Stoa/blob/master/docs/verification.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground"
+                >
+                  Verify this trace yourself
+                </a>
+              </div>
             </div>
           </div>
         )}
