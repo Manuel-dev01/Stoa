@@ -2,7 +2,7 @@
 
 import { use } from "react"
 import { useMemo, useState } from "react"
-import { useTraces, useAgent, useMarket } from "@/lib/hooks"
+import { useTraces, useAgent, useMarket, useTreasuryValue } from "@/lib/hooks"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +15,7 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
   const fullAgentId = agentId.startsWith("0x") ? agentId : `0x${agentId}`
   const { data: agent, isLoading: agentLoading } = useAgent(fullAgentId as `0x${string}`)
   const { data: traces, isLoading: tracesLoading } = useTraces()
+  const { data: treasuryValue } = useTreasuryValue(fullAgentId as `0x${string}`)
 
   const agentTraces = useMemo(() => {
     if (!traces) return []
@@ -60,7 +61,7 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
             <div className="text-2xl font-serif font-bold">{stats.count}</div>
@@ -79,6 +80,14 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
               {stats.latest > 0n ? formatTimestamp(stats.latest) : "—"}
             </div>
             <div className="text-xs text-muted-foreground">Latest trace</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <div className="text-2xl font-mono font-bold">
+              {treasuryValue != null ? `$${(Number(treasuryValue) / 1e6).toFixed(2)}` : "—"}
+            </div>
+            <div className="text-xs text-muted-foreground">Treasury</div>
           </CardContent>
         </Card>
       </div>

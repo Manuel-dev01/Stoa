@@ -1,8 +1,11 @@
 "use client"
 
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { usePublicClient } from "wagmi"
+import { usePublicClient, useReadContract, useWriteContract } from "wagmi"
 import { getAllTraces, getAgent, type TracePublishedEvent } from "./contracts"
+import { stoaTreasuryAbi } from "./shared/stoaTreasury"
+
+const STOA_TREASURY = process.env.NEXT_PUBLIC_STOA_TREASURY_ADDRESS || "0x0000000000000000000000000000000000000000"
 
 export function useTraces() {
   const client = usePublicClient()
@@ -103,4 +106,52 @@ export function useRouteOrder() {
       return resp.json()
     },
   })
+}
+
+export function useTreasuryValue(agentId: `0x${string}` | undefined) {
+  return useReadContract({
+    address: STOA_TREASURY as `0x${string}`,
+    abi: stoaTreasuryAbi,
+    functionName: "agentValue",
+    args: agentId ? [agentId] : undefined,
+    query: { enabled: !!agentId && STOA_TREASURY !== "0x0000000000000000000000000000000000000000" },
+  })
+}
+
+export function useTreasuryShares(agentId: `0x${string}` | undefined) {
+  return useReadContract({
+    address: STOA_TREASURY as `0x${string}`,
+    abi: stoaTreasuryAbi,
+    functionName: "agentShares",
+    args: agentId ? [agentId] : undefined,
+    query: { enabled: !!agentId && STOA_TREASURY !== "0x0000000000000000000000000000000000000000" },
+  })
+}
+
+export function useTreasurySubscribe() {
+  const { writeContractAsync, isPending } = useWriteContract()
+  return {
+    subscribe: (agentId: `0x${string}`, amount: bigint) =>
+      writeContractAsync({
+        address: STOA_TREASURY as `0x${string}`,
+        abi: stoaTreasuryAbi,
+        functionName: "subscribe",
+        args: [agentId, amount],
+      }),
+    isPending,
+  }
+}
+
+export function useTreasuryRedeem() {
+  const { writeContractAsync, isPending } = useWriteContract()
+  return {
+    redeem: (agentId: `0x${string}`, shares: bigint) =>
+      writeContractAsync({
+        address: STOA_TREASURY as `0x${string}`,
+        abi: stoaTreasuryAbi,
+        functionName: "redeem",
+        args: [agentId, shares],
+      }),
+    isPending,
+  }
 }

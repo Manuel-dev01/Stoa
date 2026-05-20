@@ -9,8 +9,7 @@
  *   npx tsx scripts/broadcast-one-order.ts --confirm-real-money
  */
 
-import { ClobClient } from "@polymarket/clob-client-v2"
-import { Chain } from "@polymarket/clob-client-v2"
+import { ClobClient, Chain, Side } from "@polymarket/clob-client-v2"
 import { createWalletClient, http } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import * as dotenv from "dotenv"
@@ -120,7 +119,7 @@ async function main() {
     tokenID: tokenId,
     price: 0.05,
     size: 1,
-    side: 0, // BUY
+    side: Side.BUY,
     builderCode: builderAddress,
   }
 
