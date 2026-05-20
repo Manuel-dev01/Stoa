@@ -38,13 +38,13 @@ export function TraceDetailDialog({
   const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
 
   const isBuy = rating > 0
-  const canRoute = !!body?.decision?.sizeUsdc && body.decision.sizeUsdc > 0 && (rating !== 0)
+  const canRoute = rating !== 0
 
   const ratingVariant = rating > 0 ? "positive" : rating < 0 ? "negative" : "neutral"
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto max-w-2xl">
+      <DialogContent className="max-h-[80vh] overflow-y-auto max-w-2xl dialog-scrollbar">
         <DialogHeader>
           <DialogTitle className="text-lg font-serif leading-relaxed">
             {body?.market?.question || `Market ${marketId.slice(0, 10)}...`}
@@ -55,11 +55,28 @@ export function TraceDetailDialog({
         </DialogHeader>
 
         {isLoading && (
-          <div className="space-y-4">
+          <div className="space-y-4 py-2">
+            <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
-            <Skeleton className="h-4 w-4/6" />
-            <Skeleton className="h-20 w-full" />
+            <div className="pt-2">
+              <Skeleton className="h-4 w-24 mb-3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-4/6" />
+            </div>
+            <div className="pt-2">
+              <Skeleton className="h-4 w-24 mb-3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-5/6" />
+            </div>
+            <div className="pt-2">
+              <Skeleton className="h-4 w-28 mb-3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/6" />
+            </div>
+            <Skeleton className="h-10 w-full mt-4" />
           </div>
         )}
 
@@ -73,7 +90,7 @@ export function TraceDetailDialog({
         )}
 
         {body && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Decision */}
             <div className="flex items-center gap-3">
               <Badge variant={ratingVariant} className="text-sm">
@@ -91,38 +108,41 @@ export function TraceDetailDialog({
 
             {/* Bull case */}
             {body.reasoning?.bull && (
-              <div>
-                <h4 className="text-sm font-medium text-emerald-500/80 mb-2 uppercase tracking-wider text-[11px]">Bull case</h4>
-                <div className="prose-stoa">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {body.reasoning.bull}
-                  </ReactMarkdown>
-                </div>
-              </div>
+              <ReasoningSection
+                label="Bull case"
+                colorClass="text-emerald-500/80"
+                defaultOpen={true}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {body.reasoning.bull}
+                </ReactMarkdown>
+              </ReasoningSection>
             )}
 
             {/* Bear case */}
             {body.reasoning?.bear && (
-              <div>
-                <h4 className="text-sm font-medium text-red-400/80 mb-2 uppercase tracking-wider text-[11px]">Bear case</h4>
-                <div className="prose-stoa">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {body.reasoning.bear}
-                  </ReactMarkdown>
-                </div>
-              </div>
+              <ReasoningSection
+                label="Bear case"
+                colorClass="text-red-400/80"
+                defaultOpen={false}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {body.reasoning.bear}
+                </ReactMarkdown>
+              </ReasoningSection>
             )}
 
             {/* Synthesis */}
             {body.reasoning?.synthesis && (
-              <div>
-                <h4 className="text-sm font-medium text-amber-500/80 mb-2 uppercase tracking-wider text-[11px]">Synthesis</h4>
-                <div className="prose-stoa">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {body.reasoning.synthesis}
-                  </ReactMarkdown>
-                </div>
-              </div>
+              <ReasoningSection
+                label="Synthesis"
+                colorClass="text-amber-500/80"
+                defaultOpen={true}
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {body.reasoning.synthesis}
+                </ReactMarkdown>
+              </ReasoningSection>
             )}
 
             {/* Model metadata */}
@@ -214,5 +234,41 @@ export function TraceDetailDialog({
         )}
       </DialogContent>
     </Dialog>
+  )
+}
+
+function ReasoningSection({
+  label,
+  colorClass,
+  defaultOpen,
+  children,
+}: {
+  label: string
+  colorClass: string
+  defaultOpen: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <details open={defaultOpen} className="group">
+      <summary className="flex items-center gap-2 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+        <svg
+          className="w-3 h-3 text-muted-foreground transition-transform group-open:rotate-90"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+        <span className={`text-[11px] font-medium uppercase tracking-wider ${colorClass}`}>
+          {label}
+        </span>
+      </summary>
+      <div className="prose-stoa mt-2 pl-5">
+        {children}
+      </div>
+    </details>
   )
 }

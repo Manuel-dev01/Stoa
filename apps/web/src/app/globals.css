@@ -168,6 +168,24 @@
     color: hsl(30 8% 55%);
     letter-spacing: 0.01em;
   }
+
+  .dialog-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(20 4% 24%) transparent;
+  }
+  .dialog-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .dialog-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .dialog-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(20 4% 24%);
+    border-radius: 3px;
+  }
+  .dialog-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(20 4% 32%);
+  }
 }
 
 @layer utilities {
