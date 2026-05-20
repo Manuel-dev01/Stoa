@@ -48,8 +48,8 @@ function getClient(): ClobClient {
     passphrase: process.env.POLYMARKET_API_PASSPHRASE!,
   }
 
-  const builderCode = process.env.POLYMARKET_BUILDER_ADDRESS
-  if (!builderCode) throw new Error("POLYMARKET_BUILDER_ADDRESS not set")
+  const builderCode = process.env.POLYMARKET_BUILDER_CODE
+  if (!builderCode) throw new Error("POLYMARKET_BUILDER_CODE not set")
 
   return new ClobClient({
     host: "https://clob.polymarket.com",
@@ -65,7 +65,7 @@ export async function buildSignedOrder(
   params: RouteOrderParams
 ): Promise<SignedOrderPayload> {
   const client = getClient()
-  const builderCode = process.env.POLYMARKET_BUILDER_ADDRESS!
+  const builderCode = process.env.POLYMARKET_BUILDER_CODE!
 
   const userOrder = {
     tokenID: params.tokenId,

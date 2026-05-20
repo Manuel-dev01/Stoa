@@ -38,7 +38,7 @@ async function main() {
   const apiKey = process.env.POLYMARKET_API_KEY
   const apiSecret = process.env.POLYMARKET_API_SECRET
   const apiPassphrase = process.env.POLYMARKET_API_PASSPHRASE
-  const builderAddress = process.env.POLYMARKET_BUILDER_ADDRESS
+  const builderAddress = process.env.POLYMARKET_BUILDER_CODE
 
   if (!apiKey || !apiSecret || !apiPassphrase) {
     console.error("Polymarket API credentials not set")
@@ -46,7 +46,7 @@ async function main() {
   }
 
   if (!builderAddress) {
-    console.error("POLYMARKET_BUILDER_ADDRESS not set")
+    console.error("POLYMARKET_BUILDER_CODE not set")
     process.exit(1)
   }
 

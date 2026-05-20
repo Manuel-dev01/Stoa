@@ -28,7 +28,7 @@ async function main() {
   const apiKey = process.env.POLYMARKET_API_KEY
   const apiSecret = process.env.POLYMARKET_API_SECRET
   const apiPassphrase = process.env.POLYMARKET_API_PASSPHRASE
-  const builderAddress = process.env.POLYMARKET_BUILDER_ADDRESS
+  const builderAddress = process.env.POLYMARKET_BUILDER_CODE
 
   if (!apiKey || !apiSecret || !apiPassphrase) {
     console.error("POLYMARKET_API_KEY, POLYMARKET_API_SECRET, POLYMARKET_API_PASSPHRASE must be set")
@@ -36,7 +36,7 @@ async function main() {
   }
 
   if (!builderAddress) {
-    console.error("POLYMARKET_BUILDER_ADDRESS not set — register at polymarket.com/settings first")
+    console.error("POLYMARKET_BUILDER_CODE not set — register at polymarket.com/settings first")
     process.exit(1)
   }
 
@@ -146,7 +146,7 @@ async function main() {
     process.exit(1)
   }
 
-  console.log("PASS: builder field matches POLYMARKET_BUILDER_ADDRESS")
+  console.log("PASS: builder field matches POLYMARKET_BUILDER_CODE")
   console.log("PASS: order was signed successfully")
   console.log("PASS: no real order was broadcast (dry-run verification)")
   console.log("\nAll assertions passed. The V2 routing pipeline is correctly wired.")
