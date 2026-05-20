@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { usePublicClient } from "wagmi"
 import { getAllTraces, getAgent, type TracePublishedEvent } from "./contracts"
 
@@ -77,5 +77,30 @@ export function useMarket(conditionId: string | undefined) {
     },
     enabled: !!conditionId,
     staleTime: 5 * 60_000,
+  })
+}
+
+interface RouteOrderParams {
+  marketId: string
+  side: "BUY" | "SELL"
+  price: number
+  size: number
+  agentBytes32: string
+}
+
+export function useRouteOrder() {
+  return useMutation({
+    mutationFn: async (params: RouteOrderParams) => {
+      const resp = await fetch("/api/route-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...params, dryRun: true }),
+      })
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: resp.statusText }))
+        throw new Error(err.error || `HTTP ${resp.status}`)
+      }
+      return resp.json()
+    },
   })
 }

@@ -1,9 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTraceBody } from "@/lib/hooks"
+import { useTraceBody, useRouteOrder } from "@/lib/hooks"
 import { truncateAddress } from "@/lib/contracts"
 import { Button } from "./ui/button"
 
@@ -31,6 +32,11 @@ export function TraceDetailDialog({
   transactionHash,
 }: TraceDetailDialogProps) {
   const { data: body, isLoading, error, refetch } = useTraceBody(open ? irysReceipt : undefined)
+  const routeOrder = useRouteOrder()
+  const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
+
+  const isBuy = rating > 0
+  const canRoute = !!body?.decision?.sizeUsdc && body.decision.sizeUsdc > 0 && (rating !== 0)
 
   const ratingVariant = rating > 0 ? "positive" : rating < 0 ? "negative" : "neutral"
 
@@ -123,6 +129,46 @@ export function TraceDetailDialog({
                 )}
               </div>
             )}
+
+            {/* Route this trade */}
+            <div className="border-t border-border pt-3">
+              {!routeResult && (
+                <Button
+                  className="w-full"
+                  disabled={!canRoute || routeOrder.isPending}
+                  onClick={async () => {
+                    const result = await routeOrder.mutateAsync({
+                      marketId,
+                      side: isBuy ? "BUY" : "SELL",
+                      price: 0.50,
+                      size: body?.decision?.sizeUsdc ?? 10,
+                      agentBytes32: agentId,
+                    })
+                    setRouteResult(result as Record<string, unknown>)
+                  }}
+                >
+                  {routeOrder.isPending
+                    ? "Constructing order..."
+                    : `Route this ${isBuy ? "BUY" : "SELL"} through agent`}
+                </Button>
+              )}
+              {routeResult && (
+                <div className="space-y-2">
+                  <Badge variant="positive" className="text-xs">Dry-run order signed</Badge>
+                  <p className="text-xs text-muted-foreground">
+                    Builder field: <code className="text-[11px]">{(routeResult.order as Record<string, unknown>)?.builder ? String((routeResult.order as Record<string, unknown>).builder).slice(0, 18) + "..." : "N/A"}</code>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {routeResult.message as string}
+                  </p>
+                </div>
+              )}
+              {routeOrder.isError && (
+                <p className="text-xs text-red-400 mt-2">
+                  {routeOrder.error instanceof Error ? routeOrder.error.message : "Routing failed"}
+                </p>
+              )}
+            </div>
 
             {/* Links */}
             <div className="text-xs text-muted-foreground border-t border-border pt-3 space-y-1">
