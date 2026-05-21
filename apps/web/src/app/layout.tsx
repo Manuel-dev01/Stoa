@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { Suspense } from "react"
 import { Inter, Newsreader, JetBrains_Mono } from "next/font/google"
 import "@rainbow-me/rainbowkit/styles.css"
 import "./globals.css"
@@ -32,12 +33,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable} font-sans`}>
-        <Providers>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-          </div>
-        </Providers>
+        <Suspense>
+          <Providers>
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-1">{children}</main>
+            </div>
+          </Providers>
+        </Suspense>
       </body>
     </html>
   )

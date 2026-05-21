@@ -244,18 +244,28 @@ details .details-body > div {
 }
 
 /* Staggered card entrance */
-.trace-list > * {
+.trace-list > *,
+.agent-traces-list > * {
   animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.trace-list > *:nth-child(1) { animation-delay: 0ms; }
-.trace-list > *:nth-child(2) { animation-delay: 60ms; }
-.trace-list > *:nth-child(3) { animation-delay: 120ms; }
-.trace-list > *:nth-child(4) { animation-delay: 180ms; }
-.trace-list > *:nth-child(5) { animation-delay: 240ms; }
-.trace-list > *:nth-child(6) { animation-delay: 300ms; }
-.trace-list > *:nth-child(7) { animation-delay: 360ms; }
-.trace-list > *:nth-child(8) { animation-delay: 420ms; }
-.trace-list > *:nth-child(n+9) { animation-delay: 480ms; }
+.trace-list > *:nth-child(1),
+.agent-traces-list > *:nth-child(1) { animation-delay: 0ms; }
+.trace-list > *:nth-child(2),
+.agent-traces-list > *:nth-child(2) { animation-delay: 60ms; }
+.trace-list > *:nth-child(3),
+.agent-traces-list > *:nth-child(3) { animation-delay: 120ms; }
+.trace-list > *:nth-child(4),
+.agent-traces-list > *:nth-child(4) { animation-delay: 180ms; }
+.trace-list > *:nth-child(5),
+.agent-traces-list > *:nth-child(5) { animation-delay: 240ms; }
+.trace-list > *:nth-child(6),
+.agent-traces-list > *:nth-child(6) { animation-delay: 300ms; }
+.trace-list > *:nth-child(7),
+.agent-traces-list > *:nth-child(7) { animation-delay: 360ms; }
+.trace-list > *:nth-child(8),
+.agent-traces-list > *:nth-child(8) { animation-delay: 420ms; }
+.trace-list > *:nth-child(n+9),
+.agent-traces-list > *:nth-child(n+9) { animation-delay: 480ms; }
 
 /* Pantheon row entrance (editorial leaderboard) */
 .pantheon-rows > a {

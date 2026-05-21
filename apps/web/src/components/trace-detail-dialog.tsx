@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTraceBody, useRouteOrder } from "@/lib/hooks"
 import { truncateAddress } from "@/lib/contracts"
+import { TeaserBlock } from "@/components/teaser-block"
 import { Button } from "./ui/button"
 
 interface TraceDetailDialogProps {
@@ -112,41 +113,41 @@ export function TraceDetailDialog({
 
             {/* Bull case */}
             {body.reasoning?.bull && (
-              <ReasoningSection
+              <TeaserBlock
                 label="Bull case"
                 colorClass="text-emerald-500/80"
-                defaultOpen={false}
+                collapsedHeight={64}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {body.reasoning.bull}
                 </ReactMarkdown>
-              </ReasoningSection>
+              </TeaserBlock>
             )}
 
             {/* Bear case */}
             {body.reasoning?.bear && (
-              <ReasoningSection
+              <TeaserBlock
                 label="Bear case"
                 colorClass="text-red-400/80"
-                defaultOpen={false}
+                collapsedHeight={64}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {body.reasoning.bear}
                 </ReactMarkdown>
-              </ReasoningSection>
+              </TeaserBlock>
             )}
 
             {/* Synthesis */}
             {body.reasoning?.synthesis && (
-              <ReasoningSection
+              <TeaserBlock
                 label="Synthesis"
                 colorClass="text-amber-500/80"
-                defaultOpen={false}
+                collapsedHeight={64}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {body.reasoning.synthesis}
                 </ReactMarkdown>
-              </ReasoningSection>
+              </TeaserBlock>
             )}
 
             {/* Model metadata */}
@@ -238,43 +239,5 @@ export function TraceDetailDialog({
         )}
       </DialogContent>
     </Dialog>
-  )
-}
-
-function ReasoningSection({
-  label,
-  colorClass,
-  defaultOpen,
-  children,
-}: {
-  label: string
-  colorClass: string
-  defaultOpen: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <details open={defaultOpen} className="group">
-      <summary className="flex items-center gap-2 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-        <svg
-          className="w-3 h-3 text-muted-foreground transition-transform duration-200 group-open:rotate-90"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="m9 18 6-6-6-6" />
-        </svg>
-        <span className={`text-[11px] font-medium uppercase tracking-wider ${colorClass}`}>
-          {label}
-        </span>
-      </summary>
-      <div className="details-body">
-        <div className="prose-stoa mt-2 pl-5">
-          {children}
-        </div>
-      </div>
-    </details>
   )
 }

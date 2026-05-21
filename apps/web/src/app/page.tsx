@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo } from "react"
-import { useTraces, useTraceBody, useMarket } from "@/lib/hooks"
+import { useMemo, useState } from "react"
+import { useTraces, useTraceBody, useMarket, useRouteOrder } from "@/lib/hooks"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Leaderboard } from "@/components/leaderboard"
 import { TraceCard } from "@/components/trace-card"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
+import { TeaserBlock } from "@/components/teaser-block"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import Link from "next/link"
@@ -63,7 +64,11 @@ function DialecticSection({ traces }: { traces: TracePublishedEvent[] }) {
 function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const { data: body, isLoading } = useTraceBody(trace.irysReceipt)
   const { data: market } = useMarket(trace.marketId)
+  const routeOrder = useRouteOrder()
+  const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
 
+  const isBuy = trace.rating > 0
+  const canRoute = trace.rating !== 0
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
 
@@ -120,54 +125,98 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 
         {/* Bull / Bear reasoning */}
         {body?.reasoning && (
-          <div className="space-y-4 animate-fade-in-up">
+          <div className="space-y-5 animate-fade-in-up">
             <div className="grid md:grid-cols-2 gap-4">
               {body.reasoning.bull && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-emerald-500/80">Bull case</span>
-                  </div>
-                  <div className="prose-stoa text-sm border-l-2 border-emerald-500/30 pl-4">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {body.reasoning.bull}
-                    </ReactMarkdown>
-                  </div>
-                </div>
+                <TeaserBlock
+                  label="Bull case"
+                  colorClass="text-emerald-500/80"
+                  collapsedHeight={68}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {body.reasoning.bull}
+                  </ReactMarkdown>
+                </TeaserBlock>
               )}
               {body.reasoning.bear && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-red-400/80">Bear case</span>
-                  </div>
-                  <div className="prose-stoa text-sm border-l-2 border-red-400/30 pl-4">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {body.reasoning.bear}
-                    </ReactMarkdown>
-                  </div>
-                </div>
+                <TeaserBlock
+                  label="Bear case"
+                  colorClass="text-red-400/80"
+                  collapsedHeight={68}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {body.reasoning.bear}
+                  </ReactMarkdown>
+                </TeaserBlock>
               )}
             </div>
 
             {/* Synthesis */}
             {body.reasoning.synthesis && (
-              <div className="space-y-2 border-t border-border/50 pt-4">
-                <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-amber-500/80">Synthesis</span>
-                <div className="prose-stoa text-sm">
+              <div className="border-t border-border/50 pt-4">
+                <TeaserBlock
+                  label="Synthesis"
+                  colorClass="text-amber-500/80"
+                  collapsedHeight={68}
+                >
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {body.reasoning.synthesis}
                   </ReactMarkdown>
-                </div>
+                </TeaserBlock>
               </div>
             )}
           </div>
         )}
 
+        {/* Route this trade */}
+        <div className="border-t border-border/50 pt-4 space-y-3">
+          {!routeResult && (
+            <Button
+              className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
+              disabled={!canRoute || routeOrder.isPending}
+              onClick={async () => {
+                const result = await routeOrder.mutateAsync({
+                  marketId: trace.marketId,
+                  side: isBuy ? "BUY" : "SELL",
+                  price: 0.50,
+                  size: body?.decision?.sizeUsdc ?? 10,
+                  agentBytes32: trace.agentId,
+                })
+                setRouteResult(result as Record<string, unknown>)
+              }}
+            >
+              {routeOrder.isPending
+                ? "Constructing order…"
+                : `Route this ${isBuy ? "BUY" : "SELL"} through agent`}
+            </Button>
+          )}
+          {routeResult && (
+            <div className="space-y-2 animate-fade-in-up">
+              <Badge variant="positive" className="text-xs">Dry-run order signed</Badge>
+              <p className="text-xs text-muted-foreground font-mono">
+                Builder: {(routeResult.order as Record<string, unknown>)?.builder
+                  ? String((routeResult.order as Record<string, unknown>).builder).slice(0, 10) + "…"
+                  : "N/A"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {routeResult.message as string}
+              </p>
+            </div>
+          )}
+          {routeOrder.isError && (
+            <p className="text-xs text-red-400 animate-fade-in">
+              {routeOrder.error instanceof Error ? routeOrder.error.message : "Routing failed"}
+            </p>
+          )}
+        </div>
+
         {/* Footer links */}
         <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border/50">
-          <Link href={`/agents/${trace.agentId}`}>
-            <Button variant="ghost" size="sm" className="text-xs font-mono text-amber-500/80 hover:text-amber-400 h-auto p-0">
-              View agent →
-            </Button>
+          <Link
+            href={`/agents/${trace.agentId}`}
+            className="text-xs font-mono text-amber-500/80 hover:text-amber-400 hover:underline underline-offset-4 transition-colors"
+          >
+            View agent →
           </Link>
           <a
             href={`https://gateway.irys.xyz/${trace.irysReceipt}`}
@@ -236,20 +285,20 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
 
 function TraceCardSkeleton() {
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <Skeleton className="h-5 w-3/4" />
-          <Skeleton className="h-5 w-16" />
-        </div>
-        <Skeleton className="h-4 w-full mb-2" />
-        <div className="flex items-center gap-3">
-          <Skeleton className="h-3 w-20" />
+    <div className="border-b border-border/30 py-5">
+      <div className="flex items-start gap-4">
+        <Skeleton className="h-4 w-6 shrink-0" />
+        <div className="flex-1 space-y-2">
           <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-3 w-48" />
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-3 w-8" />
+        </div>
+      </div>
+    </div>
   )
 }
 
