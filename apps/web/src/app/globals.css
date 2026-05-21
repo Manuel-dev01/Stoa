@@ -257,16 +257,16 @@ details .details-body > div {
 .trace-list > *:nth-child(8) { animation-delay: 420ms; }
 .trace-list > *:nth-child(n+9) { animation-delay: 480ms; }
 
-/* Leaderboard row entrance */
-.leaderboard-rows > tr {
+/* Pantheon row entrance (editorial leaderboard) */
+.pantheon-rows > a {
   animation: fade-in 0.3s ease both;
 }
-.leaderboard-rows > tr:nth-child(1) { animation-delay: 0ms; }
-.leaderboard-rows > tr:nth-child(2) { animation-delay: 50ms; }
-.leaderboard-rows > tr:nth-child(3) { animation-delay: 100ms; }
-.leaderboard-rows > tr:nth-child(4) { animation-delay: 150ms; }
-.leaderboard-rows > tr:nth-child(5) { animation-delay: 200ms; }
-.leaderboard-rows > tr:nth-child(n+6) { animation-delay: 250ms; }
+.pantheon-rows > a:nth-child(1) { animation-delay: 0ms; }
+.pantheon-rows > a:nth-child(2) { animation-delay: 50ms; }
+.pantheon-rows > a:nth-child(3) { animation-delay: 100ms; }
+.pantheon-rows > a:nth-child(4) { animation-delay: 150ms; }
+.pantheon-rows > a:nth-child(5) { animation-delay: 200ms; }
+.pantheon-rows > a:nth-child(n+6) { animation-delay: 250ms; }
 
 @layer utilities {
   .border-border {
