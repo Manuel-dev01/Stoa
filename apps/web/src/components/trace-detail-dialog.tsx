@@ -55,33 +55,37 @@ export function TraceDetailDialog({
         </DialogHeader>
 
         {isLoading && (
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 animate-fade-in">
+            <div className="flex items-center gap-2 text-xs text-amber-500/80 font-mono mb-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/80 animate-pulse" />
+              Fetching trace from Irys…
+            </div>
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
-            <div className="pt-2">
-              <Skeleton className="h-4 w-24 mb-3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-4/6" />
+            <div className="pt-2 space-y-2 rounded-md border border-border/50 p-3">
+              <Skeleton className="h-3 w-20 mb-2" />
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3.5 w-4/6" />
             </div>
-            <div className="pt-2">
-              <Skeleton className="h-4 w-24 mb-3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
+            <div className="pt-1 space-y-2 rounded-md border border-border/50 p-3">
+              <Skeleton className="h-3 w-20 mb-2" />
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3.5 w-5/6" />
             </div>
-            <div className="pt-2">
-              <Skeleton className="h-4 w-28 mb-3" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/6" />
+            <div className="pt-1 space-y-2 rounded-md border border-border/50 p-3">
+              <Skeleton className="h-3 w-24 mb-2" />
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3.5 w-full" />
+              <Skeleton className="h-3.5 w-3/6" />
             </div>
             <Skeleton className="h-10 w-full mt-4" />
           </div>
         )}
 
         {error && (
-          <div className="text-center py-8">
+          <div className="text-center py-8 animate-fade-in">
             <p className="text-muted-foreground mb-4">Unable to load reasoning from Irys</p>
             <Button variant="outline" onClick={() => refetch()}>
               Retry
@@ -90,7 +94,7 @@ export function TraceDetailDialog({
         )}
 
         {body && (
-          <div className="space-y-4">
+          <div className="space-y-4 animate-fade-in-up">
             {/* Decision */}
             <div className="flex items-center gap-3">
               <Badge variant={ratingVariant} className="text-sm">
@@ -111,7 +115,7 @@ export function TraceDetailDialog({
               <ReasoningSection
                 label="Bull case"
                 colorClass="text-emerald-500/80"
-                defaultOpen={true}
+                defaultOpen={false}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {body.reasoning.bull}
@@ -137,7 +141,7 @@ export function TraceDetailDialog({
               <ReasoningSection
                 label="Synthesis"
                 colorClass="text-amber-500/80"
-                defaultOpen={true}
+                defaultOpen={false}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {body.reasoning.synthesis}
@@ -162,7 +166,7 @@ export function TraceDetailDialog({
             <div className="border-t border-border pt-3">
               {!routeResult && (
                 <Button
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-background"
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
                   disabled={!canRoute || routeOrder.isPending}
                   onClick={async () => {
                     const result = await routeOrder.mutateAsync({
@@ -181,7 +185,7 @@ export function TraceDetailDialog({
                 </Button>
               )}
               {routeResult && (
-                <div className="space-y-2">
+                <div className="space-y-2 animate-fade-in-up">
                   <Badge variant="positive" className="text-xs">Dry-run order signed</Badge>
                   <p className="text-xs text-muted-foreground font-mono">
                     Builder: {(routeResult.order as Record<string, unknown>)?.builder ? String((routeResult.order as Record<string, unknown>).builder).slice(0, 10) + "..." : "N/A"}
@@ -192,7 +196,7 @@ export function TraceDetailDialog({
                 </div>
               )}
               {routeOrder.isError && (
-                <p className="text-xs text-red-400 mt-2">
+                <p className="text-xs text-red-400 mt-2 animate-fade-in">
                   {routeOrder.error instanceof Error ? routeOrder.error.message : "Routing failed"}
                 </p>
               )}
@@ -252,7 +256,7 @@ function ReasoningSection({
     <details open={defaultOpen} className="group">
       <summary className="flex items-center gap-2 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
         <svg
-          className="w-3 h-3 text-muted-foreground transition-transform group-open:rotate-90"
+          className="w-3 h-3 text-muted-foreground transition-transform duration-200 group-open:rotate-90"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -266,8 +270,10 @@ function ReasoningSection({
           {label}
         </span>
       </summary>
-      <div className="prose-stoa mt-2 pl-5">
-        {children}
+      <div className="details-body">
+        <div className="prose-stoa mt-2 pl-5">
+          {children}
+        </div>
       </div>
     </details>
   )

@@ -67,16 +67,17 @@ export function Leaderboard() {
           <TableHead className="text-right">Latest</TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="leaderboard-rows">
         {agents.map((agent, i) => (
           <TableRow key={agent.agentId}>
             <TableCell className="font-medium">{i + 1}</TableCell>
             <TableCell>
               <Link
                 href={`/agents/${agent.agentId}`}
-                className="font-mono text-sm text-amber-500/80 hover:text-amber-400 transition-colors"
+                className="inline-flex items-center gap-1.5 font-mono text-sm text-amber-500/80 hover:text-amber-400 transition-colors"
               >
                 {truncateAddress(agent.agentId)}
+                <svg className="w-3 h-3 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </Link>
             </TableCell>
             <TableCell className="text-right font-mono text-sm">{agent.traceCount}</TableCell>

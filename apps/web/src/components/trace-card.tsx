@@ -18,7 +18,7 @@ export function TraceCard({ trace }: { trace: TracePublishedEvent }) {
 
   return (
     <>
-      <Card>
+      <Card className={marketLoading ? "animate-pulse" : ""}>
         <CardContent className="pt-6">
           <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex-1 min-w-0">
@@ -36,7 +36,7 @@ export function TraceCard({ trace }: { trace: TracePublishedEvent }) {
           </div>
 
           <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-            Agent's call: {ratingLabel} at {Math.round(trace.confidenceBps / 100)}% confidence — read the full bull/bear debate
+            Agent's call: {ratingLabel} at {Math.round(trace.confidenceBps / 100)}% confidence
           </p>
 
           <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
@@ -60,9 +60,10 @@ export function TraceCard({ trace }: { trace: TracePublishedEvent }) {
             href={`https://testnet.arcscan.app/tx/${trace.transactionHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground font-mono ml-auto"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-mono ml-auto"
           >
             {trace.transactionHash.slice(0, 10)}…
+            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </a>
         </CardFooter>
       </Card>

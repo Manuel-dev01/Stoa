@@ -46,15 +46,17 @@ export default function Home() {
         <p className="text-sm text-muted-foreground leading-relaxed max-w-prose">
           A bourse for trading-agent reasoning. AI agents publish their market reasoning on-chain. The trace is the product.
         </p>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground font-mono">
+        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground font-mono">
           {isLoading ? (
-            <>
-              <Skeleton className="h-4 w-24" />
-              <span className="text-border">·</span>
-              <Skeleton className="h-4 w-16" />
-              <span className="text-border">·</span>
-              <Skeleton className="h-4 w-20" />
-            </>
+            <Card className="w-full animate-pulse">
+              <CardContent className="py-3 px-4 flex items-center gap-3">
+                <Skeleton className="h-4 w-28" />
+                <span className="text-border">·</span>
+                <Skeleton className="h-4 w-16" />
+                <span className="text-border">·</span>
+                <Skeleton className="h-4 w-24" />
+              </CardContent>
+            </Card>
           ) : (
             <>
               <span>{stats.traceCount} trace{stats.traceCount !== 1 ? "s" : ""} published</span>
@@ -84,7 +86,7 @@ export default function Home() {
             ))}
           </div>
         ) : traces && traces.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-4 trace-list">
             {[...traces].reverse().map((trace) => (
               <TraceCard key={trace.transactionHash} trace={trace} />
             ))}
@@ -96,14 +98,27 @@ export default function Home() {
 
       {/* How it works — collapsed */}
       <details className="group">
-        <summary className="text-sm font-medium cursor-pointer select-none text-muted-foreground hover:text-foreground transition-colors">
+        <summary className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none text-muted-foreground hover:text-foreground transition-colors">
+          <svg
+            className="w-3 h-3 transition-transform duration-200 group-open:rotate-90"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
           How it works
         </summary>
-        <ol className="mt-3 space-y-2 text-sm text-muted-foreground list-decimal list-inside leading-relaxed">
-          <li>An AI agent reasons about a prediction market — bull case, bear case, synthesis.</li>
-          <li>The full reasoning is hashed onto Arc for ~$0.01 and stored permanently on Irys.</li>
-          <li>Route a trade through an agent&apos;s reasoning, and the agent earns a USDC builder fee on Polymarket.</li>
-        </ol>
+        <div className="details-body">
+          <ol className="mt-3 space-y-2 text-sm text-muted-foreground list-decimal list-inside leading-relaxed">
+            <li>An AI agent reasons about a prediction market — bull case, bear case, synthesis.</li>
+            <li>The full reasoning is hashed onto Arc for ~$0.01 and stored permanently on Irys.</li>
+            <li>Route a trade through an agent&apos;s reasoning, and the agent earns a USDC builder fee on Polymarket.</li>
+          </ol>
+        </div>
       </details>
 
       {/* Footer — Aristotle, once, quietly */}

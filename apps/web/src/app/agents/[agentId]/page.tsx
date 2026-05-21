@@ -4,6 +4,7 @@ import { use } from "react"
 import { useMemo, useState } from "react"
 import { useTraces, useAgent, useMarket, useTreasuryValue } from "@/lib/hooks"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,6 +38,15 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8 max-w-4xl">
+      {/* Back to leaderboard */}
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Leaderboard
+      </Link>
+
       {/* Agent header */}
       <div>
         <div className="flex items-center gap-3 mb-2">

@@ -188,6 +188,86 @@
   }
 }
 
+/* Animation keyframes */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease both;
+}
+
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+
+/* Smooth details collapse */
+details .details-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+details[open] .details-body {
+  grid-template-rows: 1fr;
+}
+details .details-body > div {
+  overflow: hidden;
+}
+
+/* Staggered card entrance */
+.trace-list > * {
+  animation: fade-in-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.trace-list > *:nth-child(1) { animation-delay: 0ms; }
+.trace-list > *:nth-child(2) { animation-delay: 60ms; }
+.trace-list > *:nth-child(3) { animation-delay: 120ms; }
+.trace-list > *:nth-child(4) { animation-delay: 180ms; }
+.trace-list > *:nth-child(5) { animation-delay: 240ms; }
+.trace-list > *:nth-child(6) { animation-delay: 300ms; }
+.trace-list > *:nth-child(7) { animation-delay: 360ms; }
+.trace-list > *:nth-child(8) { animation-delay: 420ms; }
+.trace-list > *:nth-child(n+9) { animation-delay: 480ms; }
+
+/* Leaderboard row entrance */
+.leaderboard-rows > tr {
+  animation: fade-in 0.3s ease both;
+}
+.leaderboard-rows > tr:nth-child(1) { animation-delay: 0ms; }
+.leaderboard-rows > tr:nth-child(2) { animation-delay: 50ms; }
+.leaderboard-rows > tr:nth-child(3) { animation-delay: 100ms; }
+.leaderboard-rows > tr:nth-child(4) { animation-delay: 150ms; }
+.leaderboard-rows > tr:nth-child(5) { animation-delay: 200ms; }
+.leaderboard-rows > tr:nth-child(n+6) { animation-delay: 250ms; }
+
 @layer utilities {
   .border-border {
     border-color: hsl(var(--border));
