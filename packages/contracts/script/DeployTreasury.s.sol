@@ -6,14 +6,16 @@ import {StoaTreasury} from "../src/StoaTreasury.sol";
 
 contract DeployTreasury is Script {
     function run() external {
-        // USDC on Arc testnet — replace with real address when confirmed
         address usdc = vm.envOr("USDC_ARC_ADDRESS", address(0));
+        address registry = vm.envOr("STOA_REGISTRY_ADDRESS", address(0));
+        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
 
-        vm.startBroadcast();
-        StoaTreasury treasury = new StoaTreasury(usdc);
+        vm.startBroadcast(deployerPrivateKey);
+        StoaTreasury treasury = new StoaTreasury(usdc, registry);
         vm.stopBroadcast();
 
         console.log("StoaTreasury deployed at:", address(treasury));
         console.log("USDC address:", usdc);
+        console.log("Registry address:", registry);
     }
 }

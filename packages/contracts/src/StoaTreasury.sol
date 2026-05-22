@@ -18,11 +18,17 @@ interface IERC4626 {
     function convertToShares(uint256 assets) external view returns (uint256 shares);
 }
 
+/// @dev Minimal interface for StoaRegistry ownership check.
+interface IStoaRegistry {
+    function agentOwner(bytes32 agentId) external view returns (address);
+}
+
 /// @title StoaTreasury
 /// @notice USDC/USYC treasury management for Stoa agents.
 /// @dev Agents deposit USDC via `subscribe`. If a yield vault (USYC) is set, USDC is
 ///      forwarded into it for yield. `redeem` burns shares and returns USDC to the agent.
 ///      If no vault is set, USDC sits in the treasury contract directly.
+///      Only the agent's registered owner can redeem.
 contract StoaTreasury {
     // --- Events ---
 
@@ -36,10 +42,12 @@ contract StoaTreasury {
     error InsufficientShares();
     error TransferFailed();
     error VaultAssetMismatch();
+    error NotAgentOwner();
 
     // --- State ---
 
     address public owner;
+    IStoaRegistry public immutable registry;
     IERC4626 public yieldVault;
     IERC20 public immutable usdc;
 
@@ -56,9 +64,10 @@ contract StoaTreasury {
 
     // --- Constructor ---
 
-    constructor(address _usdc) {
+    constructor(address _usdc, address _registry) {
         owner = msg.sender;
         usdc = IERC20(_usdc);
+        registry = IStoaRegistry(_registry);
     }
 
     // --- External functions ---
@@ -86,10 +95,12 @@ contract StoaTreasury {
         emit Subscribed(agentId, amount, shares, block.timestamp);
     }
 
-    /// @notice Redeem shares for USDC.
+    /// @notice Redeem shares for USDC. Only the agent's registered owner can call.
     /// @param agentId The agent whose shares to redeem.
     /// @param sharesToRedeem Number of shares to redeem. Pass type(uint256).max for all.
     function redeem(bytes32 agentId, uint256 sharesToRedeem) external {
+        if (registry.agentOwner(agentId) != msg.sender) revert NotAgentOwner();
+
         uint256 held = agentShares[agentId];
         if (sharesToRedeem == type(uint256).max) {
             sharesToRedeem = held;

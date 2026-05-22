@@ -37,6 +37,9 @@ export function TraceDetailDialog({
   const { data: body, isLoading, error, refetch } = useTraceBody(open ? irysReceipt : undefined)
   const routeOrder = useRouteOrder()
   const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
+  const [liveResult, setLiveResult] = useState<Record<string, unknown> | null>(null)
+  const [isSubmittingLive, setIsSubmittingLive] = useState(false)
+  const [liveError, setLiveError] = useState<string | null>(null)
 
   const isBuy = rating > 0
   const canRoute = rating !== 0
@@ -166,33 +169,82 @@ export function TraceDetailDialog({
             {/* Route this trade */}
             <div className="border-t border-border pt-3">
               {!routeResult && (
-                <Button
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
-                  disabled={!canRoute || routeOrder.isPending}
-                  onClick={async () => {
-                    const result = await routeOrder.mutateAsync({
-                      marketId,
-                      side: isBuy ? "BUY" : "SELL",
-                      price: 0.50,
-                      size: body?.decision?.sizeUsdc ?? 10,
-                      agentBytes32: agentId,
-                    })
-                    setRouteResult(result as Record<string, unknown>)
-                  }}
-                >
-                  {routeOrder.isPending
-                    ? "Constructing order..."
-                    : `Route this ${isBuy ? "BUY" : "SELL"} through agent`}
-                </Button>
+                <>
+                  <Button
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
+                    disabled={!canRoute || routeOrder.isPending}
+                    onClick={async () => {
+                      const result = await routeOrder.mutateAsync({
+                        marketId,
+                        side: isBuy ? "BUY" : "SELL",
+                        price: 0.50,
+                        size: body?.decision?.sizeUsdc ?? 10,
+                        agentBytes32: agentId,
+                      })
+                      setRouteResult(result as Record<string, unknown>)
+                    }}
+                  >
+                    {routeOrder.isPending
+                      ? "Constructing order..."
+                      : `Preview ${isBuy ? "BUY" : "SELL"} through agent`}
+                  </Button>
+                  <p className="text-[10px] text-muted-foreground/60 font-mono text-center mt-1">
+                    Preview only — order is signed but not submitted.
+                  </p>
+                </>
               )}
-              {routeResult && (
-                <div className="space-y-2 animate-fade-in-up">
-                  <Badge variant="positive" className="text-xs">Dry-run order signed</Badge>
+              {routeResult && !liveResult && (
+                <div className="space-y-3 animate-fade-in-up">
+                  <Badge variant="positive" className="text-xs">Order signed</Badge>
                   <p className="text-xs text-muted-foreground font-mono">
                     Builder: {(routeResult.order as Record<string, unknown>)?.builder ? String((routeResult.order as Record<string, unknown>).builder).slice(0, 10) + "..." : "N/A"}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {routeResult.message as string}
+                    Preview complete — order is signed with the agent&apos;s builder code.
+                  </p>
+                  <Button
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-background active:scale-[0.98] transition-transform text-xs font-mono"
+                    disabled={isSubmittingLive}
+                    onClick={async () => {
+                      setIsSubmittingLive(true)
+                      setLiveError(null)
+                      try {
+                        const resp = await fetch("/api/route-order", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            marketId,
+                            side: isBuy ? "BUY" : "SELL",
+                            price: 0.50,
+                            size: body?.decision?.sizeUsdc ?? 10,
+                            agentBytes32: agentId,
+                            dryRun: false,
+                          }),
+                        })
+                        if (!resp.ok) {
+                          const err = await resp.json().catch(() => ({ error: resp.statusText }))
+                          throw new Error(err.error || `HTTP ${resp.status}`)
+                        }
+                        setLiveResult(await resp.json())
+                      } catch (e) {
+                        setLiveError(e instanceof Error ? e.message : "Submission failed")
+                      } finally {
+                        setIsSubmittingLive(false)
+                      }
+                    }}
+                  >
+                    {isSubmittingLive ? "Submitting to Polymarket…" : "Submit live order"}
+                  </Button>
+                  {liveError && (
+                    <p className="text-xs text-red-400 font-mono">{liveError}</p>
+                  )}
+                </div>
+              )}
+              {liveResult && (
+                <div className="space-y-2 animate-fade-in-up">
+                  <Badge variant="positive" className="text-xs">Order submitted</Badge>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {JSON.stringify(liveResult).slice(0, 200)}
                   </p>
                 </div>
               )}

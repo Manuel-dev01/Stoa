@@ -1,4 +1,4 @@
-import { ClobClient, Chain, Side } from '@polymarket/clob-client-v2'
+import { ClobClient, Chain, Side, SignatureTypeV2 } from '@polymarket/clob-client-v2'
 import { createWalletClient, http } from 'viem'
 import { polygon } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -20,7 +20,7 @@ function getClient(config: StoaConfig): ClobClient {
       passphrase: config.polymarket.apiPassphrase,
     },
     builderConfig: { builderCode: config.polymarket.builderCode },
-    funderAddress: account.address,
+    signatureType: SignatureTypeV2.EOA,
   })
 }
 

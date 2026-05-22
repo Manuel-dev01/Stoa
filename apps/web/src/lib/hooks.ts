@@ -122,6 +122,7 @@ interface RouteOrderParams {
   price: number
   size: number
   agentBytes32: string
+  dryRun?: boolean
 }
 
 export function useRouteOrder() {
@@ -130,7 +131,7 @@ export function useRouteOrder() {
       const resp = await fetch("/api/route-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...params, dryRun: true }),
+        body: JSON.stringify(params),
       })
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: resp.statusText }))
@@ -189,68 +190,3 @@ export function useTreasuryRedeem() {
   }
 }
 
-export function useGasFreePublishTrace() {
-  return useMutation({
-    mutationFn: async (params: {
-      privateKey: string
-      agentId: `0x${string}`
-      traceHash: `0x${string}`
-      marketId: `0x${string}`
-      rating: number
-      confidenceBps: number
-      irysReceipt: string
-    }) => {
-      const { createGasFreeClient } = await import("./paymaster")
-      const { STOA_REGISTRY } = await import("@stoa/shared")
-
-      const usdcAddress = (process.env.NEXT_PUBLIC_ARC_USDC || "0x0000000000000000000000000000000000000000") as `0x${string}`
-      const bundlerRpc = process.env.NEXT_PUBLIC_BUNDLER_RPC
-      if (!bundlerRpc) throw new Error("NEXT_PUBLIC_BUNDLER_RPC not set")
-
-      const { bundlerClient, account } = await createGasFreeClient({
-        privateKey: params.privateKey,
-        bundlerRpc,
-        usdcAddress,
-      })
-
-      const REGISTRY_ABI = [
-        {
-          name: "publishTrace",
-          type: "function",
-          stateMutability: "nonpayable",
-          inputs: [
-            { name: "agentId", type: "bytes32" },
-            { name: "traceHash", type: "bytes32" },
-            { name: "marketId", type: "bytes32" },
-            { name: "rating", type: "int8" },
-            { name: "confidenceBps", type: "uint16" },
-            { name: "irysReceipt", type: "string" },
-          ],
-          outputs: [],
-        },
-      ] as const
-
-      const hash = await bundlerClient.sendUserOperation({
-        account,
-        calls: [
-          {
-            to: STOA_REGISTRY,
-            abi: REGISTRY_ABI,
-            functionName: "publishTrace",
-            args: [
-              params.agentId,
-              params.traceHash,
-              params.marketId,
-              params.rating,
-              params.confidenceBps,
-              params.irysReceipt,
-            ],
-          },
-        ],
-      })
-
-      const receipt = await bundlerClient.waitForUserOperationReceipt({ hash })
-      return receipt
-    },
-  })
-}

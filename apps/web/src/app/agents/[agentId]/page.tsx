@@ -6,6 +6,7 @@ import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/li
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TraceDetailDialog } from "@/components/trace-detail-dialog"
+import { TreasuryActions } from "@/components/treasury-actions"
 import Link from "next/link"
 
 export default function AgentPage({ params }: { params: Promise<{ agentId: string }> }) {
@@ -95,6 +96,9 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
           />
         </div>
       </section>
+
+      {/* Treasury deposit/withdraw */}
+      <TreasuryActions agentId={fullAgentId as `0x${string}`} agentOwner={agent?.owner} />
 
       {/* Traces */}
       <section className="space-y-6">

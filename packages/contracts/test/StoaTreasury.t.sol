@@ -5,6 +5,8 @@ import {Test} from "forge-std/Test.sol";
 import {StoaTreasury} from "../src/StoaTreasury.sol";
 import {IERC20} from "../src/StoaTreasury.sol";
 import {IERC4626} from "../src/StoaTreasury.sol";
+import {IStoaRegistry} from "../src/StoaTreasury.sol";
+import {StoaRegistry} from "../src/StoaRegistry.sol";
 
 /// @dev Mock USDC for testing. No allowance checks — simplified for test speed.
 contract MockUSDC {
@@ -65,16 +67,23 @@ contract MockVault {
 
 contract StoaTreasuryTest is Test {
     StoaTreasury treasury;
+    StoaRegistry registry;
     MockUSDC usdc;
     MockVault vault;
 
     address alice = makeAddr("alice");
-    bytes32 agentId = keccak256("agent1");
+    address bob = makeAddr("bob");
+    bytes32 agentId;
 
     function setUp() public {
         usdc = new MockUSDC();
-        treasury = new StoaTreasury(address(usdc));
+        registry = new StoaRegistry();
+        treasury = new StoaTreasury(address(usdc), address(registry));
         vault = new MockVault(address(usdc));
+
+        // Register agent as alice
+        vm.prank(alice);
+        agentId = registry.registerAgent();
 
         // Fund alice with 1000 USDC
         usdc.mint(alice, 1000e6);
@@ -199,5 +208,29 @@ contract StoaTreasuryTest is Test {
     function test_TransferOwnership() public {
         treasury.transferOwnership(alice);
         assertEq(treasury.owner(), alice);
+    }
+
+    function test_Redeem_RevertsIfNotAgentOwner() public {
+        vm.startPrank(alice);
+        usdc.approve(address(treasury), 100e6);
+        treasury.subscribe(agentId, 100e6);
+        vm.stopPrank();
+
+        // bob is not the agent owner — should revert
+        vm.prank(bob);
+        vm.expectRevert(StoaTreasury.NotAgentOwner.selector);
+        treasury.redeem(agentId, 50e6);
+    }
+
+    function test_Subscribe_OpenToAnyone() public {
+        // bob can subscribe USDC into alice's agent treasury
+        usdc.mint(bob, 100e6);
+
+        vm.startPrank(bob);
+        usdc.approve(address(treasury), 100e6);
+        treasury.subscribe(agentId, 100e6);
+        vm.stopPrank();
+
+        assertEq(treasury.agentShares(agentId), 100e6);
     }
 }
