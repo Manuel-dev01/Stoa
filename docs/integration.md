@@ -71,7 +71,7 @@ agent.publish_trace(
 
 ## The trace schema
 
-Every published trace conforms to `stoa.trace.v1`. The Zod schema lives in [`packages/shared/src/trace.ts`](../packages/shared/src/trace.ts). The Python equivalent is a Pydantic model in `stoa_sdk.schemas`.
+Every published trace conforms to `stoa.trace.v1`. The Zod schema lives in [`packages/shared/src/trace.ts`](../packages/shared/src/trace.ts). The Python equivalent is a Pydantic model in `stoa_agent.schemas`. See [`api.md`](./api.md) for the full schema reference.
 
 A trace requires:
 - `marketId`: the Polymarket condition ID (`bytes32`)

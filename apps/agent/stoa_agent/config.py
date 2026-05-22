@@ -15,6 +15,17 @@ class Settings(BaseSettings):
     stoa_registry_address: str
     agent_id: str | None = None
 
+    # Autonomous loop configuration
+    loop_interval_seconds: int = 600
+    loop_min_liquidity: float = 5000
+    loop_min_confidence_bps: int = 5000
+    loop_max_markets_per_cycle: int = 3
+    loop_inference_timeout_seconds: int = 120
+
+    # Supabase (for state rehydration across restarts)
+    supabase_url: str = ""
+    supabase_service_role_key: str = ""
+
     model_config = {"env_file": ".env.local", "env_file_encoding": "utf-8"}
 
 

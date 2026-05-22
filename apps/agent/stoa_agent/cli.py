@@ -24,7 +24,7 @@ def cmd_publish_trace(args: argparse.Namespace) -> None:
     from stoa_agent.config import load_settings
     from stoa_agent.errors import GammaApiError, IrysUploadError, ArcSubmitError, TradingAgentsInferenceError, MarketIdMismatchError, MarketNotFoundError
     from stoa_agent.polymarket.gamma import get_market
-    from stoa_agent.reasoning.runner import run_inference
+    from stoa_agent.reasoning.runner import run_inference_direct
     from stoa_agent.schemas import (
         Trace, TraceDecision, TraceMarket, TraceModelMetadata, TraceReasoning,
     )
@@ -52,10 +52,10 @@ def cmd_publish_trace(args: argparse.Namespace) -> None:
     print(f"Market: {market.question}")
     print(f"Outcomes: {market.outcomes}, Liquidity: ${market.liquidity:,.0f}")
 
-    # 2. Run inference
-    print("Running TradingAgents inference...")
+    # 2. Run inference (DeepSeek primary)
+    print("Running DeepSeek inference...")
     try:
-        inference = run_inference(market)
+        inference = run_inference_direct(market)
     except TradingAgentsInferenceError as e:
         print(f"Error running inference: {e}", file=sys.stderr)
         sys.exit(1)
@@ -118,6 +118,38 @@ def cmd_publish_trace(args: argparse.Namespace) -> None:
     print(f"irys_url: https://gateway.irys.xyz/{irys_receipt}")
 
 
+def cmd_autonomous(args: argparse.Namespace) -> None:
+    from stoa_agent.config import load_settings
+    from stoa_agent.loop import AgentLoop
+
+    settings = load_settings()
+    os.environ["DEEPSEEK_API_KEY"] = settings.deepseek_api_key
+
+    if settings.agent_id is None:
+        print("Error: AGENT_ID not set in .env.local. Run 'register' first.", file=sys.stderr)
+        sys.exit(1)
+
+    interval = args.interval or settings.loop_interval_seconds
+    min_confidence = args.min_confidence or settings.loop_min_confidence_bps
+    max_markets = args.max_markets or settings.loop_max_markets_per_cycle
+
+    loop = AgentLoop(
+        settings=settings,
+        interval_seconds=interval,
+        min_liquidity=settings.loop_min_liquidity,
+        min_confidence_bps=min_confidence,
+        max_markets_per_cycle=max_markets,
+    )
+
+    print(f"Starting autonomous loop (interval={interval}s, min_confidence={min_confidence / 100:.0f}%, max_markets={max_markets})")
+    print(f"Agent ID: {settings.agent_id}")
+
+    try:
+        asyncio.run(loop.run())
+    except KeyboardInterrupt:
+        print("\nLoop stopped.")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Stoa agent CLI")
     sub = parser.add_subparsers(dest="command")
@@ -127,12 +159,19 @@ def main() -> None:
     publish_parser = sub.add_parser("publish-trace", help="Publish a trace for a market")
     publish_parser.add_argument("--market-id", required=True, help="Polymarket condition_id (0x...)")
 
+    auto_parser = sub.add_parser("autonomous", help="Run the autonomous market analysis loop")
+    auto_parser.add_argument("--interval", type=int, default=None, help="Poll interval in seconds")
+    auto_parser.add_argument("--min-confidence", type=int, default=None, help="Minimum confidence BPS to publish")
+    auto_parser.add_argument("--max-markets", type=int, default=None, help="Max markets per cycle")
+
     args = parser.parse_args()
 
     if args.command == "register":
         cmd_register(args)
     elif args.command == "publish-trace":
         cmd_publish_trace(args)
+    elif args.command == "autonomous":
+        cmd_autonomous(args)
     else:
         parser.print_help()
         sys.exit(1)

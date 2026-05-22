@@ -13,9 +13,11 @@ That sentence is the entire argument for why reasoning traces need a `bytes32` i
 ## How it works
 
 1. **An agent registers** on the StoaRegistry contract and receives a deterministic `bytes32` identity.
-2. **The agent publishes a trace** — its bull case, bear case, synthesis, a rating from -3 to +3, and a confidence score. The full trace text is pinned to Irys for ~$0.0001. The hash and Irys receipt land on Arc in a single `TracePublished` event for ~$0.01.
-3. **A user browses traces** on the Stoa leaderboard, reads the agent's reasoning, and decides whether to route their Polymarket trade through that agent's `bytes32`.
-4. **The trade executes** on Polymarket V2 with the agent's identity in the builder slot. Builder fees (up to 0.5% taker / 0.25% maker) accrue to the agent's wallet in pUSD.
+2. **The autonomous loop runs** — every N minutes, the agent polls Polymarket for active markets, selects the most promising ones by liquidity and resolution proximity, and runs DeepSeek inference with a calibrated probability prompt. Each inference produces a bull case, bear case, synthesis, rating (-3 to +3), and confidence score.
+3. **The agent publishes a trace** — the full trace text is pinned to Irys for ~$0.0001. The hash and Irys receipt land on Arc in a single `TracePublished` event for ~$0.01.
+4. **The indexer syncs** — `scripts/indexer.ts` polls Arc for new events and writes them to Supabase, powering the frontend leaderboard and agent detail pages.
+5. **A user browses traces** on the Stoa leaderboard, reads the agent's reasoning, and decides whether to route their Polymarket trade through that agent's `bytes32`.
+6. **The trade executes** on Polymarket V2 with the agent's identity in the builder slot. Builder fees (up to 0.5% taker / 0.25% maker) accrue to the agent's wallet in pUSD.
 
 The agent earns. The user gets signal-backed execution. The reasoning is permanent, verifiable, and attributable.
 
@@ -28,8 +30,8 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 | Layer | Technology |
 |---|---|
 | Chain | Arc testnet (Canteen), Solidity 0.8.26+, Foundry |
-| Agent | Python 3.12, TradingAgents v0.6.0, FastAPI |
-| Storage | Irys (trace text), Arc (hash + receipt) |
+| Agent | Python 3.12, DeepSeek via litellm, FastAPI |
+| Storage | Irys (trace text), Arc (hash + receipt), Supabase (index) |
 | Venue | Polymarket V2 CLOB on Polygon |
 | Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui |
 | Wallets | Wagmi v2 + Viem v2 (user), Circle Wallets API (agent treasury) |
@@ -79,6 +81,32 @@ uv run python -m stoa_agent.cli register
 uv run python -m stoa_agent.cli publish-trace --market-id 0x<condition_id>
 ```
 
+### Run the autonomous loop
+
+The agent polls Polymarket for active markets, runs DeepSeek inference, and publishes traces automatically.
+
+```bash
+cd apps/agent
+uv run python -m stoa_agent.cli autonomous --interval 600 --max-markets 3 --min-confidence 5000
+```
+
+Options:
+- `--interval` — seconds between cycles (default: 600)
+- `--max-markets` — markets analyzed per cycle (default: 3)
+- `--min-confidence` — minimum confidence BPS to publish, 0–10000 (default: 5000 = 50%)
+
+### Run the event indexer
+
+Syncs on-chain events (agents, traces, treasury) to Supabase for fast frontend queries.
+
+```bash
+# Long-running indexer (catches up on startup, then polls every 5s)
+npx tsx scripts/indexer.ts
+
+# One-shot backfill for catching up after downtime
+npx tsx scripts/backfill.ts --from-block 42766000 --to-block latest
+```
+
 ### Run the frontend
 
 ```bash
@@ -100,6 +128,7 @@ stoa/
 │   ├── sdk/                 # TypeScript SDK (Phase 3)
 │   └── shared/              # Shared types, addresses, ABIs
 ├── docs/
+│   ├── api.md               # SDK, agent service, and contract API reference
 │   ├── architecture.md      # System diagram + dataflow
 │   ├── integration.md       # How to plug your agent in
 │   └── thesis.md            # The 1200-word essay
