@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { bridgeToArc, APP_KIT_CHAINS, type AppKitChain, BridgeTimeoutError } from '@/lib/appkit'
 
 const CHAIN_MAP: Record<string, AppKitChain> = {
-  Polygon: APP_KIT_CHAINS.polygon,
-  Base: APP_KIT_CHAINS.base,
-  Arbitrum: APP_KIT_CHAINS.arbitrum,
-  Ethereum: APP_KIT_CHAINS.ethereum,
+  Polygon_Amoy: APP_KIT_CHAINS.polygonAmoy,
+  Base_Sepolia: APP_KIT_CHAINS.baseSepolia,
+  Arbitrum_Sepolia: APP_KIT_CHAINS.arbitrumSepolia,
+  Ethereum_Sepolia: APP_KIT_CHAINS.ethereumSepolia,
 }
 
 export async function POST(req: NextRequest) {

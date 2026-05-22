@@ -5,10 +5,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button"
 
 const CHAINS = [
-  { id: "Polygon", label: "Polygon", symbol: "POL" },
-  { id: "Base", label: "Base", symbol: "ETH" },
-  { id: "Arbitrum", label: "Arbitrum", symbol: "ETH" },
-  { id: "Ethereum", label: "Ethereum", symbol: "ETH" },
+  { id: "Polygon_Amoy", label: "Polygon Amoy", symbol: "POL" },
+  { id: "Base_Sepolia", label: "Base Sepolia", symbol: "ETH" },
+  { id: "Arbitrum_Sepolia", label: "Arbitrum Sepolia", symbol: "ETH" },
+  { id: "Ethereum_Sepolia", label: "Ethereum Sepolia", symbol: "ETH" },
 ] as const
 
 interface FundingDialogProps {
@@ -17,7 +17,7 @@ interface FundingDialogProps {
 }
 
 export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
-  const [selectedChain, setSelectedChain] = useState<string>("Polygon")
+  const [selectedChain, setSelectedChain] = useState<string>("Polygon_Amoy")
   const [amount, setAmount] = useState("10")
   const [status, setStatus] = useState<"idle" | "bridging" | "success" | "error">("idle")
   const [error, setError] = useState<string | null>(null)
@@ -61,7 +61,7 @@ export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
         <DialogHeader>
           <DialogTitle>Fund your Arc wallet</DialogTitle>
           <DialogDescription>
-            Bridge USDC from any chain to Arc testnet via CCTP V2. Gas on Arc is paid in USDC — no native token needed.
+            Bridge USDC from a testnet chain to Arc testnet via CCTP V2. Gas on Arc is paid in USDC — no native token needed.
           </DialogDescription>
         </DialogHeader>
 
