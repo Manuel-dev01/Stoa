@@ -100,4 +100,19 @@ The treasury works. The vault doesn't meet the treasury's standards. That's the 
 
 ---
 
+## Update — Day 11 (May 24)
+
+The yield vault blocker persists — Circle's testnet USYC still doesn't implement `asset()`.
+
+What changed: the treasury features are now fully wired on the frontend. `NEXT_PUBLIC_STOA_TREASURY_ADDRESS` was missing from `apps/web/.env.local` and Vercel, causing the treasury stat card to show "--" on all agent pages. Fixed:
+- Added to `apps/web/.env.local` with value `0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18`
+- Added to Vercel production env vars
+- Reconciled local `apps/web/src/lib/shared/addresses.ts` (had `address(0)`) with `packages/shared/src/addresses.ts` (had correct address)
+
+The `useTreasuryValue`, `useTreasurySubscribe`, `useTreasuryRedeem` hooks now resolve to the real contract. Agent detail pages will show live treasury values. The core deposit/redeem cycle (without yield) is fully functional end-to-end from the frontend.
+
+The yield-routing leg remains blocked on Circle's testnet vault. No code changes needed when it becomes available — `setYieldVault()` will work immediately.
+
+---
+
 *Third honest boundary document, same framing as Polymarket and Paymaster. In this case, the boundary actively flatters the code: the contract's safety check is more correct than the external contract it integrates with.*

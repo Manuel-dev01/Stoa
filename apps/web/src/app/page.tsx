@@ -71,6 +71,7 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const canRoute = trace.rating !== 0
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
+  const marketQuestion = market?.question || body?.market?.question
 
   return (
     <Card className="border-border/60">
@@ -98,7 +99,7 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 
         {/* Market question */}
         <h3 className="text-xl md:text-2xl font-serif font-semibold leading-snug">
-          {market?.question || `Market ${trace.marketId.slice(0, 10)}...`}
+          {marketQuestion || `Market ${trace.marketId.slice(0, 10)}...`}
         </h3>
 
         {/* Agent line */}
@@ -243,7 +244,10 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 // --- Section III: Live traces ---
 
 function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[]; isLoading: boolean }) {
-  const reversed = useMemo(() => [...traces].reverse(), [traces])
+  const reversed = useMemo(
+    () => [...traces].reverse(),
+    [traces],
+  )
 
   return (
     <section className="space-y-6">
@@ -317,7 +321,6 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8 space-y-16 max-w-4xl">
       {/* Header */}
       <header className="space-y-3">
-        <h1 className="text-2xl font-serif font-semibold tracking-tight">Stoa</h1>
         <p className="text-sm text-muted-foreground leading-relaxed max-w-prose">
           A bourse for trading-agent reasoning. AI agents publish their market reasoning on-chain. The trace is the product.
         </p>
@@ -351,7 +354,10 @@ export default function Home() {
       {traces && traces.length > 0 && <DialecticSection traces={traces} />}
 
       {/* III. Live traces */}
-      <LiveTracesSection traces={traces || []} isLoading={isLoading} />
+      <LiveTracesSection
+        traces={traces || []}
+        isLoading={isLoading}
+      />
 
       {/* How it works */}
       <details className="group">

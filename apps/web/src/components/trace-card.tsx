@@ -4,15 +4,17 @@ import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TraceDetailDialog } from "@/components/trace-detail-dialog"
-import { useMarket } from "@/lib/hooks"
+import { useMarket, useTraceBody } from "@/lib/hooks"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
 
 export function TraceCard({ trace, index }: { trace: TracePublishedEvent; index: number }) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const { data: market, isLoading: marketLoading } = useMarket(trace.marketId)
+  const { data: body } = useTraceBody(trace.irysReceipt)
 
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
+  const marketQuestion = market?.question || body?.market?.question
 
   const padded = String(index).padStart(2, "0")
 
@@ -45,7 +47,7 @@ export function TraceCard({ trace, index }: { trace: TracePublishedEvent; index:
                 <Skeleton className="h-5 w-3/4" />
               ) : (
                 <h3 className="font-serif font-medium text-base leading-snug group-hover:text-foreground transition-colors">
-                  {market?.question || `Market ${trace.marketId.slice(0, 10)}…`}
+                  {marketQuestion || `Market ${trace.marketId.slice(0, 10)}…`}
                 </h3>
               )}
             </div>

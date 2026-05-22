@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@stoa/shared'],
+  transpilePackages: ['@stoa/shared', '@stoa/sdk'],
   async headers() {
     return [
       {

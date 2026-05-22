@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#18181b"/>
-  <text x="16" y="22" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#fafafa">S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <rect width="1080" height="1080" fill="#0a0807"/>
+  <text x="490" y="600" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="260" font-weight="400" fill="#f3ece0" letter-spacing="-5">Stoa</text>
+  <circle cx="790" cy="500" r="34" fill="#f59538"/>
 </svg>

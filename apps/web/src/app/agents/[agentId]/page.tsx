@@ -1,7 +1,7 @@
 "use client"
 
 import { use, useMemo, useState } from "react"
-import { useTraces, useAgent, useMarket, useTreasuryValue } from "@/lib/hooks"
+import { useTraces, useAgent, useMarket, useTraceBody, useTreasuryValue } from "@/lib/hooks"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -177,6 +177,8 @@ function StatCell({ label, value, mono }: { label: string; value: string; mono?:
 function AgentTraceEntry({ trace, index }: { trace: TracePublishedEvent; index: number }) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const { data: market, isLoading: marketLoading } = useMarket(trace.marketId)
+  const { data: body } = useTraceBody(trace.irysReceipt)
+  const marketQuestion = market?.question || body?.market?.question
 
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
@@ -208,7 +210,7 @@ function AgentTraceEntry({ trace, index }: { trace: TracePublishedEvent; index: 
                 <Skeleton className="h-5 w-3/4" />
               ) : (
                 <h3 className="font-serif font-medium text-base leading-snug group-hover:text-foreground transition-colors">
-                  {market?.question || `Market ${trace.marketId.slice(0, 10)}…`}
+                  {marketQuestion || `Market ${trace.marketId.slice(0, 10)}…`}
                 </h3>
               )}
             </div>

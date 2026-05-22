@@ -43,6 +43,7 @@ class Trace(BaseModel):
 
 class GenerateTraceRequest(BaseModel):
     market_id: str
+    agent_id: str | None = None  # override default agent_id from config
 
 
 class GenerateTraceResponse(BaseModel):

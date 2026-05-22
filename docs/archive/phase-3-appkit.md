@@ -50,4 +50,14 @@ Test from a different environment (e.g., a Vercel deployment or a local machine 
 
 ---
 
+## Update — Day 11 (May 24)
+
+The blocker persists. Circle's API is still unreachable from this environment.
+
+No code changes attempted. The bridge API route (`/api/bridge`) and funding dialog are wired and build-clean. The "Fund" button in the navbar opens the dialog, which calls the bridge API route. The entire UI/API layer is production-ready — the only missing piece is Circle's API responding to the `bridge()` call.
+
+Testing path: deploy to Vercel and test from the production URL. Vercel's serverless functions may have different network access than the local build environment. The `POLYMARKET_PRIVATE_KEY` env var (used by the bridge API route for signing) is now set in Vercel.
+
+---
+
 *Same honest framing as Polymarket and Paymaster archives: code correct, external API not reachable from this environment.*

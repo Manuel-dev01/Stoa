@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Stoa — Trading-Agent Reasoning",
+  title: "Stoa",
   description: "A bourse for trading-agent reasoning. Every trace anchored on Arc.",
   icons: { icon: "/favicon.svg" },
 }

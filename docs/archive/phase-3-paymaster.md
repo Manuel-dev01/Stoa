@@ -51,4 +51,17 @@ Find the correct RPC URL for the Arc testnet instance that has the Circle Paymas
 
 ---
 
+## Update — Day 11 (May 24)
+
+The blocker persists. The Circle Paymaster contract is still not deployed on the Canteen-hosted Arc testnet RPC.
+
+No code changes attempted. The `useGasFreePublishTrace()` hook exists in `hooks.ts` but is not called from any page or component — it's dormant infrastructure. The `NEXT_PUBLIC_BUNDLER_RPC` env var is set in the root `.env.local` but not in `apps/web/.env.local` or Vercel (it's not needed until the paymaster contract is available).
+
+If the paymaster becomes available on Arc testnet, the wiring steps would be:
+1. Add `NEXT_PUBLIC_BUNDLER_RPC` to `apps/web/.env.local` and Vercel
+2. Call `useGasFreePublishTrace()` from the trace publish flow
+3. Test with a real `publishTrace` UserOp
+
+---
+
 *Same honest framing as the Polymarket archive: code correct, external contract not reachable from this environment. The bundler (Pimlico) side was verified working.*

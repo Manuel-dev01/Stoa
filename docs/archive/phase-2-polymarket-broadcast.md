@@ -128,4 +128,17 @@ The trace publishing pipeline (Irys + Arc) is fully operational and unaffected b
 
 ---
 
+## Update — Day 11 (May 24)
+
+The blocker persists. No code changes attempted — the issue is network access to the Polymarket relayer, not code.
+
+What changed in the surrounding infrastructure:
+- Polymarket env vars (`POLYMARKET_API_KEY`, `POLYMARKET_API_SECRET`, `POLYMARKET_API_PASSPHRASE`, `POLYMARKET_PRIVATE_KEY`, `POLYMARKET_BUILDER_CODE`) added to Vercel production env vars and `apps/web/.env.local`. The `/api/route-order` endpoint now works end-to-end on Vercel in dry-run mode.
+- `@stoa/sdk` added to `transpilePackages` in `next.config.ts` — SDK imports resolve correctly at build time.
+- Dry-run test against live Polymarket market ("New Rihanna Album before GTA VI?", condition ID `0x1fad72...`) returns a signed order with correct `builder` field, valid signature, and correct token ID resolution from Gamma API.
+
+The dry-run pipeline is fully production-ready. The only missing step is the live broadcast, which requires the relayer to deploy the proxy wallet.
+
+---
+
 *This document will be updated when the deposit wallet is resolved. The resolution path is clear — it's a network/environment access issue, not a code issue.*

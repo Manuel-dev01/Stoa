@@ -2,14 +2,15 @@
 
 import { useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTraces } from "@/lib/hooks"
-import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
+import { useTracesFromDB } from "@/lib/hooks"
+import { truncateAddress } from "@/lib/contracts"
+import { type TraceRow } from "@/lib/supabase"
 import Link from "next/link"
 
 interface AgentRow {
   agentId: string
   traceCount: number
-  latestTimestamp: bigint
+  latestAt: string
 }
 
 function AgentMark({ agentId }: { agentId: string }) {
@@ -51,19 +52,19 @@ function LeaderboardSkeleton() {
 }
 
 export function Leaderboard() {
-  const { data: traces, isLoading } = useTraces()
+  const { data: traces, isLoading } = useTracesFromDB()
 
   const agents = useMemo(() => {
     if (!traces) return []
     const map = new Map<string, AgentRow>()
     for (const t of traces) {
-      const key = t.agentId.toLowerCase()
+      const key = t.agent_id.toLowerCase()
       const existing = map.get(key)
       if (existing) {
         existing.traceCount++
-        if (t.timestamp > existing.latestTimestamp) existing.latestTimestamp = t.timestamp
+        if (t.published_at > existing.latestAt) existing.latestAt = t.published_at
       } else {
-        map.set(key, { agentId: t.agentId, traceCount: 1, latestTimestamp: t.timestamp })
+        map.set(key, { agentId: t.agent_id, traceCount: 1, latestAt: t.published_at })
       }
     }
     return Array.from(map.values()).sort((a, b) => b.traceCount - a.traceCount)
@@ -126,7 +127,7 @@ export function Leaderboard() {
 
           {/* Latest */}
           <div className="w-24 text-right text-xs font-mono text-muted-foreground">
-            {formatTimestamp(agent.latestTimestamp)}
+            {formatRelativeTime(agent.latestAt)}
           </div>
 
           {/* On-chain indicator */}
@@ -151,4 +152,12 @@ function toRoman(n: number): string {
     }
   }
   return result
+}
+
+function formatRelativeTime(isoString: string): string {
+  const diff = (Date.now() - new Date(isoString).getTime()) / 1000
+  if (diff < 60) return "just now"
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
+  return `${Math.floor(diff / 86400)}d ago`
 }

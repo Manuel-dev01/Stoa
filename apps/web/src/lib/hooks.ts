@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { usePublicClient, useReadContract, useWriteContract } from "wagmi"
 import { getAllTraces, getAgent, type TracePublishedEvent } from "./contracts"
 import { stoaTreasuryAbi } from "./shared/stoaTreasury"
+import { getTraces, getAgents, type TraceRow, type AgentRow } from "./supabase"
 
 const STOA_TREASURY = process.env.NEXT_PUBLIC_STOA_TREASURY_ADDRESS || "0x0000000000000000000000000000000000000000"
 
@@ -14,6 +15,22 @@ export function useTraces() {
     queryFn: () => getAllTraces(client!),
     enabled: !!client,
     refetchInterval: 30_000,
+  })
+}
+
+export function useTracesFromDB() {
+  return useQuery<TraceRow[]>({
+    queryKey: ["traces-db"],
+    queryFn: getTraces,
+    refetchInterval: 15_000,
+  })
+}
+
+export function useAgentsFromDB() {
+  return useQuery<AgentRow[]>({
+    queryKey: ["agents-db"],
+    queryFn: getAgents,
+    refetchInterval: 15_000,
   })
 }
 
@@ -55,30 +72,46 @@ interface GammaMarket {
   liquidity?: number
 }
 
+/** Fetch all markets once (paginated) and cache for 5 minutes. */
+function useAllMarkets() {
+  return useQuery<GammaMarket[]>({
+    queryKey: ["all-markets"],
+    queryFn: async () => {
+      const all: GammaMarket[] = []
+      for (let offset = 0; offset < 1000; offset += 100) {
+        const resp = await fetch(
+          `https://gamma-api.polymarket.com/markets?limit=100&offset=${offset}`
+        )
+        if (!resp.ok) break
+        const markets: Record<string, unknown>[] = await resp.json()
+        if (!markets.length) break
+        for (const m of markets) {
+          const cid = ((m.conditionId as string) || (m.condition_id as string) || "").toLowerCase()
+          if (!cid) continue
+          all.push({
+            conditionId: cid,
+            question: (m.question as string) || "",
+            outcomes: m.outcomes as string[] | undefined,
+            liquidity: m.liquidity as number | undefined,
+          })
+        }
+      }
+      return all
+    },
+    staleTime: 5 * 60_000,
+  })
+}
+
 export function useMarket(conditionId: string | undefined) {
+  const { data: allMarkets } = useAllMarkets()
   return useQuery<GammaMarket | null>({
     queryKey: ["market", conditionId],
-    queryFn: async () => {
-      if (!conditionId) return null
-      const resp = await fetch(
-        `https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=100`
-      )
-      if (!resp.ok) return null
-      const markets: Record<string, unknown>[] = await resp.json()
-      const found = markets.find(
-        (m) =>
-          ((m.conditionId as string) || (m.condition_id as string) || "").toLowerCase() ===
-          conditionId.toLowerCase()
-      )
-      if (!found) return null
-      return {
-        conditionId: (found.conditionId as string) || (found.condition_id as string) || "",
-        question: (found.question as string) || "",
-        outcomes: found.outcomes as string[] | undefined,
-        liquidity: found.liquidity as number | undefined,
-      }
+    queryFn: () => {
+      if (!conditionId || !allMarkets) return null
+      const target = conditionId.toLowerCase()
+      return allMarkets.find((m) => m.conditionId === target) ?? null
     },
-    enabled: !!conditionId,
+    enabled: !!conditionId && !!allMarkets,
     staleTime: 5 * 60_000,
   })
 }

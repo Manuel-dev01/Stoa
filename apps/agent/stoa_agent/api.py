@@ -57,11 +57,12 @@ async def create_trace(req: GenerateTraceRequest) -> GenerateTraceResponse:
     # 3. Build trace JSON
     from datetime import datetime, timezone
 
-    if settings.agent_id is None:
-        raise HTTPException(status_code=400, detail="AGENT_ID not set in .env.local")
+    agent_id = req.agent_id or settings.agent_id
+    if agent_id is None:
+        raise HTTPException(status_code=400, detail="AGENT_ID not set in .env.local and not provided in request")
 
     trace = Trace(
-        agent_id=settings.agent_id,
+        agent_id=agent_id,
         market_id=req.market_id,
         generated_at=datetime.now(timezone.utc),
         market=TraceMarket(
@@ -94,7 +95,7 @@ async def create_trace(req: GenerateTraceRequest) -> GenerateTraceResponse:
     # 6. Publish to Arc
     try:
         arc_tx_hash = arc_client.publish_trace(
-            agent_id=settings.agent_id,
+            agent_id=agent_id,
             market_id=req.market_id,
             trace_hash=trace_hash,
             rating=inference["rating"],
