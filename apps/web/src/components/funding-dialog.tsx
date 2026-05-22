@@ -3,13 +3,14 @@
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import type { AppKitChain } from "@/lib/appkit"
 
-const CHAINS = [
-  { id: "Polygon_Amoy", label: "Polygon Amoy", symbol: "POL" },
+const CHAINS: { id: AppKitChain; label: string; symbol: string }[] = [
+  { id: "Polygon_Amoy_Testnet", label: "Polygon Amoy", symbol: "POL" },
   { id: "Base_Sepolia", label: "Base Sepolia", symbol: "ETH" },
   { id: "Arbitrum_Sepolia", label: "Arbitrum Sepolia", symbol: "ETH" },
   { id: "Ethereum_Sepolia", label: "Ethereum Sepolia", symbol: "ETH" },
-] as const
+]
 
 interface FundingDialogProps {
   open: boolean
@@ -17,7 +18,7 @@ interface FundingDialogProps {
 }
 
 export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
-  const [selectedChain, setSelectedChain] = useState<string>("Polygon_Amoy")
+  const [selectedChain, setSelectedChain] = useState<AppKitChain>("Polygon_Amoy_Testnet")
   const [amount, setAmount] = useState("10")
   const [status, setStatus] = useState<"idle" | "bridging" | "success" | "error">("idle")
   const [error, setError] = useState<string | null>(null)
@@ -29,23 +30,11 @@ export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
     setIsTimeout(false)
 
     try {
-      const resp = await fetch("/api/bridge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fromChain: selectedChain,
-          amount,
-        }),
+      const { bridgeToArc } = await import("@/lib/appkit")
+      await bridgeToArc({
+        fromChain: selectedChain,
+        amount,
       })
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: resp.statusText }))
-        if (err.isTimeout) {
-          throw new Error("timeout")
-        }
-        throw new Error(err.error || `HTTP ${resp.status}`)
-      }
-
       setStatus("success")
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Bridge failed"

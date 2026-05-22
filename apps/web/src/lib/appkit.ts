@@ -1,12 +1,12 @@
 /**
  * Circle App Kit integration for cross-chain USDC funding.
  *
- * Provides bridge (CCTP V2), send, and unified balance capabilities.
- * Uses the viem adapter for wallet interaction.
+ * Bridge and send use the connected browser wallet (MetaMask).
+ * The adapter is created from the EIP1193 provider, not a private key.
  */
 
 import { AppKit } from '@circle-fin/app-kit'
-import { createViemAdapterFromPrivateKey } from '@circle-fin/adapter-viem-v2'
+import { createViemAdapterFromProvider } from '@circle-fin/adapter-viem-v2'
 
 const BRIDGE_TIMEOUT_MS = 30_000
 
@@ -46,55 +46,26 @@ interface BridgeParams {
   amount: string
 }
 
-interface SendParams {
-  to: string
-  amount: string
-}
-
 /**
- * Create an App Kit instance with a viem adapter for the given private key.
+ * Bridge USDC from a source chain to Arc testnet via CCTP V2.
+ * Uses the connected browser wallet (MetaMask) for signing.
  */
-function createKitWithKey(privateKey: string) {
-  const key = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`
+export async function bridgeToArc(params: BridgeParams) {
+  if (typeof window === 'undefined' || !window.ethereum) {
+    throw new Error('No browser wallet detected. Connect MetaMask first.')
+  }
 
-  const adapter = createViemAdapterFromPrivateKey({
-    privateKey: key as `0x${string}`,
+  const adapter = await createViemAdapterFromProvider({
+    provider: window.ethereum as any,
   })
 
   const kit = new AppKit()
-  return { kit, adapter }
-}
-
-/**
- * Bridge USDC from a source chain to Arc testnet via CCTP V2.
- */
-export async function bridgeToArc(params: BridgeParams, privateKey: string) {
-  const { kit, adapter } = createKitWithKey(privateKey)
 
   const result = await withTimeout(
     kit.bridge({
       from: { adapter, chain: params.fromChain },
       to: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
       amount: params.amount,
-    }),
-    BRIDGE_TIMEOUT_MS,
-  )
-
-  return result
-}
-
-/**
- * Send USDC on Arc testnet to a recipient.
- */
-export async function sendOnArc(params: SendParams, privateKey: string) {
-  const { kit, adapter } = createKitWithKey(privateKey)
-
-  const result = await withTimeout(
-    kit.send({
-      from: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
-      to: params.to,
-      amount: params.amount,
-      token: 'USDC',
     }),
     BRIDGE_TIMEOUT_MS,
   )
