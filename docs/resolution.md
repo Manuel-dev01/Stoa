@@ -32,24 +32,16 @@ Four items blocked by external infra. All share the same pattern: code correct, 
 ## 2. Paymaster
 
 **Archive:** `docs/archive/phase-3-paymaster.md`
-**Status:** Compiled, not proven
-**Impact:** Gas-free user transactions on Arc not available
+**Status:** Not applicable — Arc uses USDC natively for gas
+**Impact:** None — gas-free UX is inherent to Arc
 
-**The problem:** Circle Paymaster contract `0x3BA9A96eE3eFf3A69E2B18886AcF52027EFF8966` (v0.8) and `0x31BE08D380A21fc740883c0BC434FcFc88740b58` (v0.7) return no code on Canteen's Arc testnet RPC. Bundler returns `AA30 paymaster not deployed`.
+**The finding:** Arc denominates all transaction fees in USDC, the native gas token ([docs.arc.io/arc/references/gas-and-fees](https://docs.arc.io/arc/references/gas-and-fees)). The Circle Paymaster (`0x3BA9...`) exists on chains where gas is paid in ETH and you want to abstract it to USDC via EIP-2612 permits + ERC-4337. On Arc, that abstraction is unnecessary — every transaction already pays gas in USDC natively, at ~$0.01/tx.
 
-**Confirmed via arc-canteen context:** Both addresses verified as empty on chain ID `5042002` (Canteen's Arc testnet) using `cast code`. Circle's official docs (`developers.circle.com/paymaster/addresses-and-events.md`) list these addresses for Arc Testnet, but Circle has not deployed them to Canteen's specific RPC endpoint. The Pimlico bundler URL is `https://public.pimlico.io/v2/${chain.id}/rpc`. v0.7 uses `toCircleSmartAccount` from `@circle-fin/modular-wallets-core`; v0.8 uses `toSimple7702SmartAccount` from `viem/account-abstraction`.
+Circle's Paymaster docs list supported chains: Arbitrum, Avalanche, Base, Ethereum, Optimism, Polygon, Unichain. **Arc is not listed** because Arc doesn't need it. Verified: `cast code 0x3BA9A96eE3eFf3A69E2B18886AcF52027EFF8966 --rpc-url https://rpc.testnet.arc.network` returns `0x`.
 
-**What works:** `apps/web/src/lib/paymaster.ts` — full implementation with `createGasFreeAccount()`, `signPermit()`, `createPaymaster()`, `createGasFreeClient()`. EIP-2612 permit signing verified. Pimlico bundler accepted the UserOp and ran simulation. Web app builds clean.
+**What works:** `apps/web/src/lib/paymaster.ts` — full implementation for ETH-gas chains. `useGasFreePublishTrace()` hook exists in `hooks.ts`. Both remain as reference for post-hackathon multi-chain expansion.
 
-**Resolution paths:**
-1. **Circle's own RPC** — check if Circle has a separate Arc testnet RPC (different from Canteen's) where the paymaster is deployed.
-2. **Different chain ID** — Circle may use a different Arc testnet chain ID for paymaster deployment.
-3. **Wait for deployment** — Circle may deploy the paymaster to Canteen's endpoint closer to mainnet.
-
-**Once resolved, complete these steps:**
-1. Add `NEXT_PUBLIC_BUNDLER_RPC` to `apps/web/.env.local` and Vercel
-2. Call `useGasFreePublishTrace()` from the trace publish flow
-3. Test with a real `publishTrace` UserOp
+**No action needed.** The "What worked with Circle / Arc" story is the native USDC gas model itself.
 
 ---
 
@@ -112,8 +104,8 @@ The original blocker was using the USYC token address instead of the Teller addr
 | Item | Blocker | Code status | Resolution |
 |------|---------|-------------|------------|
 | Polymarket Broadcast | Relayer unreachable | Production-ready (dry-run verified) | Try from Polymarket UI or Vercel |
-| Paymaster | Contract not on Canteen RPC (confirmed: both v0.7 + v0.8 return `0x` on chain 5042002) | Compiled, bundler tested | Try Circle's own RPC or wait |
+| Paymaster | Not applicable — Arc uses USDC natively for gas | Compiled (for ETH-gas chains) | No action needed |
 | App Kit Bridge | Circle API unreachable (code matches documented API) | Compiled, UI wired, timeout added | Try from Vercel; 30s timeout prevents hangs |
 | Treasury Yield | Teller is ERC-4626 (confirmed live); allowlisting pending (24-48hr) | Zero code changes needed | Wire `setYieldVault(TELLER)` once allowlisted |
 
-Three are external infra issues. Treasury yield is resolved — just waiting on Circle Support allowlisting.
+Paymaster is not applicable (Arc uses USDC natively). Treasury yield is resolved — waiting on Circle Support allowlisting. Two remain as external infra blockers.

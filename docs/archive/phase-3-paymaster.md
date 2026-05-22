@@ -1,7 +1,7 @@
-# Phase 3 Archive: Paymaster — Compiled, Not Proven
+# Phase 3 Archive: Paymaster — Not Applicable on Arc
 
-**Status:** Compiled, not proven  
-**Date documented:** 2026-05-23  
+**Status:** Resolved — Arc uses USDC natively for gas, paymaster not needed
+**Date documented:** 2026-05-23
 **Phase:** 3 (The Surface)
 
 ---
@@ -64,4 +64,22 @@ If the paymaster becomes available on Arc testnet, the wiring steps would be:
 
 ---
 
-*Same honest framing as the Polymarket archive: code correct, external contract not reachable from this environment. The bundler (Pimlico) side was verified working.*
+## Update — Day 12 (May 22)
+
+**Finding: Paymaster is not needed on Arc.**
+
+Verified on Circle's own RPC (`https://rpc.testnet.arc.network`): `cast code 0x3BA9A96eE3eFf3A69E2B18886AcF52027EFF8966` returns `0x`. The contract is not deployed there either.
+
+Root cause: Arc's gas model is fundamentally different from Ethereum/Base/Polygon. Per [docs.arc.io/arc/references/gas-and-fees](https://docs.arc.io/arc/references/gas-and-fees):
+
+> "Arc denominates all transaction fees in USDC, the native gas token."
+
+The Circle Paymaster exists on chains where gas is paid in ETH and you want to abstract it to USDC via EIP-2612 permits + ERC-4337. On Arc, that abstraction is unnecessary — every transaction already pays gas in USDC natively at ~$0.01/tx. Circle's Paymaster docs list: Arbitrum, Avalanche, Base, Ethereum, Optimism, Polygon, Unichain. Arc is not listed because Arc doesn't need it.
+
+The "What worked with Circle / Arc" story is the native USDC gas model itself. No paymaster hack needed.
+
+The `paymaster.ts` code and `useGasFreePublishTrace()` hook remain as reference for post-hackathon multi-chain expansion (if Stoa ever needs gas abstraction on ETH-gas chains).
+
+---
+
+*Resolution is better than originally framed: the code is correct AND the external contract being absent is the right outcome — Arc solved the problem at the protocol level.*

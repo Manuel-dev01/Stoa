@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm --filter @stoa/shared build && pnpm --filter @stoa/sdk build && next build",
     "start": "next start",
     "lint": "next lint"
   },
