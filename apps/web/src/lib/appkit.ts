@@ -8,6 +8,24 @@
 import { AppKit } from '@circle-fin/app-kit'
 import { createViemAdapterFromPrivateKey } from '@circle-fin/adapter-viem-v2'
 
+const BRIDGE_TIMEOUT_MS = 30_000
+
+export class BridgeTimeoutError extends Error {
+  constructor() {
+    super('Bridge request timed out after 30 seconds')
+    this.name = 'BridgeTimeoutError'
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new BridgeTimeoutError()), ms)
+    ),
+  ])
+}
+
 // Chain identifiers for App Kit (must match BridgeChain enum exactly)
 export const APP_KIT_CHAINS = {
   arcTestnet: 'Arc_Testnet',
@@ -53,11 +71,14 @@ function createKitWithKey(privateKey: string) {
 export async function bridgeToArc(params: BridgeParams, privateKey: string) {
   const { kit, adapter } = createKitWithKey(privateKey)
 
-  const result = await kit.bridge({
-    from: { adapter, chain: params.fromChain },
-    to: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
-    amount: params.amount,
-  })
+  const result = await withTimeout(
+    kit.bridge({
+      from: { adapter, chain: params.fromChain },
+      to: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
+      amount: params.amount,
+    }),
+    BRIDGE_TIMEOUT_MS,
+  )
 
   return result
 }
@@ -68,12 +89,15 @@ export async function bridgeToArc(params: BridgeParams, privateKey: string) {
 export async function sendOnArc(params: SendParams, privateKey: string) {
   const { kit, adapter } = createKitWithKey(privateKey)
 
-  const result = await kit.send({
-    from: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
-    to: params.to,
-    amount: params.amount,
-    token: 'USDC',
-  })
+  const result = await withTimeout(
+    kit.send({
+      from: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
+      to: params.to,
+      amount: params.amount,
+      token: 'USDC',
+    }),
+    BRIDGE_TIMEOUT_MS,
+  )
 
   return result
 }

@@ -112,7 +112,7 @@ if (tokens) {
 ### Re-exports from `@stoa/shared`
 
 ```typescript
-export { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC_VAULT } from '@stoa/shared'
+export { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC } from '@stoa/shared'
 export { TraceSchema } from '@stoa/shared'
 export type { Trace } from '@stoa/shared'
 export { stoaRegistryAbi } from '@stoa/shared'
@@ -327,7 +327,7 @@ event Redeemed(bytes32 indexed agentId, uint256 shares, uint256 assets, uint256 
 ### Addresses
 
 ```typescript
-import { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC_VAULT } from '@stoa/shared'
+import { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC } from '@stoa/shared'
 // or from Python:
 // settings.stoa_registry_address
 ```
@@ -337,7 +337,8 @@ import { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC_VAULT } from '@stoa/sh
 | `STOA_REGISTRY` | `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b` |
 | `STOA_TREASURY` | `0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18` |
 | `ARC_USDC` | `0x3600000000000000000000000000000000000000` |
-| `ARC_USYC_VAULT` | `0x825Ae482558415310C71B7E03d2BbBe409345903` |
+| `ARC_USYC` | `0xe9185F0c5F296Ed1797AaE4238D26CCaBEadb86C` |
+| `ARC_USYC_TELLER` | `0x9fdF14c5B14173D74C08Af27AebFf39240dC105A` |
 
 ---
 

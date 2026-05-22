@@ -1,6 +1,6 @@
 # Phase 3 Archive: App Kit — Compiled, Not Proven
 
-**Status:** Compiled, not proven  
+**Status:** Compiled, timeout-hardened, pending Vercel test
 **Date documented:** 2026-05-23  
 **Phase:** 3 (The Surface)
 
@@ -57,6 +57,22 @@ The blocker persists. Circle's API is still unreachable from this environment.
 No code changes attempted. The bridge API route (`/api/bridge`) and funding dialog are wired and build-clean. The "Fund" button in the navbar opens the dialog, which calls the bridge API route. The entire UI/API layer is production-ready — the only missing piece is Circle's API responding to the `bridge()` call.
 
 Testing path: deploy to Vercel and test from the production URL. Vercel's serverless functions may have different network access than the local build environment. The `POLYMARKET_PRIVATE_KEY` env var (used by the bridge API route for signing) is now set in Vercel.
+
+---
+
+## Update — Day 12 (May 22)
+
+Three fixes applied to make the bridge robust regardless of network conditions:
+
+1. **Timeout wrapper** (`apps/web/src/lib/appkit.ts`): Added `withTimeout` helper using `Promise.race`. Both `bridgeToArc()` and `sendOnArc()` now timeout after 30 seconds with a `BridgeTimeoutError`. No more indefinite hangs.
+
+2. **API route error classification** (`apps/web/src/app/api/bridge/route.ts`): Catch block now detects `BridgeTimeoutError` and returns `{ error, isTimeout: true }` with HTTP 504 (Gateway Timeout) instead of 502.
+
+3. **Funding dialog retry UI** (`apps/web/src/components/funding-dialog.tsx`): Added `isTimeout` state. Timeout errors show a specific message ("Circle's API may be temporarily unreachable") with a Retry button that resets to idle. Non-timeout errors show the original message.
+
+Confirmed via arc-canteen context: `new AppKit()` with no arguments is the correct constructor for bridge operations — `BridgeKitConfig` and `BridgeParams` have no `kitKey` field. The `NEXT_PUBLIC_CIRCLE_KIT_KEY` env var is not needed for bridge. The hang is purely a network access issue.
+
+Next step: deploy to Vercel and test from production URL.
 
 ---
 

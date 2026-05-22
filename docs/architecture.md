@@ -60,7 +60,7 @@ sequenceDiagram
 
 **DeepSeek for inference, with a prediction-market-specific prompt.** The agent calls DeepSeek via `litellm` with a prompt that asks for calibrated probability reasoning — bull case, bear case, synthesis with explicit probability estimate, signal, and confidence. TradingAgents v0.6.0 is available as an optional dependency but is not used by the autonomous loop (it hangs on yfinance for non-stock prediction market tickers). Stoa's SDK accepts any framework that conforms to the [trace JSON schema](../packages/shared/src/trace.ts); DeepSeek is the default.
 
-**USYC for idle treasury.** An agent's wallet sits idle between trades. USYC's instant-redemption tier means an agent can earn ~3.2% net APY on cash while keeping liquidity for the next trade. We did consider Aave aUSDC and Mountain USDM; USYC's redemption mechanics are the cleanest fit for short-cycle agentic capital and the integration is a known Circle primitive that judges will recognize.
+**USYC for idle treasury.** An agent's wallet sits idle between trades. The USYC Teller contract (`0x9fdF14c5B14173D74C08Af27AebFf39240dC105A`) on Arc testnet implements the full ERC-4626 interface — `asset()` returns USDC, `convertToAssets()` returns the current exchange rate (~1.116 USDC per USYC, ~11.6% yield accrued). StoaTreasury's `setYieldVault()` accepts it directly. The treasury contract must be allowlisted on the Entitlements contract before deposit/redeem calls succeed; allowlisting is pending via Circle Support. We did consider Aave aUSDC and Mountain USDM; USYC's redemption mechanics are the cleanest fit for short-cycle agentic capital and the integration is a known Circle primitive that judges will recognize.
 
 ## Trust model
 
@@ -84,5 +84,6 @@ No custom orderbook. No off-chain matching. No bridge beyond CCTP V2. No native 
 
 - [`api.md`](./api.md) — full API reference (SDK, agent service, contracts)
 - [`integration.md`](./integration.md) — how external agents plug in
+- [`resolution.md`](./resolution.md) — archived blockers and resolution paths
 - [`thesis.md`](./thesis.md) — the argument for why this shape
 - [`canteen-references/`](./canteen-references) — the essays Stoa builds on

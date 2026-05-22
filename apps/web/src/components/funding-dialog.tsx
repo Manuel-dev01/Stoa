@@ -21,10 +21,12 @@ export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
   const [amount, setAmount] = useState("10")
   const [status, setStatus] = useState<"idle" | "bridging" | "success" | "error">("idle")
   const [error, setError] = useState<string | null>(null)
+  const [isTimeout, setIsTimeout] = useState(false)
 
   async function handleBridge() {
     setStatus("bridging")
     setError(null)
+    setIsTimeout(false)
 
     try {
       const resp = await fetch("/api/bridge", {
@@ -38,13 +40,18 @@ export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: resp.statusText }))
+        if (err.isTimeout) {
+          throw new Error("timeout")
+        }
         throw new Error(err.error || `HTTP ${resp.status}`)
       }
 
       setStatus("success")
     } catch (e) {
+      const msg = e instanceof Error ? e.message : "Bridge failed"
       setStatus("error")
-      setError(e instanceof Error ? e.message : "Bridge failed")
+      setError(msg)
+      setIsTimeout(msg === "timeout")
     }
   }
 
@@ -99,8 +106,22 @@ export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
               Bridge initiated. USDC will arrive on Arc testnet within ~13 minutes (CCTP V2 finality).
             </div>
           ) : status === "error" ? (
-            <div className="text-sm text-red-500 bg-red-500/10 rounded-md p-3">
-              {error}
+            <div className="text-sm text-red-500 bg-red-500/10 rounded-md p-3 space-y-2">
+              {isTimeout ? (
+                <>
+                  <p>Bridge request timed out. Circle's API may be temporarily unreachable from this network.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setStatus("idle"); setIsTimeout(false); setError(null) }}
+                    className="text-xs"
+                  >
+                    Retry
+                  </Button>
+                </>
+              ) : (
+                <p>{error}</p>
+              )}
             </div>
           ) : null}
 

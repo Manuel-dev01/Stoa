@@ -1,6 +1,6 @@
 # Phase 3 Archive: StoaTreasury Yield Leg — Verified Core, Blocked Vault Wiring
 
-**Status:** Core flow live and verified; yield-routing leg blocked by testnet vault  
+**Status:** Resolved — Teller is a full ERC-4626 vault, allowlisting pending (24-48hr)  
 **Date documented:** 2026-05-23  
 **Phase:** 3 (The Surface)
 
@@ -112,6 +112,24 @@ What changed: the treasury features are now fully wired on the frontend. `NEXT_P
 The `useTreasuryValue`, `useTreasurySubscribe`, `useTreasuryRedeem` hooks now resolve to the real contract. Agent detail pages will show live treasury values. The core deposit/redeem cycle (without yield) is fully functional end-to-end from the frontend.
 
 The yield-routing leg remains blocked on Circle's testnet vault. No code changes needed when it becomes available — `setYieldVault()` will work immediately.
+
+---
+
+## Update — Day 12 (May 22)
+
+**Breakthrough:** The original blocker was using the wrong address. We were testing against the USYC **token** contract (`0xe9185F0c5F296Ed1797AaE4238D26CCaBEadb86C`, formerly `0x825Ae...`), which is a plain ERC-20 without `asset()`. The **Teller** contract at `0x9fdF14c5B14173D74C08Af27AebFf39240dC105A` — which is what you call to mint/redeem USYC — implements the full ERC-4626 interface.
+
+Verified live on Arc testnet via `cast call`:
+- `asset()` → `0x3600000000000000000000000000000000000000` (USDC)
+- `totalAssets()` → `1494803751255` (~$1.49M TVL)
+- `convertToAssets(1e6)` → `1116277` (1 USYC = $1.116, ~11.6% yield accrued)
+- `convertToShares(1e6)` → `895834`
+- `previewDeposit/previewRedeem/maxDeposit/maxRedeem` → all work
+- `deposit()` and `redeem()` → function exists, reverts due to allowlisting (not missing function)
+
+**Zero code changes to StoaTreasury.sol needed.** `setYieldVault(0x9fdF14c5B14173D74C08Af27AebFf39240dC105A)` will pass the `asset() == usdc` check.
+
+**Remaining blocker:** The treasury contract (`0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18`) must be allowlisted on the Entitlements contract (`0xcc205224862c7641930c87679e98999d23c26113`) before the Teller accepts deposit/redeem calls. USYC Hackathon Access Form submitted; email drafted to customer-support@circle.com. Expected turnaround: 24-48 hours.
 
 ---
 

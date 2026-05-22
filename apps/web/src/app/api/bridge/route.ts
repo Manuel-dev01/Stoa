@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { bridgeToArc, APP_KIT_CHAINS, type AppKitChain } from '@/lib/appkit'
+import { bridgeToArc, APP_KIT_CHAINS, type AppKitChain, BridgeTimeoutError } from '@/lib/appkit'
 
 const CHAIN_MAP: Record<string, AppKitChain> = {
   Polygon: APP_KIT_CHAINS.polygon,
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, result })
   } catch (e) {
     const message = e instanceof Error ? e.message : 'Bridge failed'
-    return NextResponse.json({ error: message }, { status: 502 })
+    const isTimeout = e instanceof BridgeTimeoutError
+    return NextResponse.json({ error: message, isTimeout }, { status: isTimeout ? 504 : 502 })
   }
 }
