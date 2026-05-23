@@ -43,11 +43,18 @@ export async function bridgeToArc(params: BridgeParams) {
 
   const kit = new AppKit()
 
-  const result = await kit.bridge({
-    from: { adapter, chain: params.fromChain },
-    to: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
-    amount: params.amount,
-  })
-
-  return result
+  try {
+    const result = await kit.bridge({
+      from: { adapter, chain: params.fromChain },
+      to: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
+      amount: params.amount,
+    })
+    return result
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    if (msg.includes('x-user-agent') || msg.includes('CORS') || msg.includes('Failed to fetch')) {
+      throw new Error('Bridge could not reach Circle API. This may be a network restriction. Try again from a standard internet connection.')
+    }
+    throw e
+  }
 }

@@ -2,11 +2,16 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ConnectButton } from "@rainbow-me/rainbowkit"
+import { useAccount, useDisconnect } from "wagmi"
+import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { FundingDialog } from "@/components/funding-dialog"
+import { truncateAddress } from "@/lib/contracts"
 
 export function Navbar() {
   const [fundingOpen, setFundingOpen] = useState(false)
+  const { address, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
+  const { openConnectModal } = useConnectModal()
 
   return (
     <header className="border-b border-border">
@@ -21,11 +26,22 @@ export function Navbar() {
           >
             Fund
           </button>
-          <ConnectButton
-            chainStatus="none"
-            showBalance={false}
-            accountStatus="address"
-          />
+          {isConnected && address ? (
+            <button
+              onClick={() => disconnect()}
+              className="text-sm font-mono text-amber-500/80 hover:text-amber-400 transition-colors px-3 py-1.5 rounded-md border border-border hover:border-amber-500/30"
+              title="Click to disconnect"
+            >
+              {truncateAddress(address)}
+            </button>
+          ) : (
+            <button
+              onClick={openConnectModal}
+              className="text-sm font-mono bg-amber-500 text-[#0f0e0d] px-3 py-1.5 rounded-md hover:bg-amber-400 transition-colors font-medium"
+            >
+              Connect Wallet
+            </button>
+          )}
         </div>
       </div>
       <FundingDialog open={fundingOpen} onOpenChange={setFundingOpen} />
