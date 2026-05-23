@@ -8,24 +8,6 @@
 import { AppKit } from '@circle-fin/app-kit'
 import { createViemAdapterFromProvider } from '@circle-fin/adapter-viem-v2'
 
-const BRIDGE_TIMEOUT_MS = 30_000
-
-export class BridgeTimeoutError extends Error {
-  constructor() {
-    super('Bridge request timed out after 30 seconds')
-    this.name = 'BridgeTimeoutError'
-  }
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new BridgeTimeoutError()), ms)
-    ),
-  ])
-}
-
 // Chain identifiers for App Kit (must match BridgeChain enum exactly)
 export const APP_KIT_CHAINS = {
   arcTestnet: 'Arc_Testnet',
@@ -61,14 +43,11 @@ export async function bridgeToArc(params: BridgeParams) {
 
   const kit = new AppKit()
 
-  const result = await withTimeout(
-    kit.bridge({
-      from: { adapter, chain: params.fromChain },
-      to: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
-      amount: params.amount,
-    }),
-    BRIDGE_TIMEOUT_MS,
-  )
+  const result = await kit.bridge({
+    from: { adapter, chain: params.fromChain },
+    to: { adapter, chain: APP_KIT_CHAINS.arcTestnet },
+    amount: params.amount,
+  })
 
   return result
 }

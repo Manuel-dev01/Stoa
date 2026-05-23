@@ -250,10 +250,25 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
           )}
           {liveResult && (
             <div className="space-y-2 animate-fade-in-up">
-              <Badge variant="positive" className="text-xs">Order submitted</Badge>
-              <p className="text-xs text-muted-foreground font-mono">
-                {JSON.stringify(liveResult).slice(0, 200)}
-              </p>
+              <Badge variant="positive" className="text-xs">Order submitted to Polymarket</Badge>
+              {Boolean(liveResult.market) && (
+                <p className="text-sm text-foreground">
+                  {String(liveResult.market)}
+                </p>
+              )}
+              {Boolean((liveResult.result as Record<string, unknown>)?.orderID) && (
+                <p className="text-xs text-muted-foreground font-mono">
+                  Order ID: {String((liveResult.result as Record<string, unknown>).orderID).slice(0, 16)}…
+                </p>
+              )}
+              <a
+                href="https://polymarket.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono text-amber-500/80 hover:text-amber-400 transition-colors"
+              >
+                View on Polymarket ↗
+              </a>
             </div>
           )}
           {routeOrder.isError && (
