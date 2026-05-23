@@ -311,10 +311,16 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 // --- Section III: Live traces ---
 
 function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[]; isLoading: boolean }) {
+  const [currentPage, setCurrentPage] = useState(0)
+  const pageSize = 5
+
   const reversed = useMemo(
     () => [...traces].reverse(),
     [traces],
   )
+
+  const totalPages = Math.ceil(reversed.length / pageSize)
+  const pageTraces = reversed.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
 
   return (
     <section className="space-y-6">
@@ -342,11 +348,34 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
           ))}
         </div>
       ) : reversed.length > 0 ? (
-        <div className="space-y-4 trace-list">
-          {reversed.map((trace, i) => (
-            <TraceCard key={trace.transactionHash} trace={trace} index={i + 1} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4 trace-list">
+            {pageTraces.map((trace, i) => (
+              <TraceCard key={trace.transactionHash} trace={trace} index={currentPage * pageSize + i + 1} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2 text-xs font-mono text-muted-foreground">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                disabled={currentPage === 0}
+                className="px-2 py-1 hover:text-amber-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                ← Prev
+              </button>
+              <span className="text-[10px] uppercase tracking-[0.15em]">
+                Page {currentPage + 1} of {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={currentPage >= totalPages - 1}
+                className="px-2 py-1 hover:text-amber-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <p className="text-muted-foreground text-sm">No traces published yet</p>
       )}

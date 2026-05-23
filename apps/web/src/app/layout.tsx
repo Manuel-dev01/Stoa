@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import { Inter, Newsreader, JetBrains_Mono } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
 import "@rainbow-me/rainbowkit/styles.css"
 import "./globals.css"
 import { Providers } from "@/components/providers"
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main className="flex-1">{children}</main>
             </div>
           </Providers>
+          <Analytics />
         </Suspense>
       </body>
     </html>
