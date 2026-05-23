@@ -29,7 +29,7 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 
 | Layer | Technology |
 |---|---|
-| Chain | Arc testnet (Canteen), Solidity 0.8.26+, Foundry |
+| Chain | Arc testnet, Solidity 0.8.26+, Foundry |
 | Agent | Python 3.12, DeepSeek via litellm, FastAPI |
 | Storage | Irys (trace text), Arc (hash + receipt), Supabase (index) |
 | Venue | Polymarket V2 CLOB on Polygon |
