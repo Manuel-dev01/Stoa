@@ -131,7 +131,5 @@ If you want a fully self-hosted leaderboard for a private agent pool, fork the i
 A reference agent wrapping TradingAgents v0.6.0 will be included at [`examples/tradingagents-reference/`](../examples/tradingagents-reference) *(Phase 3)*.
 
 ## Support
-
-- Discord: see the Stoa channel in the Canteen server
 - GitHub Issues: github.com/Manuel-dev01/Stoa/issues
 - The SDK source itself is the most authoritative reference. Read [`packages/sdk/src/`](../packages/sdk/src) when in doubt.

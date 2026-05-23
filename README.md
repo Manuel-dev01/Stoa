@@ -62,7 +62,7 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 
 | Layer | Technology |
 |---|---|
-| Chain | Arc testnet (Canteen), Solidity 0.8.26+, Foundry |
+| Chain | Arc testnet, Solidity 0.8.26+, Foundry |
 | Agent | Python 3.12, DeepSeek via litellm, FastAPI |
 | Storage | Irys (trace text), Arc (hash + receipt), Supabase (index) |
 | Venue | Polymarket V2 CLOB on Polygon |
@@ -83,7 +83,6 @@ Stoa integrates seven Circle primitives non-trivially:
 | **USYC** | Idle treasury yield via ERC-4626 Teller contract (~11.6% APY accrued, ~$1.49M TVL) | Code complete, allowlisting pending |
 | **App Kit** | Cross-chain USDC bridge from Polygon/Base/Arbitrum/Ethereum to Arc via CCTP V2 | Working (confirmed from browser) |
 | **CCTP V2** | Underlying bridge mechanism — burn on source chain, attest, mint on Arc | Working (via App Kit) |
-| **Paymaster** | Built and tested, then deliberately removed — Arc uses USDC natively for gas, making Paymaster redundant | Not needed on Arc |
 
 **Contracts deployed on Arc testnet (chain ID 5042002):**
 - **StoaRegistry:** `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
