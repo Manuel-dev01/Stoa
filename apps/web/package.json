@@ -11,10 +11,12 @@
   "dependencies": {
     "@circle-fin/adapter-viem-v2": "^1.11.1",
     "@circle-fin/app-kit": "^1.6.1",
+    "@dynamic-labs/ethereum": "^2.0.0",
+    "@dynamic-labs/sdk-react-core": "^2.0.0",
+    "@dynamic-labs/wagmi-connector": "^2.0.0",
     "@polymarket/builder-relayer-client": "^0.0.9",
     "@polymarket/builder-signing-sdk": "^1.0.0",
     "@radix-ui/react-dialog": "^1.1.15",
-    "@rainbow-me/rainbowkit": "^2.2.11",
     "@stoa/sdk": "workspace:*",
     "@stoa/shared": "workspace:*",
     "@supabase/supabase-js": "^2.106.1",

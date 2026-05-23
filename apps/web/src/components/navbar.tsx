@@ -3,15 +3,44 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useAccount, useDisconnect } from "wagmi"
-import { useConnectModal } from "@rainbow-me/rainbowkit"
 import { FundingDialog } from "@/components/funding-dialog"
 import { truncateAddress } from "@/lib/contracts"
+
+const hasDynamicId = Boolean(process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID)
+
+function ConnectButton() {
+  if (!hasDynamicId) {
+    return (
+      <button
+        disabled
+        className="text-sm font-mono bg-amber-500/50 text-[#0f0e0d] px-3 py-1.5 rounded-md cursor-not-allowed font-medium"
+        title="Set NEXT_PUBLIC_DYNAMIC_ENV_ID to enable wallet connection"
+      >
+        Connect Wallet
+      </button>
+    )
+  }
+
+  return <DynamicConnectButton />
+}
+
+function DynamicConnectButton() {
+  const { useDynamicContext } = require("@dynamic-labs/sdk-react-core")
+  const { setShowAuthFlow } = useDynamicContext()
+  return (
+    <button
+      onClick={() => setShowAuthFlow(true)}
+      className="text-sm font-mono bg-amber-500 text-[#0f0e0d] px-3 py-1.5 rounded-md hover:bg-amber-400 transition-colors font-medium"
+    >
+      Connect Wallet
+    </button>
+  )
+}
 
 export function Navbar() {
   const [fundingOpen, setFundingOpen] = useState(false)
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
-  const { openConnectModal } = useConnectModal()
 
   return (
     <header className="border-b border-border">
@@ -35,12 +64,7 @@ export function Navbar() {
               {truncateAddress(address)}
             </button>
           ) : (
-            <button
-              onClick={openConnectModal}
-              className="text-sm font-mono bg-amber-500 text-[#0f0e0d] px-3 py-1.5 rounded-md hover:bg-amber-400 transition-colors font-medium"
-            >
-              Connect Wallet
-            </button>
+            <ConnectButton />
           )}
         </div>
       </div>
