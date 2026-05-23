@@ -15,6 +15,8 @@ dependencies = [
     "eth-utils>=5.0.0",
     "python-dotenv>=1.0.0",
     "tradingagents>=0.3.0",
+    "py-clob-client-v2>=1.0.1",
+    "cryptography>=46.0.7",
 ]
 
 [build-system]

@@ -106,21 +106,26 @@ def run_inference(market: Market) -> dict:
     }
 
 
-def run_inference_direct(market: Market) -> dict:
+def run_inference_direct(market: Market, persona: str | None = None) -> dict:
     """Direct DeepSeek inference — primary method for prediction markets.
 
     Uses probabilistic reasoning tailored to prediction market questions.
+    If persona is provided, it replaces the default role preamble.
     """
     from stoa_agent.config import load_settings
     import litellm
 
     settings = load_settings()
     os.environ["DEEPSEEK_API_KEY"] = settings.deepseek_api_key
+    if not persona and settings.agent_persona:
+        persona = settings.agent_persona
 
     outcomes_str = ", ".join(market.outcomes) if market.outcomes else "Yes/No"
     end_date_str = f"\nResolution date: {market.end_date}" if market.end_date else ""
 
-    prompt = f"""You are a prediction market analyst. Your job is to estimate the probability that a binary event will resolve YES, then recommend whether to BUY or SELL at the current implied price.
+    role_preamble = persona or "You are a prediction market analyst. Your job is to estimate the probability that a binary event will resolve YES, then recommend whether to BUY or SELL at the current implied price."
+
+    prompt = f"""{role_preamble}
 
 ## Market
 Question: {market.question}

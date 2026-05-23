@@ -26,7 +26,7 @@ class TraceModelMetadata(BaseModel):
 
 class TraceMarket(BaseModel):
     question: str
-    venue: Literal["polymarket"] = "polymarket"
+    venue: Literal["polymarket", "kalshi"] = "polymarket"
     resolution_at: datetime | None = None
 
 

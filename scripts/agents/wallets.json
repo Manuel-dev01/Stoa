@@ -1,0 +1,177 @@
+[
+  {
+    "index": 1,
+    "wallet_id": "365e067f-f720-595f-b11c-d38d055e1e1a",
+    "address": "0xa040db15d45afb5897b70d18ec21b4a11da480fc",
+    "agent_id": "0x52333453ed1d92c4d55ef1a4f45a24f8f3649aadd63f8129daedea3a98a1bfdd",
+    "persona": "stoikos"
+  },
+  {
+    "index": 2,
+    "wallet_id": "db93166a-dbc6-5b0f-8e63-9b36f0fd59c9",
+    "address": "0xeddfc21e8a6593676c82e71f036e046f90980d1a",
+    "agent_id": "0x1ff371c4b311f3741a201c7567cc25054f5a51aa371096a0190f5268650beb8f",
+    "persona": "stoikos"
+  },
+  {
+    "index": 3,
+    "wallet_id": "4bb5e514-3f9d-56cf-a79b-98473bd46896",
+    "address": "0xdf642780530469ec2ab93b543af688eea92e3bb7",
+    "agent_id": "0xff90795ea1ebbf2b1bb2713789da7f8f73c5096192d192a58e0f47a875aa55d7",
+    "persona": "stoikos"
+  },
+  {
+    "index": 4,
+    "wallet_id": "bacb3a50-2c72-5aaf-818c-6488f456cc66",
+    "address": "0xf6256f9bb23e7a16817202393387a151ad3b518e",
+    "agent_id": "0xde19595484013419cd11b91a2f7d075e514f184eb1948cb25cd1d4a50fa46ba2",
+    "persona": "stoikos"
+  },
+  {
+    "index": 5,
+    "wallet_id": "c5f9f645-ee40-5a20-b831-e6c4627651b1",
+    "address": "0x5e0e0a5a488d708e92f3197e09d39ae16e0242f0",
+    "agent_id": "0x16236a80bc2a980daa24b29c5cb999aaa427c710d9a38d5849f06759c6f703e5",
+    "persona": "heraklit"
+  },
+  {
+    "index": 6,
+    "wallet_id": "f8ae5c27-e29c-59d3-8c10-9938b8405a2c",
+    "address": "0x920419decb6ab3901611b5fb82f851197bc6eb4d",
+    "agent_id": "0x158cfeec154bc79a9e53464d90fb010be26c41aecf696bd99e888311da7be11f",
+    "persona": "heraklit"
+  },
+  {
+    "index": 7,
+    "wallet_id": "0b36d5b1-9547-5d8a-b31d-f3418d46c388",
+    "address": "0x0e4e5902b20deea6d73219d88ebada96f33d742e",
+    "agent_id": "0xf07ccb3a6c30733d04ed342fff454f55e8e77cd999414cb76b134cdca5cdb423",
+    "persona": "heraklit"
+  },
+  {
+    "index": 8,
+    "wallet_id": "8e54cdde-751f-5750-900a-addb7771e697",
+    "address": "0xeacd9018934cbac667d11f0341ef4b0d3fdd5c51",
+    "agent_id": "0x7be5b39135df9276d8da9376c61ff88f5ccbd53f10580a18437708ca3a72d87f",
+    "persona": "heraklit"
+  },
+  {
+    "index": 9,
+    "wallet_id": "3dc1f438-9b54-5783-84d6-ea206ed42ec1",
+    "address": "0xf5c996c901a5cf58b0525a6c65e407cd5516c2c4",
+    "agent_id": "0x94bc09ec3bb71a0d79006a40b1f2826961d779e494d7a53ad872f67b613ea707",
+    "persona": "phyrr"
+  },
+  {
+    "index": 10,
+    "wallet_id": "67e8c15a-28bc-5eae-befd-5ca0fc559e6f",
+    "address": "0xf046da15375299bdde2e21d00cfa3a4758504df8",
+    "agent_id": "0xc8337dd8ac92cf6d86598df8c16f3ca11c00040357557b5ffa61520c42c14aa3",
+    "persona": "phyrr"
+  },
+  {
+    "index": 11,
+    "wallet_id": "6bef2b9a-608a-5a8b-b189-912d9fcc7cd2",
+    "address": "0x0202d45b2f45468988ad255b5a37c3aff8ad34c1",
+    "agent_id": "0x84dd8e06ff755dd56a437ea7988ead74497c211f5c1803aaee2c76b03bd4635f",
+    "persona": "phyrr"
+  },
+  {
+    "index": 12,
+    "wallet_id": "7bb6fa49-0c02-55e0-afd2-c8c021e8fe83",
+    "address": "0xa77dba66b4a98f5b8ca068622d946e866616c82d",
+    "agent_id": "0x0e6c985a6651906a93353a610e4854bf5d01800837c56afca6b89746c8bdbbe3",
+    "persona": "phyrr"
+  },
+  {
+    "index": 13,
+    "wallet_id": "8ccab9b8-fa88-5901-95c6-df41ca4489dd",
+    "address": "0x08839832848fd26a0ece05b759e65aa4f309c351",
+    "agent_id": "0x0d9195aa3904d2bd1382e090aedaea57cdc8170fc55c24d098693463a9657365",
+    "persona": "artemis"
+  },
+  {
+    "index": 14,
+    "wallet_id": "ca73b010-3b3d-50db-b861-d941a04ad020",
+    "address": "0xc7bc373d856df8d054c55b011d1489210966b6c5",
+    "agent_id": "0x3d37dbe6be3ce31fbede444e37229b9d811faa399979321b1e64aa111d8a76ca",
+    "persona": "artemis"
+  },
+  {
+    "index": 15,
+    "wallet_id": "f2e2ba24-3791-5681-ba23-6ddeb0e26e33",
+    "address": "0xf4bbd23d36d0159b374676963f1cec72224cf103",
+    "agent_id": "0xfa231d28c5d88e30757798b760744d5a92958f746ff97cad558034a927d213f9",
+    "persona": "artemis"
+  },
+  {
+    "index": 16,
+    "wallet_id": "69b62e62-07d1-5aaa-a01e-c5a4ce821d4f",
+    "address": "0x176172145e4e8550300fabe18225c927d9e7a837",
+    "agent_id": "0x1cc9346f737c7580947a2de8a1e16dcaf36ca8a558be579a8a5dda591e285533",
+    "persona": "artemis"
+  },
+  {
+    "index": 17,
+    "wallet_id": "c935cdd9-7f7b-5212-96e5-2f1a663ae917",
+    "address": "0x23e62ce4d87efd63450c2b4a8368cf6e1e08d517",
+    "agent_id": "0xd35bd6b003b4ace9f9ea36afc434e73d844c35f397b7e3627fbb8c49af3db264",
+    "persona": "athena"
+  },
+  {
+    "index": 18,
+    "wallet_id": "687aeb12-42bf-5168-890b-d7b56668382e",
+    "address": "0xb099e5b69ddaabcc9d1e9e6f9fced7a5e2f17548",
+    "agent_id": "0x4378be11189e50660dbaa559e1dfc80834e5152bbf2509f9ea4b128cfbe13086",
+    "persona": "athena"
+  },
+  {
+    "index": 19,
+    "wallet_id": "ec651fde-ad8d-5fb8-b18f-4b744376eaf6",
+    "address": "0xe531fd83ff0a8a77ec4d081d34d90a071b86f7ce",
+    "agent_id": "0xbd2b59f0d9af596d090eeae1ef4458fbea15db461ccb7f70dcebb2ab6b881f78",
+    "persona": "athena"
+  },
+  {
+    "index": 20,
+    "wallet_id": "452cd501-6109-5cfb-bec0-795967871d31",
+    "address": "0x75ba4995b3028531e1db2c611022f635aa7809ca",
+    "agent_id": "0x5858a3cf39dea08e79d19c71653ee7ee340eb1b61c52b317eb4cb1b081e19493",
+    "persona": "athena"
+  },
+  {
+    "index": 21,
+    "wallet_id": "3d517559-b74f-5f16-b4bf-6994cd01a20a",
+    "address": "0x71d986fe680fc80ebc37fc1be25d16b7330e6212",
+    "agent_id": "0x922990b7803bbb0207de27f8c38e8d8530a40a8f7f2df3f44ca118acadc87b66",
+    "persona": "hermes"
+  },
+  {
+    "index": 22,
+    "wallet_id": "0f80b359-eba5-5497-94e7-99ef6c0565ac",
+    "address": "0x92da50f0ca224051c2e6be56326ad51109c06ad8",
+    "agent_id": "0x42fd886505e77b66737e5e3c9a69c9c78f67257eafb3797b3d89ad8ceeea71e0",
+    "persona": "hermes"
+  },
+  {
+    "index": 23,
+    "wallet_id": "b2ecc1f8-bb14-5f8d-bee8-aff3840d9aa8",
+    "address": "0x83af6f6df35687d8e555a6a0c1ee26ba6b5545a8",
+    "agent_id": "0xac17910fd9928f5e0ec04cbc1a2613dacce55a65362abd8078cd46c3d59f3ba3",
+    "persona": "hermes"
+  },
+  {
+    "index": 24,
+    "wallet_id": "15a86a90-6bc7-5b89-b3f9-dca3bfaa6f97",
+    "address": "0x715d787ae5a32dfab363b16143a60431a75b9d15",
+    "agent_id": "0x5ca973205942ebe40be1385ae6669d3737c91244f64eda0ca1ede39a1938bcad",
+    "persona": "hermes"
+  },
+  {
+    "index": 25,
+    "wallet_id": "74d89c45-c01b-50e5-b12d-030b0973c56d",
+    "address": "0x7a2eac785591f24bb6478caed0f9598f40cc23b7",
+    "agent_id": "0xe947d035d85a9e33fed01e6e73e38017952b699aa8042ae6d706a76cd8a60daa",
+    "persona": "stoikos"
+  }
+]

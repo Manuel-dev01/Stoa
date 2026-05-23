@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import random
 
 import httpx
 from pydantic import BaseModel, field_validator
@@ -33,37 +34,45 @@ class Market(BaseModel):
 
 
 async def get_active_markets(min_liquidity: float = 1000, limit: int = 5) -> list[Market]:
-    """Fetch active, unresolved markets with at least min_liquidity USDC volume."""
-    async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.get(
-            f"{GAMMA_BASE_URL}/markets",
-            params={
-                "active": "true",
-                "closed": "false",
-                "limit": limit * 2,
-            },
-        )
-        if resp.status_code != 200:
-            raise GammaApiError(f"Gamma API returned {resp.status_code}: {resp.text}")
+    """Fetch active, unresolved markets with at least min_liquidity USDC volume.
 
-        raw_markets = resp.json()
+    Paginates through 3 pages (offset 0, 100, 200) to get beyond the top 100,
+    then shuffles before selecting to avoid deterministic repetition.
+    """
+    all_raw: list[dict] = []
+    async with httpx.AsyncClient(timeout=30) as client:
+        for offset in range(0, 300, 100):
+            try:
+                resp = await client.get(
+                    f"{GAMMA_BASE_URL}/markets",
+                    params={
+                        "active": "true",
+                        "closed": "false",
+                        "limit": 100,
+                        "offset": offset,
+                    },
+                )
+                if resp.status_code != 200:
+                    break
+                results = resp.json()
+                if not results:
+                    break
+                all_raw.extend(results)
+            except Exception:
+                break
+
+    if not all_raw:
+        raise GammaApiError("Gamma API returned no markets from any page")
 
     markets: list[Market] = []
-    for m in raw_markets:
+    for m in all_raw:
         if not m.get("conditionId") and not m.get("condition_id"):
             continue
-        market = Market(
-            condition_id=m.get("conditionId") or m.get("condition_id", ""),
-            question=m.get("question", ""),
-            end_date=m.get("endDate") or m.get("end_date"),
-            outcomes=m.get("outcomes", []),
-            liquidity=float(m.get("liquidity", 0)),
-            active=m.get("active", True),
-            closed=m.get("closed", False),
-        )
+        market = _parse_market(m)
         if market.liquidity >= min_liquidity and not market.closed:
             markets.append(market)
 
+    random.shuffle(markets)
     return markets[:limit]
 
 

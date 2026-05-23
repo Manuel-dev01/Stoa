@@ -313,6 +313,130 @@ def cmd_circle_treasury(args: argparse.Namespace) -> None:
     print(f"  Shares: {shares / 1_000_000:.6f}")
 
 
+def cmd_publish_once(args: argparse.Namespace) -> None:
+    """Publish one trace for a random active market. Designed for multi-agent setups."""
+    import json
+    import random
+
+    from stoa_agent.chain.circle_client import CircleArcClient
+    from stoa_agent.config import load_settings
+    from stoa_agent.errors import ArcSubmitError, IrysUploadError
+    from stoa_agent.polymarket.gamma import get_active_markets
+    from stoa_agent.kalshi.client import get_kalshi_markets
+    from stoa_agent.reasoning.runner import run_inference_direct
+    from stoa_agent.schemas import (
+        Trace, TraceDecision, TraceMarket, TraceModelMetadata, TraceReasoning,
+    )
+    from stoa_agent.storage.irys import compute_trace_hash, upload_trace
+
+    settings = load_settings()
+    os.environ["DEEPSEEK_API_KEY"] = settings.deepseek_api_key
+
+    # Resolve agent identity
+    wallet_id = args.wallet_id
+    agent_id = args.agent_id
+    persona = args.persona or settings.agent_persona or None
+    min_confidence = args.min_confidence or 4000
+
+    if not agent_id:
+        print("Error: --agent-id is required", file=sys.stderr)
+        sys.exit(1)
+    if not wallet_id:
+        print("Error: --wallet-id is required", file=sys.stderr)
+        sys.exit(1)
+
+    # Fetch markets
+    markets = []
+    try:
+        pm = asyncio.run(get_active_markets(min_liquidity=2000, limit=30))
+        markets.extend(pm)
+    except Exception:
+        pass
+    try:
+        km = asyncio.run(get_kalshi_markets(limit=30))
+        markets.extend(km)
+    except Exception:
+        pass
+
+    if not markets:
+        print("No markets available.")
+        return
+
+    random.shuffle(markets)
+    market = markets[0]
+    venue = "kalshi" if market.condition_id.startswith("kalshi:") else "polymarket"
+    print(f"Market: {market.question[:80]}...")
+    print(f"Venue: {venue}")
+
+    # Inference
+    print("Running inference...")
+    try:
+        inference = run_inference_direct(market, persona=persona)
+    except Exception as e:
+        print(f"Inference failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Rating: {inference['rating']:+d}, Confidence: {inference['confidence_bps'] / 100:.0f}%")
+
+    if inference["confidence_bps"] < min_confidence:
+        print(f"Confidence below threshold ({min_confidence / 100:.0f}%). Skipping.")
+        return
+
+    # Build trace
+    trace = Trace(
+        agent_id=agent_id,
+        market_id=market.condition_id,
+        generated_at=datetime.now(timezone.utc),
+        market=TraceMarket(question=market.question, venue=venue, resolution_at=None),
+        reasoning=TraceReasoning(
+            bull=inference["bull"],
+            bear=inference["bear"],
+            synthesis=inference["synthesis"],
+        ),
+        decision=TraceDecision(
+            rating=inference["rating"],
+            confidence_bps=inference["confidence_bps"],
+        ),
+        model_metadata=TraceModelMetadata(),
+    )
+    trace_dict = trace.model_dump(mode="json")
+
+    # Upload to Irys
+    print("Uploading to Irys...")
+    try:
+        irys_receipt = upload_trace(trace_dict, settings)
+    except IrysUploadError as e:
+        print(f"Irys upload failed: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(f"Irys: {irys_receipt}")
+
+    trace_hash = compute_trace_hash(trace_dict)
+
+    # Kalshi: Irys-only (no on-chain contract)
+    if venue == "kalshi":
+        print(f"PUBLISHED (Irys-only, Kalshi): rating={inference['rating']:+d} conf={inference['confidence_bps'] / 100:.0f}%")
+        return
+
+    # Publish on-chain via Circle
+    print("Publishing to Arc...")
+    circle_client = CircleArcClient(settings)
+    try:
+        arc_tx = circle_client.publish_trace(
+            agent_id=agent_id,
+            market_id=market.condition_id,
+            trace_hash=trace_hash,
+            rating=inference["rating"],
+            confidence_bps=inference["confidence_bps"],
+            irys_receipt=irys_receipt,
+            wallet_id=wallet_id,
+        )
+        print(f"Arc tx: {arc_tx}")
+        print(f"PUBLISHED: rating={inference['rating']:+d} conf={inference['confidence_bps'] / 100:.0f}%")
+    except ArcSubmitError as e:
+        print(f"Arc publish failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def cmd_autonomous(args: argparse.Namespace) -> None:
     from stoa_agent.config import load_settings
     from stoa_agent.loop import AgentLoop
@@ -354,6 +478,12 @@ def main() -> None:
     publish_parser = sub.add_parser("publish-trace", help="Publish a trace for a market")
     publish_parser.add_argument("--market-id", required=True, help="Polymarket condition_id (0x...)")
 
+    po_parser = sub.add_parser("publish-once", help="Publish one trace for a random market")
+    po_parser.add_argument("--agent-id", required=True, help="Agent ID (0x...)")
+    po_parser.add_argument("--wallet-id", required=True, help="Circle wallet ID")
+    po_parser.add_argument("--persona", default=None, help="Persona prompt (e.g. 'stoikos', 'heraklit')")
+    po_parser.add_argument("--min-confidence", type=int, default=None, help="Minimum confidence BPS (default 4000)")
+
     auto_parser = sub.add_parser("autonomous", help="Run the autonomous market analysis loop")
     auto_parser.add_argument("--interval", type=int, default=None, help="Poll interval in seconds")
     auto_parser.add_argument("--min-confidence", type=int, default=None, help="Minimum confidence BPS to publish")
@@ -381,6 +511,8 @@ def main() -> None:
         cmd_register(args)
     elif args.command == "publish-trace":
         cmd_publish_trace(args)
+    elif args.command == "publish-once":
+        cmd_publish_once(args)
     elif args.command == "autonomous":
         cmd_autonomous(args)
     elif args.command == "circle-setup":

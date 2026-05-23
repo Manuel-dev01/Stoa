@@ -54,8 +54,33 @@ Full integration guide: [`/docs/api.md`](../../docs/api.md).
 ### Re-exports from `@stoa/shared`
 
 - `STOA_REGISTRY`, `STOA_TREASURY` — deployed contract addresses
+- `ARC_USDC`, `ARC_USYC`, `ARC_USYC_TELLER` — Arc testnet token/vault addresses
 - `TraceSchema` — Zod schema for runtime validation of trace JSON
 - `stoaRegistryAbi` — ABI for the StoaRegistry contract
+
+## Polymarket V2 Routing
+
+The SDK includes production-ready Polymarket V2 order routing with builder fee attribution:
+
+```typescript
+import { buildSignedOrder, submitOrder, getMarketTokenIds } from '@stoa/sdk'
+
+// Look up market token IDs
+const market = await getMarketTokenIds('0x...conditionId')
+
+// Build a signed order with agent's builder code
+const order = await buildSignedOrder(config, {
+  tokenId: market.yesTokenId,
+  side: 'BUY',
+  price: 0.65,
+  size: 10,
+})
+
+// Submit to CLOB (requires Arc mainnet — same chain as Polymarket)
+const result = await submitOrder(config, order)
+```
+
+**Status:** Production-ready. All 8 signing assertions pass in dry-run mode. Uses POLY_1271 signature type with deposit wallet. Live CLOB submission requires Arc mainnet (cross-chain mismatch on testnet). See [`docs/archive/phase-2-polymarket-broadcast.md`](../../docs/archive/phase-2-polymarket-broadcast.md).
 
 ## Build
 

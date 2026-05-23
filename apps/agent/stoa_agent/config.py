@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     stoa_registry_address: str
     stoa_treasury_address: str = ""
     agent_id: str | None = None
+    agent_persona: str = ""
 
     # Circle Wallets (Programmable Wallets / W3S)
     use_circle_wallets: bool = False

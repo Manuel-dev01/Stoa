@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import base64
+import json
 import time
 import uuid
+from datetime import datetime, timezone
 
 import httpx
 from cryptography.hazmat.primitives import hashes, serialization
@@ -14,6 +16,11 @@ from stoa_agent.config import Settings
 from stoa_agent.errors import ArcSubmitError
 
 _CIRCLE_BASE = "https://api.circle.com/v1/w3s"
+
+
+def _log_circle(msg: str) -> None:
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    print(f"[{ts}] {msg}", flush=True)
 
 
 def _get_entity_ciphertext(api_key: str, entity_secret: str) -> str:
@@ -193,8 +200,21 @@ class CircleArcClient:
                     if state in _TERMINAL_STATES:
                         if state in _SUCCESS_STATES:
                             return tx
+                        # Log full transaction details for debugging
+                        error_detail = tx.get("errorDetails") or tx.get("errorMessage") or tx.get("errorReason") or ""
+                        _log_circle(f"Circle tx {transaction_id} FAILED. state={state}, error={error_detail}, full={json.dumps(tx, indent=2)}")
+                        # Try to get revert reason from Arc RPC
+                        tx_hash = tx.get("txHash")
+                        if tx_hash:
+                            try:
+                                if not tx_hash.startswith("0x"):
+                                    tx_hash = f"0x{tx_hash}"
+                                receipt = self._w3.eth.get_transaction_receipt(tx_hash)
+                                _log_circle(f"  On-chain receipt: status={receipt.get('status')}, gasUsed={receipt.get('gasUsed')}")
+                            except Exception as e:
+                                _log_circle(f"  Could not fetch receipt: {e}")
                         raise ArcSubmitError(
-                            f"Circle transaction {transaction_id} ended in state: {state}"
+                            f"Circle transaction {transaction_id} ended in state: {state}. {error_detail}"
                         )
                 except ArcSubmitError:
                     raise

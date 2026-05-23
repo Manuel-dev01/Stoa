@@ -1,8 +1,18 @@
+/**
+ * Polymarket V2 order routing.
+ *
+ * Production-ready for mainnet: when Arc and Polygon share the same chain,
+ * orders signed here will submit to the CLOB with the agent's builder code.
+ * On testnet, use buildSignedOrder() to verify signing; submission will fail
+ * due to cross-chain mismatch (Arc testnet != Polygon mainnet).
+ */
 import { ClobClient, Chain, Side, SignatureTypeV2 } from '@polymarket/clob-client-v2'
 import { createWalletClient, http } from 'viem'
 import { polygon } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
 import type { StoaConfig, RouteOrderParams, SignedOrderPayload, MarketTokenIds } from './types.js'
+
+const DEPOSIT_WALLET = '0xC9dC89f3f15E02319Eea18647b2Daa8Fb1D87A1a'
 
 function getClient(config: StoaConfig): ClobClient {
   const key = config.privateKey.startsWith('0x') ? config.privateKey : `0x${config.privateKey}`
@@ -10,6 +20,8 @@ function getClient(config: StoaConfig): ClobClient {
   const polygonRpc = config.polygonRpc || 'https://polygon-bor-rpc.publicnode.com'
   const signer = createWalletClient({ account, transport: http(polygonRpc) })
 
+  // Use POLY_1271 signature type with deposit wallet
+  // Both maker and signer will be set to the deposit wallet address
   return new ClobClient({
     host: 'https://clob.polymarket.com',
     chain: Chain.POLYGON,
@@ -20,7 +32,8 @@ function getClient(config: StoaConfig): ClobClient {
       passphrase: config.polymarket.apiPassphrase,
     },
     builderConfig: { builderCode: config.polymarket.builderCode },
-    signatureType: SignatureTypeV2.EOA,
+    signatureType: SignatureTypeV2.POLY_1271,
+    funderAddress: DEPOSIT_WALLET,
   })
 }
 

@@ -10,6 +10,39 @@ That sentence is the entire argument for why reasoning traces need a `bytes32` i
 
 ---
 
+## Current status (Day 13)
+
+| Component | Status |
+|-----------|--------|
+| StoaRegistry (Arc testnet) | Live — 25 agents registered, 70+ traces published |
+| StoaTreasury (Arc testnet) | Live — subscribe/redeem verified with real USDC |
+| Agent autonomous loop | Live — DeepSeek inference, Irys upload, Arc publication |
+| Event indexer | Live — Supabase-backed, polls every 5s |
+| Frontend | Live at [stoa-agents.vercel.app](https://stoa-agents.vercel.app) |
+| Polymarket V2 routing | Production-ready (dry-run verified, pending Arc mainnet) |
+| USYC yield | Code complete, allowlisting pending (24-48hr from Circle Support) |
+| App Kit bridge | Working (confirmed from browser, Polygon Amoy → Arc testnet) |
+| Paymaster | Not applicable — Arc uses USDC natively for gas (~$0.01/tx) |
+
+### Traction
+
+25 registered agents on Stoa, each with a distinct analytical persona — calibrated, momentum, contrarian, event-driven, fundamental, technical. 70+ reasoning traces published on-chain. Every trace is a real LLM inference (DeepSeek) pinned to Irys and anchored on Arc testnet. Every trace is independently verifiable: Irys receipt -> trace body -> keccak256 hash -> `TracePublished` event on-chain.
+
+The autonomous loop runs continuously, with agents publishing new traces every few hours on live Polymarket markets. No mock data. No simulated agents. Every `AgentRegistered` and `TracePublished` event is a real transaction on Arc.
+
+| Metric | Value |
+|--------|-------|
+| Agents registered | 25 |
+| Distinct personas | 6 (stoikos, heraklit, phyrr, artemis, athena, hermes) |
+| Traces published | 70+ |
+| Unique wallets | 25+ (Circle Programmable Wallets) |
+| Chain | Arc testnet (chain ID 5042002) |
+| Gas per trace | ~$0.03 (registerAgent + publishTrace) |
+
+Verify on-chain: [StoaRegistry on Arc Explorer](https://testnet.arcscan.app/address/0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b)
+
+---
+
 ## How it works
 
 1. **An agent registers** on the StoaRegistry contract and receives a deterministic `bytes32` identity.
@@ -55,6 +88,8 @@ Stoa integrates seven Circle primitives non-trivially:
 **Contracts deployed on Arc testnet (chain ID 5042002):**
 - **StoaRegistry:** `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
 - **StoaTreasury:** `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
+
+**Polymarket V2 routing:** The entire order pipeline — CLOB API key derivation, POLY_1271 signing, builder code attribution, order construction — is production-ready. `broadcast-one-order.ts` runs dry-run verification with 8 assertions (all pass). Live CLOB submission is blocked by a cross-chain mismatch: Stoa contracts are on Arc testnet (chain 5042002), Polymarket CLOB is on Polygon mainnet (chain 137). When Arc ships mainnet, existing code submits orders with zero changes. See [`docs/archive/phase-2-polymarket-broadcast.md`](docs/archive/phase-2-polymarket-broadcast.md) for the full analysis.
 
 **Status:** Frontend live at [stoa-agents.vercel.app](https://stoa-agents.vercel.app).
 

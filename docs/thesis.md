@@ -4,7 +4,7 @@
 
 In May 2026, three primitives that had nothing to do with each other landed close enough together to suggest they did. On April 25, Tauric Research shipped TradingAgents v0.2.4 with structured JSON outputs at three reasoning layers. Three days later, Polymarket migrated to CLOB V2, adding a `builder` field of type `bytes32` to the order struct and a per-fill fee mechanism allowing up to 100 bps taker and 50 bps maker attribution. The week after, Circle's Arc testnet crossed 244 million transactions in its public testing window, with USDC-denominated gas holding stable at the one-cent target. Each of these is independently interesting. Together they make a thing that did not exist before: an economical home for the reasoning trace.
 
-Canteen's May 1 essay, *Unbundling the Prediction Market Stack*, named the convergence. They observed that the same `bytes32` attribution slot was appearing in three independent venues — Polymarket V2, Hyperliquid HIP-3, and Pump.fun's `BREAKING_FEE_RECIPIENT` upgrade — and that the pattern was a generalized agent-identity primitive looking for a substrate. The essay closed with a question rather than a product: what does the trace become when it has an on-chain identity? Stoa is one possible answer.
+Canteen's May 1 essay, *Unbundling the Prediction Market Stack* ([thecanteenapp.com](https://thecanteenapp.com/analysis/2026/05/01/unbundling-the-prediction-market-stack.html)), named the convergence. They observed that the same `bytes32` attribution slot was appearing in three independent venues — Polymarket V2, Hyperliquid HIP-3, and Pump.fun's `BREAKING_FEE_RECIPIENT` upgrade — and that the pattern was a generalized agent-identity primitive looking for a substrate. The essay closed with a question rather than a product: what does the trace become when it has an on-chain identity? Stoa is one possible answer.
 
 ## The trace as it stood
 
@@ -14,7 +14,7 @@ This is not because the trace lacks value. It is because publication has been un
 
 ## The convergence, technically
 
-Polymarket V2's `matchOrders` function on `CTFExchangeV2` now reads the `builder` field as a 32-byte identifier paired with a basis-point fee schedule per order. The exchange computes the fee at fill time and routes it directly to the registered builder's address. The mechanism is non-custodial — Polymarket never holds builder funds — and atomic, settled in the same Polygon block as the underlying trade. As of mid-May 2026, the top six Polymarket builders collectively control 81% of all third-party volume through this layer, with Betmoar (a Telegram bot) clearing over $12M weekly. The fee economics work. The attribution is on-chain. The matching is venue-native.
+Polymarket V2's `matchOrders` function on `CTFExchangeV2` now reads the `builder` field as a 32-byte identifier paired with a basis-point fee schedule per order. The exchange computes the fee at fill time and routes it directly to the registered builder's address in pUSD (Polymarket's USD stablecoin on Polygon). The mechanism is non-custodial — Polymarket never holds builder funds — and atomic, settled in the same Polygon block as the underlying trade. As of mid-May 2026, the top six Polymarket builders collectively control 81% of all third-party volume through this layer, with Betmoar (a Telegram bot) clearing over $12M weekly. The fee economics work. The attribution is on-chain. The matching is venue-native.
 
 Circle's Arc complements this with the right physics for publication. Sub-second deterministic finality (~780ms in our testnet measurements) means a trace published at the moment of decision is anchored before the user can act. Gas denominated in USDC at approximately $0.01 per transaction means an agent emitting one trace per decision across twenty markets daily costs $0.20 to operate the publication layer. The arithmetic that broke on Ethereum closes on Arc.
 
@@ -22,9 +22,9 @@ The remaining piece is permanence. Trace content is too large for direct on-chai
 
 ## Aristotle, used substantively
 
-In *Nicomachean Ethics* Book V, Aristotle works through what makes exchange possible. His argument is that *all things that are exchanged must be somehow comparable*. Two things become comparable when they share a unit of account — money in the human case, but more fundamentally any common identifier that makes one thing addressable from the location of the other.
+In *Nicomachean Ethics* Book V, Aristotle works through what makes exchange possible. His argument is that *all things that are exchanged must be somehow comparable*. Two things become comparable when they share a unit of account — money in the human case, but more fundamentally any common measure that makes exchange calculable.
 
-A reasoning trace and a trade have not been comparable until now. The trace is a string of text; the trade is a fill on a CLOB. They live in different systems with different identities. The `bytes32` agent identifier is the first identifier that addresses both. When the same `bytes32` appears in a `TracePublished` event on Arc and in the `builder` field of a Polymarket V2 order, the two artifacts become comparable along the dimension that matters: causation. The trace caused the trade, and the trade can pay the trace.
+A reasoning trace and a trade have not been comparable until now. The trace is a string of text; the trade is a fill on a CLOB. They live in different systems with different identities. The `bytes32` agent identifier does not make them comparable in Aristotle's sense — that job belongs to the shared currency (USDC, pUSD). What the `bytes32` does is make them *linkable*. The same identity appears in the `TracePublished` event on Arc and in the `builder` field of a Polymarket V2 order, enabling attribution: the trace caused the trade, and the trade can pay the trace. The `bytes32` is the address; the currency is the measure. Both are necessary.
 
 This is what the agora was. Aristotle in *Politics* VII calls the agora the heart of the city, but the substance of the claim is that the agora is where things become comparable to each other because they are all addressable from the same square. Stoa, the porch, was a place inside this square. Zeno taught there because the foot traffic between transactions made reasoning audible to the people doing the transacting. The architecture of physical proximity made the comparison work.
 
@@ -45,25 +45,25 @@ In fourteen days of building, Stoa shipped:
 
 Real receipts behind each number live in the [project README](../README.md).
 
-## What I'd bet on
-
-Three predictions, each falsifiable within twelve months.
-
-First, every serious trading agent framework will ship with a native `bytes32` identity primitive by Q3 2026. The pattern is not Stoa-specific; it is venue-specific. TradingAgents, Trading-R1, AlpacaTradingAgent, MiroFish, OASIS, and the rest will all eventually expose `agentId` as a first-class export from the SDK because their users will ask for it.
-
-Second, the reasoning trace will become a queryable asset class within eighteen months. Markets will exist on "which agent's reasoning will outperform over the next 30 days," with the underlying signal being the on-chain attribution layer we're describing here. Numerai's tournament structure is the closest analog, but it required centralization; the `bytes32` slot lets the same shape work without a trusted operator.
-
-Third — and this is the one I'm least sure of, but most interested in — the trace itself will become the primary content artifact of agentic finance, and trade execution will become commoditized infrastructure underneath it. The thing humans value, and pay for, is good reasoning. The trade is the proof. We have spent a decade building markets for the proofs while leaving the reasoning to evaporate. Stoa is one bet on inverting that.
-
 ## What I'm still unsure of
 
-Whether agent operators actually want public traces. Trace publication is a credible commitment, but it's also a competitive disclosure. The slashing-bonded copy-trading mechanism from Canteen's research angle #6 may be a necessary complement; without skin in the game, public reasoning is cheap talk. We'll know in three months whether the leaderboard's profit-weighted ranking is enough.
+Whether agent operators actually want public traces. Trace publication is a credible commitment, but it's also a competitive disclosure. Slashing-bonded copy-trading mechanisms may be a necessary complement; without skin in the game, public reasoning is cheap talk. We'll know in three months whether the leaderboard's profit-weighted ranking is enough.
 
 Whether Polymarket's market curation gates the supply of opportunities. Polymarket today curates markets centrally; the long tail of niche events where an agent has real edge may not exist on the venue. Stoa's value compounds as the venue's market count grows. We are betting that the V2 builder economics will pull more market types onto the platform, but this is a venue-side prediction, not a Stoa-side one.
 
 Whether Arc's sub-second finality holds at mainnet load. Our testnet measurements average 780ms. The economics of one-trace-per-decision break above ~3 seconds. We do not yet know what mainnet looks like under real congestion.
 
 These are the kinds of questions you can only answer by shipping. We shipped.
+
+## What I'd bet on
+
+Three predictions, each falsifiable within twelve months.
+
+First, every serious trading agent framework will ship with a native `bytes32` identity primitive by Q3 2026. The pattern is not Stoa-specific; it is venue-specific. TradingAgents, Trading-R1, AlpacaTradingAgent, MiroFish, OASIS, and the rest will all eventually expose `agentId` as a first-class export from the SDK because their users will ask for it.
+
+Second, the reasoning trace will become a queryable asset class within twelve months. Markets will exist on "which agent's reasoning will outperform over the next 30 days," with the underlying signal being the on-chain attribution layer we're describing here. Numerai's tournament structure is the closest analog, but it required centralization; the `bytes32` slot lets the same shape work without a trusted operator.
+
+Third — and this is the one I'm least sure of, but most interested in — within twelve months, the trace itself will become the primary content artifact of agentic finance, and trade execution will become commoditized infrastructure underneath it. The thing humans value, and pay for, is good reasoning. The trade is the proof. We have spent a decade building markets for the proofs while leaving the reasoning to evaporate. Stoa is one bet on inverting that.
 
 ---
 

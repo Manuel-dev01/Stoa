@@ -7,7 +7,7 @@ export const TraceSchema = z.object({
   generatedAt: z.string().datetime(),
   market: z.object({
     question: z.string(),
-    venue: z.literal('polymarket'),
+    venue: z.enum(['polymarket', 'kalshi']),
     resolutionAt: z.string().datetime().nullable(),
   }),
   reasoning: z.object({

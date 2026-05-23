@@ -8,7 +8,7 @@
 
 ## What works (live on-chain)
 
-StoaTreasury is deployed on Arc testnet at `0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18`. The full deposit/value/redeem cycle executed live with real USDC:
+StoaTreasury is deployed on Arc testnet at `0x7408923341F0ab2d66084f5a1957a9bFf0346360`. The full deposit/value/redeem cycle executed live with real USDC:
 
 1. **Approve** — deployer approved 1 USDC for the treasury  
    Tx: `0xc07fc49231ea57c967da5a4b92ea6da8c365085b41b8ed23248c340a96393597`
@@ -105,7 +105,7 @@ The treasury works. The vault doesn't meet the treasury's standards. That's the 
 The yield vault blocker persists — Circle's testnet USYC still doesn't implement `asset()`.
 
 What changed: the treasury features are now fully wired on the frontend. `NEXT_PUBLIC_STOA_TREASURY_ADDRESS` was missing from `apps/web/.env.local` and Vercel, causing the treasury stat card to show "--" on all agent pages. Fixed:
-- Added to `apps/web/.env.local` with value `0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18`
+- Added to `apps/web/.env.local` with value `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
 - Added to Vercel production env vars
 - Reconciled local `apps/web/src/lib/shared/addresses.ts` (had `address(0)`) with `packages/shared/src/addresses.ts` (had correct address)
 
@@ -129,7 +129,7 @@ Verified live on Arc testnet via `cast call`:
 
 **Zero code changes to StoaTreasury.sol needed.** `setYieldVault(0x9fdF14c5B14173D74C08Af27AebFf39240dC105A)` will pass the `asset() == usdc` check.
 
-**Remaining blocker:** The treasury contract (`0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18`) must be allowlisted on the Entitlements contract (`0xcc205224862c7641930c87679e98999d23c26113`) before the Teller accepts deposit/redeem calls. USYC Hackathon Access Form submitted; email drafted to customer-support@circle.com. Expected turnaround: 24-48 hours.
+**Remaining blocker:** The treasury contract (`0x7408923341F0ab2d66084f5a1957a9bFf0346360`) must be allowlisted on the Entitlements contract (`0xcc205224862c7641930c87679e98999d23c26113`) before the Teller accepts deposit/redeem calls. USYC Hackathon Access Form submitted; email drafted to customer-support@circle.com. Expected turnaround: 24-48 hours.
 
 ---
 

@@ -18,7 +18,7 @@ Circle App Kit integration written. Module resolves, `AppKit` class instantiates
 
 Original treasury deploy (`0xe8eB3a...`) had USDC set to `address(0)` because the `USDC_ARC_ADDRESS` env var wasn't configured in the deploy script. Redeployed with correct USDC address:
 
-- **New address:** `0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18`
+- **New address:** `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
 - **Subscribe tx:** `0xcc2bc262b5a48f1b41c588d564e013ce21037358d5ac664d5995388347ed4669` (block 43297083)
 - **Redeem tx:** `0xbfc7cd117f28fdfec13326cad5ddda3f4173aeb1bfd82764dc61f60eef8eb965` (block 43297156)
 - `agentValue()` confirmed 1 USDC after subscribe, 0 after redeem

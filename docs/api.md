@@ -272,6 +272,24 @@ All loaded from `apps/agent/.env.local` via pydantic-settings:
 | `SUPABASE_URL` | no | — | Supabase project URL (for state rehydration + agent wallets) |
 | `SUPABASE_SERVICE_ROLE_KEY` | no | — | Supabase service role key |
 
+### Polymarket Environment Variables (frontend / API routes)
+
+These are server-side only (never exposed to the browser). Set in `apps/web/.env.local` and Vercel project settings:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `POLYMARKET_API_KEY` | yes | CLOB API key (derived via `setup-clob-keys.ts`) |
+| `POLYMARKET_API_SECRET` | yes | CLOB API secret |
+| `POLYMARKET_API_PASSPHRASE` | yes | CLOB API passphrase |
+| `POLYMARKET_PRIVATE_KEY` | yes | Private key for order signing (operator EOA) |
+| `POLYMARKET_BUILDER_CODE` | yes | Registered builder code (bytes32) |
+| `POLYMARKET_AGENT_API_KEY` | for agent orders | Agent EOA's CLOB API key |
+| `POLYMARKET_AGENT_API_SECRET` | for agent orders | Agent EOA's CLOB API secret |
+| `POLYMARKET_AGENT_API_PASSPHRASE` | for agent orders | Agent EOA's CLOB API passphrase |
+| `RELAYER_API_KEY` | for proxy deployment | Polymarket relayer API key |
+| `RELAYER_API_KEY_ADDRESS` | for proxy deployment | EOA address associated with relayer key |
+| `POLYGON_RPC` | no | Polygon RPC URL (default: public RPC) |
+
 ### Error Classes
 
 All inherit from `StoaError`:
@@ -379,7 +397,7 @@ event Redeemed(bytes32 indexed agentId, uint256 shares, uint256 assets, uint256 
 ### Addresses
 
 ```typescript
-import { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC } from '@stoa/shared'
+import { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC, ARC_USYC_TELLER } from '@stoa/shared'
 // or from Python:
 // settings.stoa_registry_address
 ```
@@ -391,6 +409,8 @@ import { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC } from '@stoa/shared'
 | `ARC_USDC` | `0x3600000000000000000000000000000000000000` |
 | `ARC_USYC` | `0xe9185F0c5F296Ed1797AaE4238D26CCaBEadb86C` |
 | `ARC_USYC_TELLER` | `0x9fdF14c5B14173D74C08Af27AebFf39240dC105A` |
+
+The USYC Teller is the actual ERC-4626 vault to interact with (not the USYC token). `asset()` returns USDC, `convertToAssets()` returns the current exchange rate (~1.116 USDC per USYC, ~11.6% yield accrued). The treasury contract must be allowlisted on the Entitlements contract before deposit/redeem calls succeed.
 
 ---
 
@@ -460,3 +480,35 @@ Fetches active markets. Used by the autonomous loop and `getMarketTokenIds()`.
 **Response:** array of market objects with `condition_id`, `question`, `outcomes` (JSON string), `liquidity`, `end_date`, etc.
 
 **Limitations:** The `/markets` endpoint silently ignores `condition_id` as a query filter and caps results at 100 per page. `get_market()` in Python paginates up to 500 markets and filters client-side. There is no lookup-by-condition-id endpoint.
+
+---
+
+## Polymarket V2 Order Routing
+
+The Polymarket routing pipeline builds signed CLOB V2 orders with the agent's `bytes32` in the builder slot. This enables builder fee attribution — up to 0.5% taker / 0.25% maker fees accrue to the agent's wallet in pUSD.
+
+### Architecture
+
+- **Signing:** POLY_1271 (signature type 3) — both `maker` and `signer` are set to the deposit wallet address
+- **Builder code:** `0xb4ac2a08f05f338f7f44db453902ad8ed287ca352047051d543152a96dcd66e6` (registered on Polymarket)
+- **Deposit wallet:** `0xC9dC89f3f15E02319Eea18647b2Daa8Fb1D87A1a` (EIP-1167 proxy on Polygon)
+- **CTFExchangeV2:** `0xE111180000d2663C0091e4f400237545B87B996B` (Polygon mainnet)
+- **pUSD:** `0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB` (Polygon mainnet collateral token)
+
+### Status
+
+Production-ready. All 8 signing assertions pass in dry-run mode (`broadcast-one-order.ts`). Live CLOB submission blocked by cross-chain mismatch: Stoa contracts on Arc testnet (5042002), Polymarket CLOB on Polygon mainnet (137). When Arc ships mainnet, existing code submits orders with zero changes.
+
+### API Route
+
+`POST /api/route-order` — server-side order construction. Secrets never reach the browser. Returns a signed order payload in dry-run mode by default.
+
+```typescript
+// From the frontend
+const res = await fetch('/api/route-order', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ tokenId, side, price, size }),
+})
+const { order } = await res.json()
+```
