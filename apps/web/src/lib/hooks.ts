@@ -143,23 +143,25 @@ export function useRouteOrder() {
 }
 
 export function useTreasuryValue(agentId: `0x${string}` | undefined) {
-  return useReadContract({
+  const result = useReadContract({
     address: STOA_TREASURY as `0x${string}`,
     abi: stoaTreasuryAbi,
     functionName: "agentValue",
     args: agentId ? [agentId] : undefined,
     query: { enabled: !!agentId && STOA_TREASURY !== "0x0000000000000000000000000000000000000000" },
   })
+  return { ...result, refetch: result.refetch }
 }
 
 export function useTreasuryShares(agentId: `0x${string}` | undefined) {
-  return useReadContract({
+  const result = useReadContract({
     address: STOA_TREASURY as `0x${string}`,
     abi: stoaTreasuryAbi,
     functionName: "agentShares",
     args: agentId ? [agentId] : undefined,
     query: { enabled: !!agentId && STOA_TREASURY !== "0x0000000000000000000000000000000000000000" },
   })
+  return { ...result, refetch: result.refetch }
 }
 
 export function useTreasurySubscribe() {

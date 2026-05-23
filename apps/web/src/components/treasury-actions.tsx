@@ -5,9 +5,7 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagm
 import { erc20Abi, parseUnits, formatUnits } from "viem"
 import { Button } from "@/components/ui/button"
 import { useTreasurySubscribe, useTreasuryRedeem, useTreasuryValue, useTreasuryShares } from "@/lib/hooks"
-
-const ARC_USDC = "0x3600000000000000000000000000000000000000" as const
-const STOA_TREASURY = (process.env.NEXT_PUBLIC_STOA_TREASURY_ADDRESS || "0x0000000000000000000000000000000000000000") as `0x${string}`
+import { ARC_USDC, STOA_TREASURY } from "@/lib/shared/addresses"
 
 interface TreasuryActionsProps {
   agentId: `0x${string}`
@@ -17,8 +15,8 @@ interface TreasuryActionsProps {
 export function TreasuryActions({ agentId, agentOwner }: TreasuryActionsProps) {
   const { address, isConnected } = useAccount()
   const isOwner = address && agentOwner && address.toLowerCase() === agentOwner.toLowerCase()
-  const { data: treasuryValue } = useTreasuryValue(agentId)
-  const { data: treasuryShares } = useTreasuryShares(agentId)
+  const { data: treasuryValue, refetch: refetchValue } = useTreasuryValue(agentId)
+  const { data: treasuryShares, refetch: refetchShares } = useTreasuryShares(agentId)
   const { subscribe, isPending: isSubscribing } = useTreasurySubscribe()
   const { redeem, isPending: isRedeeming } = useTreasuryRedeem()
 
@@ -54,6 +52,8 @@ export function TreasuryActions({ agentId, agentOwner }: TreasuryActionsProps) {
 
       setStatus("done")
       setAmount("")
+      refetchValue()
+      refetchShares()
     } catch (e) {
       setStatus("error")
       setError(e instanceof Error ? e.message : "Transaction failed")
@@ -70,6 +70,8 @@ export function TreasuryActions({ agentId, agentOwner }: TreasuryActionsProps) {
       await redeem(agentId, parsedShares)
       setStatus("done")
       setAmount("")
+      refetchValue()
+      refetchShares()
     } catch (e) {
       setStatus("error")
       setError(e instanceof Error ? e.message : "Transaction failed")

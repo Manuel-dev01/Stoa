@@ -6,8 +6,9 @@ from datetime import datetime, timezone
 
 import httpx
 
-from stoa_agent.chain.client import ArcClient
+from stoa_agent.chain.client import create_client
 from stoa_agent.config import Settings
+from stoa_agent.storage.supabase import get_agent_wallet
 from stoa_agent.errors import (
     ArcSubmitError,
     GammaApiError,
@@ -44,12 +45,29 @@ class AgentLoop:
         self._min_liquidity = min_liquidity
         self._min_confidence_bps = min_confidence_bps
         self._max_markets = max_markets_per_cycle
-        self._arc_client = ArcClient(settings)
+        self._arc_client = create_client(settings)
         self._published: set[str] = set()
         self._cycle_count = 0
+        self._agent_wallet_id: str | None = None  # resolved on first cycle
+
+    def _resolve_agent_wallet(self) -> None:
+        """Look up per-agent Circle wallet from Supabase. Cached for the session."""
+        agent_id = self._settings.agent_id
+        if not agent_id or not self._settings.use_circle_wallets:
+            return
+        try:
+            wallet = get_agent_wallet(self._settings, agent_id)
+            if wallet:
+                self._agent_wallet_id = wallet["wallet_id"]
+                _log(f"Using per-agent Circle wallet: {self._agent_wallet_id}")
+            else:
+                _log("No per-agent wallet found, using global CIRCLE_WALLET_ID.")
+        except Exception as e:
+            _log(f"Warning: Could not look up agent wallet: {e}")
 
     async def run(self) -> None:
         await self._load_state()
+        self._resolve_agent_wallet()
         _log(f"Agent {self._settings.agent_id} starting. {len(self._published)} markets already published.")
         _log(f"Config: interval={self._interval}s, min_confidence={self._min_confidence_bps / 100:.0f}%, max_markets={self._max_markets}")
 
@@ -157,14 +175,20 @@ class AgentLoop:
         trace_hash = compute_trace_hash(trace_dict)
 
         try:
-            arc_tx = await asyncio.to_thread(
-                self._arc_client.publish_trace,
+            publish_kwargs: dict = dict(
                 agent_id=self._settings.agent_id,
                 market_id=market.condition_id,
                 trace_hash=trace_hash,
                 rating=inference["rating"],
                 confidence_bps=inference["confidence_bps"],
                 irys_receipt=irys_receipt,
+            )
+            if self._agent_wallet_id:
+                publish_kwargs["wallet_id"] = self._agent_wallet_id
+
+            arc_tx = await asyncio.to_thread(
+                self._arc_client.publish_trace,
+                **publish_kwargs,
             )
             _log(f"Arc tx: {arc_tx}")
         except ArcSubmitError as e:

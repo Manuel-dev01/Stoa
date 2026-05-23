@@ -10,10 +10,18 @@ class Settings(BaseSettings):
     irys_node_url: str = "https://devnet.irys.xyz"
     irys_token: str = "matic"
     irys_provider_url: str = "https://rpc-amoy.polygon.technology"
-    agent_private_key: str
+    agent_private_key: str = ""
     arc_testnet_rpc: str
     stoa_registry_address: str
+    stoa_treasury_address: str = ""
     agent_id: str | None = None
+
+    # Circle Wallets (Programmable Wallets / W3S)
+    use_circle_wallets: bool = False
+    circle_api_key: str = ""
+    circle_entity_secret: str = ""
+    circle_wallet_id: str = ""
+    circle_wallet_set_id: str = ""
 
     # Autonomous loop configuration
     loop_interval_seconds: int = 600

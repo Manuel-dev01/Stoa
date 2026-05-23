@@ -2,25 +2,24 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import os
 import sys
 from datetime import datetime, timezone
 
 
 def cmd_register(args: argparse.Namespace) -> None:
-    from stoa_agent.chain.client import ArcClient
+    from stoa_agent.chain.client import create_client
     from stoa_agent.config import load_settings
 
     settings = load_settings()
-    client = ArcClient(settings)
+    client = create_client(settings)
     agent_id = client.register_agent()
     print(f"Agent ID: {agent_id}")
     print("Copy this into .env.local as AGENT_ID, then restart the service.")
 
 
 def cmd_publish_trace(args: argparse.Namespace) -> None:
-    from stoa_agent.chain.client import ArcClient
+    from stoa_agent.chain.client import create_client
     from stoa_agent.config import load_settings
     from stoa_agent.errors import GammaApiError, IrysUploadError, ArcSubmitError, TradingAgentsInferenceError, MarketIdMismatchError, MarketNotFoundError
     from stoa_agent.polymarket.gamma import get_market
@@ -96,7 +95,7 @@ def cmd_publish_trace(args: argparse.Namespace) -> None:
 
     # 6. Publish to Arc
     print("Publishing to Arc...")
-    arc_client = ArcClient(settings)
+    arc_client = create_client(settings)
     try:
         arc_tx_hash = arc_client.publish_trace(
             agent_id=settings.agent_id,
@@ -116,6 +115,202 @@ def cmd_publish_trace(args: argparse.Namespace) -> None:
     print(f"irys_receipt: {irys_receipt}")
     print(f"arc_tx_hash: {arc_tx_hash}")
     print(f"irys_url: https://gateway.irys.xyz/{irys_receipt}")
+
+
+def cmd_circle_setup(args: argparse.Namespace) -> None:
+    """Create a Circle wallet set and wallet for the agent."""
+    from stoa_agent.chain.circle_client import create_circle_wallet
+    from stoa_agent.config import load_settings
+
+    settings = load_settings()
+    if not settings.circle_api_key or not settings.circle_entity_secret:
+        print("Error: CIRCLE_API_KEY and CIRCLE_ENTITY_SECRET must be set in .env.local", file=sys.stderr)
+        sys.exit(1)
+
+    agent_id = getattr(args, "agent_id", None)
+
+    wallet_set_id = settings.circle_wallet_set_id or None
+
+    if not wallet_set_id:
+        print("Creating wallet set...")
+    else:
+        print(f"Using existing wallet set: {wallet_set_id}")
+
+    print("Creating wallet on ARC-TESTNET...")
+    result = create_circle_wallet(
+        api_key=settings.circle_api_key,
+        entity_secret=settings.circle_entity_secret,
+        wallet_set_id=wallet_set_id,
+    )
+
+    print(f"\nWallet created successfully!")
+    print(f"  Wallet ID:     {result['wallet_id']}")
+    print(f"  Address:       {result['address']}")
+    print(f"  Wallet Set ID: {result['wallet_set_id']}")
+
+    if agent_id:
+        # Per-agent wallet: store mapping in Supabase
+        from stoa_agent.storage.supabase import save_agent_wallet
+        try:
+            save_agent_wallet(settings, agent_id, result["wallet_id"], result["address"])
+            print(f"\nPer-agent wallet stored in Supabase for agent {agent_id}")
+        except Exception as e:
+            print(f"\nWarning: Could not store wallet in Supabase: {e}", file=sys.stderr)
+            print("Manually add CIRCLE_WALLET_ID to .env.local if needed.")
+    else:
+        print(f"\nAdd these to apps/agent/.env.local:")
+        print(f"  CIRCLE_WALLET_ID={result['wallet_id']}")
+        print(f"  CIRCLE_WALLET_SET_ID={result['wallet_set_id']}")
+        print(f"  USE_CIRCLE_WALLETS=true")
+
+
+def cmd_circle_balance(args: argparse.Namespace) -> None:
+    """Check the USDC balance of the Circle-managed agent wallet."""
+    from stoa_agent.chain.circle_client import get_circle_balance
+    from stoa_agent.config import load_settings
+
+    settings = load_settings()
+    if not settings.circle_api_key:
+        print("Error: CIRCLE_API_KEY must be set in .env.local", file=sys.stderr)
+        sys.exit(1)
+    if not settings.circle_wallet_id:
+        print("Error: CIRCLE_WALLET_ID not set. Run 'circle-setup' first.", file=sys.stderr)
+        sys.exit(1)
+
+    balances = get_circle_balance(settings.circle_api_key, settings.circle_wallet_id)
+    if not balances:
+        print("No token balances found.")
+        return
+
+    print(f"Wallet {settings.circle_wallet_id}:")
+    for b in balances:
+        print(f"  {b['symbol']}: {b['amount']}")
+
+
+def _resolve_wallet_id(settings, agent_id: str | None) -> str:
+    """Resolve the Circle wallet ID for an agent. Checks Supabase first, falls back to env."""
+    if agent_id:
+        from stoa_agent.storage.supabase import get_agent_wallet
+        wallet = get_agent_wallet(settings, agent_id)
+        if wallet:
+            return wallet["wallet_id"]
+    if settings.circle_wallet_id:
+        return settings.circle_wallet_id
+    print("Error: No Circle wallet found. Run 'circle-setup' first.", file=sys.stderr)
+    sys.exit(1)
+
+
+def cmd_circle_subscribe(args: argparse.Namespace) -> None:
+    """Subscribe (deposit) USDC into an agent's treasury via Circle wallet."""
+    from stoa_agent.chain.circle_client import CircleArcClient
+    from stoa_agent.config import load_settings
+
+    settings = load_settings()
+    if not settings.circle_api_key:
+        print("Error: CIRCLE_API_KEY must be set in .env.local", file=sys.stderr)
+        sys.exit(1)
+    if not settings.stoa_treasury_address:
+        print("Error: STOA_TREASURY_ADDRESS must be set in .env.local", file=sys.stderr)
+        sys.exit(1)
+
+    agent_id = args.agent_id
+    amount_usdc = args.amount
+    amount_wei = int(amount_usdc * 1_000_000)  # USDC has 6 decimals
+
+    wallet_id = _resolve_wallet_id(settings, agent_id)
+    print(f"Using Circle wallet: {wallet_id}")
+
+    client = CircleArcClient(settings)
+    treasury = settings.stoa_treasury_address
+
+    def _hex(v: str) -> str:
+        return v if v.startswith("0x") else f"0x{v}"
+
+    # Step 1: Approve USDC
+    print(f"Approving {amount_usdc} USDC for treasury...")
+    approve_hash = client.execute_on_contract(
+        contract_address="0x3600000000000000000000000000000000000000",
+        function_signature="approve(address,uint256)",
+        parameters=[treasury, str(amount_wei)],
+        wallet_id=wallet_id,
+    )
+    print(f"  Approve tx: {approve_hash}")
+
+    # Step 2: Subscribe
+    print(f"Subscribing {amount_usdc} USDC to agent {agent_id}...")
+    subscribe_hash = client.execute_on_contract(
+        contract_address=treasury,
+        function_signature="subscribe(bytes32,uint256)",
+        parameters=[_hex(agent_id), str(amount_wei)],
+        wallet_id=wallet_id,
+    )
+    print(f"  Subscribe tx: {subscribe_hash}")
+    print(f"\nDeposited {amount_usdc} USDC into treasury for agent {agent_id}")
+
+
+def cmd_circle_redeem(args: argparse.Namespace) -> None:
+    """Redeem shares from an agent's treasury via Circle wallet."""
+    from stoa_agent.chain.circle_client import CircleArcClient
+    from stoa_agent.config import load_settings
+
+    settings = load_settings()
+    if not settings.circle_api_key:
+        print("Error: CIRCLE_API_KEY must be set in .env.local", file=sys.stderr)
+        sys.exit(1)
+    if not settings.stoa_treasury_address:
+        print("Error: STOA_TREASURY_ADDRESS must be set in .env.local", file=sys.stderr)
+        sys.exit(1)
+
+    agent_id = args.agent_id
+    shares = args.shares
+    shares_wei = int(shares * 1_000_000)
+
+    wallet_id = _resolve_wallet_id(settings, agent_id)
+    print(f"Using Circle wallet: {wallet_id}")
+
+    client = CircleArcClient(settings)
+
+    def _hex(v: str) -> str:
+        return v if v.startswith("0x") else f"0x{v}"
+
+    print(f"Redeeming {shares} shares from agent {agent_id}...")
+    redeem_hash = client.execute_on_contract(
+        contract_address=settings.stoa_treasury_address,
+        function_signature="redeem(bytes32,uint256)",
+        parameters=[_hex(agent_id), str(shares_wei)],
+        wallet_id=wallet_id,
+    )
+    print(f"  Redeem tx: {redeem_hash}")
+    print(f"\nRedeemed {shares} shares from treasury for agent {agent_id}")
+
+
+def cmd_circle_treasury(args: argparse.Namespace) -> None:
+    """View an agent's treasury value and shares."""
+    from web3 import Web3
+
+    from stoa_agent.chain.abis import STOA_TREASURY_ABI
+    from stoa_agent.config import load_settings
+
+    settings = load_settings()
+    if not settings.stoa_treasury_address:
+        print("Error: STOA_TREASURY_ADDRESS must be set in .env.local", file=sys.stderr)
+        sys.exit(1)
+
+    agent_id = args.agent_id
+
+    w3 = Web3(Web3.HTTPProvider(settings.arc_testnet_rpc))
+    treasury = w3.eth.contract(
+        address=Web3.to_checksum_address(settings.stoa_treasury_address),
+        abi=STOA_TREASURY_ABI,
+    )
+
+    agent_id_bytes = bytes.fromhex(agent_id[2:] if agent_id.startswith("0x") else agent_id)
+    value = treasury.functions.agentValue(agent_id_bytes).call()
+    shares = treasury.functions.agentShares(agent_id_bytes).call()
+
+    print(f"Agent: {agent_id}")
+    print(f"  Treasury value: ${value / 1_000_000:.2f} USDC")
+    print(f"  Shares: {shares / 1_000_000:.6f}")
 
 
 def cmd_autonomous(args: argparse.Namespace) -> None:
@@ -164,6 +359,22 @@ def main() -> None:
     auto_parser.add_argument("--min-confidence", type=int, default=None, help="Minimum confidence BPS to publish")
     auto_parser.add_argument("--max-markets", type=int, default=None, help="Max markets per cycle")
 
+    circle_setup_parser = sub.add_parser("circle-setup", help="Create a Circle wallet set and wallet for the agent")
+    circle_setup_parser.add_argument("--agent-id", default=None, help="Create a per-agent wallet (stored in Supabase)")
+
+    sub.add_parser("circle-balance", help="Check USDC balance of the Circle-managed wallet")
+
+    circle_subscribe_parser = sub.add_parser("circle-subscribe", help="Deposit USDC into an agent's treasury via Circle wallet")
+    circle_subscribe_parser.add_argument("--agent-id", required=True, help="Agent ID (0x...)")
+    circle_subscribe_parser.add_argument("--amount", type=float, required=True, help="Amount in USDC")
+
+    circle_redeem_parser = sub.add_parser("circle-redeem", help="Redeem shares from an agent's treasury via Circle wallet")
+    circle_redeem_parser.add_argument("--agent-id", required=True, help="Agent ID (0x...)")
+    circle_redeem_parser.add_argument("--shares", type=float, required=True, help="Number of shares to redeem")
+
+    circle_treasury_parser = sub.add_parser("circle-treasury", help="View an agent's treasury value and shares")
+    circle_treasury_parser.add_argument("--agent-id", required=True, help="Agent ID (0x...)")
+
     args = parser.parse_args()
 
     if args.command == "register":
@@ -172,6 +383,16 @@ def main() -> None:
         cmd_publish_trace(args)
     elif args.command == "autonomous":
         cmd_autonomous(args)
+    elif args.command == "circle-setup":
+        cmd_circle_setup(args)
+    elif args.command == "circle-balance":
+        cmd_circle_balance(args)
+    elif args.command == "circle-subscribe":
+        cmd_circle_subscribe(args)
+    elif args.command == "circle-redeem":
+        cmd_circle_redeem(args)
+    elif args.command == "circle-treasury":
+        cmd_circle_treasury(args)
     else:
         parser.print_help()
         sys.exit(1)

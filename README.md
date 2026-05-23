@@ -36,10 +36,27 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 | Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui |
 | Wallets | Wagmi v2 + Viem v2 (user), Circle Wallets API (agent treasury) |
 
-**Status:** Day 4 of 14. Phase 2 of 4. Frontend live at [web-manuel-dev01s-projects.vercel.app](https://stoa-agents.vercel.app).
+---
 
-Contracts deployed on Arc testnet (chain ID 5042002):
+## Circle Developer Platform — Tools Used
+
+Stoa integrates seven Circle primitives non-trivially:
+
+| Tool | How it's used | Status |
+|------|--------------|--------|
+| **Arc** | Settlement chain — all contracts deployed here, sub-second finality, ~$0.01 USDC gas | Live on testnet |
+| **USDC** | Native gas token on Arc, treasury deposit/redeem asset, unit of account for builder fees | Live on testnet |
+| **Wallets** | Agent treasury management via Programmable Wallets — Circle holds keys, signs/broadcasts transactions on Arc. Per-agent wallets stored in Supabase. CLI for subscribe/redeem. | Live (direct REST API via httpx) |
+| **USYC** | Idle treasury yield via ERC-4626 Teller contract (~11.6% APY accrued, ~$1.49M TVL) | Code complete, allowlisting pending |
+| **App Kit** | Cross-chain USDC bridge from Polygon/Base/Arbitrum/Ethereum to Arc via CCTP V2 | Working (confirmed from browser) |
+| **CCTP V2** | Underlying bridge mechanism — burn on source chain, attest, mint on Arc | Working (via App Kit) |
+| **Paymaster** | Built and tested, then deliberately removed — Arc uses USDC natively for gas, making Paymaster redundant | Not needed on Arc |
+
+**Contracts deployed on Arc testnet (chain ID 5042002):**
 - **StoaRegistry:** `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
+- **StoaTreasury:** `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
+
+**Status:** Frontend live at [stoa-agents.vercel.app](https://stoa-agents.vercel.app).
 
 ---
 
@@ -64,6 +81,33 @@ cd packages/contracts && forge build && cd ../..
 # Set POLYMARKET_PRIVATE_KEY in .env.local first, then:
 npx tsx scripts/setup-clob-keys.ts
 ```
+
+### Set up Circle Wallets (optional — agent treasury management)
+
+```bash
+cd apps/agent
+# Set CIRCLE_API_KEY, CIRCLE_ENTITY_SECRET, and STOA_TREASURY_ADDRESS in .env.local first, then:
+
+# Create a global Circle wallet (for agent registration + trace publication)
+uv run python -m stoa_agent.cli circle-setup
+
+# Or create a per-agent wallet (stored in Supabase agent_wallets table)
+uv run python -m stoa_agent.cli circle-setup --agent-id 0x<agent_id>
+
+# Check USDC balance
+uv run python -m stoa_agent.cli circle-balance
+
+# View an agent's treasury value and shares
+uv run python -m stoa_agent.cli circle-treasury --agent-id 0x<agent_id>
+
+# Deposit USDC into an agent's treasury (approve + subscribe)
+uv run python -m stoa_agent.cli circle-subscribe --agent-id 0x<agent_id> --amount 10
+
+# Redeem shares from an agent's treasury (requires agent owner wallet)
+uv run python -m stoa_agent.cli circle-redeem --agent-id 0x<agent_id> --shares 5
+```
+
+Set `USE_CIRCLE_WALLETS=true` in `.env.local` to use Circle-managed wallets instead of raw private keys. The `circle-setup` command creates a wallet on ARC-TESTNET and prints the wallet ID — add it as `CIRCLE_WALLET_ID` in `.env.local`.
 
 ### Run the agent service
 

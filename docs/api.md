@@ -198,6 +198,52 @@ uv run python -m stoa_agent.cli autonomous \
 
 The loop persists its published-market-ID set to Supabase across restarts. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` to enable.
 
+#### `circle-setup`
+
+Creates a Circle wallet set and wallet on ARC-TESTNET. Without `--agent-id`, creates a global wallet (add `CIRCLE_WALLET_ID` to `.env.local`). With `--agent-id`, creates a per-agent wallet and stores the mapping in Supabase.
+
+```bash
+# Global wallet
+uv run python -m stoa_agent.cli circle-setup
+
+# Per-agent wallet
+uv run python -m stoa_agent.cli circle-setup --agent-id 0x<agent_id>
+```
+
+#### `circle-balance`
+
+Checks the USDC balance of the global Circle wallet.
+
+```bash
+uv run python -m stoa_agent.cli circle-balance
+```
+
+#### `circle-treasury`
+
+Reads an agent's treasury value and share count via web3 view calls (no Circle wallet needed).
+
+```bash
+uv run python -m stoa_agent.cli circle-treasury --agent-id 0x<agent_id>
+```
+
+#### `circle-subscribe`
+
+Deposits USDC into an agent's treasury via Circle wallet. Executes USDC `approve` + `StoaTreasury.subscribe()` as two sequential contract calls.
+
+```bash
+uv run python -m stoa_agent.cli circle-subscribe --agent-id 0x<agent_id> --amount 10.5
+```
+
+Resolves the Circle wallet from Supabase (per-agent) or falls back to `CIRCLE_WALLET_ID`.
+
+#### `circle-redeem`
+
+Redeems shares from an agent's treasury via Circle wallet. Calls `StoaTreasury.redeem()`. Requires the Circle wallet to be the agent's registered owner (the wallet that called `registerAgent`).
+
+```bash
+uv run python -m stoa_agent.cli circle-redeem --agent-id 0x<agent_id> --shares 5
+```
+
 ### Environment Variables
 
 All loaded from `apps/agent/.env.local` via pydantic-settings:
@@ -205,19 +251,25 @@ All loaded from `apps/agent/.env.local` via pydantic-settings:
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DEEPSEEK_API_KEY` | yes | — | DeepSeek API key (via litellm) |
-| `AGENT_PRIVATE_KEY` | yes | — | EOA private key for Arc transactions |
+| `AGENT_PRIVATE_KEY` | when `USE_CIRCLE_WALLETS=false` | — | EOA private key for Arc transactions |
 | `IRYS_PRIVATE_KEY` | yes | — | Private key for Irys uploads |
 | `ARC_TESTNET_RPC` | yes | — | Arc testnet RPC URL |
 | `STOA_REGISTRY_ADDRESS` | yes | — | Deployed StoaRegistry address |
+| `STOA_TREASURY_ADDRESS` | for treasury CLI | — | Deployed StoaTreasury address |
 | `AGENT_ID` | no | — | Registered agent bytes32 (from `register`) |
 | `IRYS_NODE_URL` | no | `https://devnet.irys.xyz` | Irys node URL |
 | `IRYS_TOKEN` | no | `matic` | Irys payment token |
 | `IRYS_PROVIDER_URL` | no | `https://rpc-amoy.polygon.technology` | Irys provider RPC |
+| `USE_CIRCLE_WALLETS` | no | `false` | Set to `true` to use Circle Wallets instead of raw private keys |
+| `CIRCLE_API_KEY` | when Circle enabled | — | Circle API key (from developers.circle.com) |
+| `CIRCLE_ENTITY_SECRET` | when Circle enabled | — | Circle entity secret (32-byte hex, registered in Circle console) |
+| `CIRCLE_WALLET_ID` | when Circle enabled | — | Circle wallet UUID (from `circle-setup`) |
+| `CIRCLE_WALLET_SET_ID` | no | — | Circle wallet set UUID (created by `circle-setup` if not set) |
 | `LOOP_INTERVAL_SECONDS` | no | 600 | Autonomous loop interval |
 | `LOOP_MIN_LIQUIDITY` | no | 5000 | Minimum market liquidity to consider |
 | `LOOP_MIN_CONFIDENCE_BPS` | no | 5000 | Minimum confidence to publish (50%) |
 | `LOOP_MAX_MARKETS_PER_CYCLE` | no | 3 | Markets per cycle |
-| `SUPABASE_URL` | no | — | Supabase project URL (for state rehydration) |
+| `SUPABASE_URL` | no | — | Supabase project URL (for state rehydration + agent wallets) |
 | `SUPABASE_SERVICE_ROLE_KEY` | no | — | Supabase service role key |
 
 ### Error Classes
@@ -289,7 +341,7 @@ event TracePublished(
 );
 ```
 
-### StoaTreasury — `0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18`
+### StoaTreasury — `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
 
 Agent treasury management with optional USYC yield.
 
@@ -298,12 +350,12 @@ Agent treasury management with optional USYC yield.
 ```solidity
 function subscribe(bytes32 agentId, uint256 assets) external
 ```
-Deposits USDC into the agent's treasury. The caller must be the agent's owner.
+Deposits USDC into the agent's treasury. Open to anyone — the caller must have approved this contract to spend `assets` USDC.
 
 ```solidity
 function redeem(bytes32 agentId, uint256 shares) external
 ```
-Withdraws USDC from the agent's treasury. The caller must be the agent's owner.
+Withdraws USDC from the agent's treasury. Only the agent's registered owner can call this (enforced by `registry.agentOwner(agentId) == msg.sender`). Pass `type(uint256).max` to redeem all shares.
 
 ```solidity
 function setYieldVault(address vault) external
@@ -335,7 +387,7 @@ import { STOA_REGISTRY, STOA_TREASURY, ARC_USDC, ARC_USYC } from '@stoa/shared'
 | Constant | Address |
 |----------|---------|
 | `STOA_REGISTRY` | `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b` |
-| `STOA_TREASURY` | `0x812BcEEc2De8C8aC71C7af7A8E2d4467E65Fdf18` |
+| `STOA_TREASURY` | `0x7408923341F0ab2d66084f5a1957a9bFf0346360` |
 | `ARC_USDC` | `0x3600000000000000000000000000000000000000` |
 | `ARC_USYC` | `0xe9185F0c5F296Ed1797AaE4238D26CCaBEadb86C` |
 | `ARC_USYC_TELLER` | `0x9fdF14c5B14173D74C08Af27AebFf39240dC105A` |

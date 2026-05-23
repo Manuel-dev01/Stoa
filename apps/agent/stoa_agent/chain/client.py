@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Union
+
 from eth_account import Account
 from web3 import Web3
 from web3.types import TxReceipt
@@ -7,6 +9,14 @@ from web3.types import TxReceipt
 from stoa_agent.chain.abis import STOA_REGISTRY_ABI
 from stoa_agent.config import Settings
 from stoa_agent.errors import ArcSubmitError
+
+
+def create_client(settings: Settings) -> Union["ArcClient", "CircleArcClient"]:
+    """Factory: return CircleArcClient if Circle Wallets enabled, else ArcClient."""
+    if settings.use_circle_wallets and settings.circle_api_key:
+        from stoa_agent.chain.circle_client import CircleArcClient
+        return CircleArcClient(settings)
+    return ArcClient(settings)
 
 
 class ArcClient:

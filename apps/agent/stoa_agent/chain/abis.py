@@ -61,3 +61,53 @@ STOA_REGISTRY_ABI: list[dict] = [
         "stateMutability": "view",
     },
 ]
+
+STOA_TREASURY_ABI: list[dict] = [
+    {
+        "type": "function",
+        "name": "subscribe",
+        "inputs": [
+            {"name": "agentId", "type": "bytes32"},
+            {"name": "amount", "type": "uint256"},
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable",
+    },
+    {
+        "type": "function",
+        "name": "redeem",
+        "inputs": [
+            {"name": "agentId", "type": "bytes32"},
+            {"name": "sharesToRedeem", "type": "uint256"},
+        ],
+        "outputs": [],
+        "stateMutability": "nonpayable",
+    },
+    {
+        "type": "function",
+        "name": "agentValue",
+        "inputs": [{"name": "agentId", "type": "bytes32"}],
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+    },
+    {
+        "type": "function",
+        "name": "agentShares",
+        "inputs": [{"name": "agentId", "type": "bytes32"}],
+        "outputs": [{"name": "", "type": "uint256"}],
+        "stateMutability": "view",
+    },
+]
+
+USDC_ABI: list[dict] = [
+    {
+        "type": "function",
+        "name": "approve",
+        "inputs": [
+            {"name": "spender", "type": "address"},
+            {"name": "amount", "type": "uint256"},
+        ],
+        "outputs": [{"name": "", "type": "bool"}],
+        "stateMutability": "nonpayable",
+    },
+]

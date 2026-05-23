@@ -48,23 +48,12 @@ Circle's Paymaster docs list supported chains: Arbitrum, Avalanche, Base, Ethere
 ## 3. App Kit Bridge
 
 **Archive:** `docs/archive/phase-3-appkit.md`
-**Status:** Compiled, not proven
-**Impact:** Cross-chain funding flow not functional
+**Status:** Working — confirmed from browser (Polygon Amoy → Arc testnet)
+**Impact:** Cross-chain USDC funding flow operational via CCTP V2
 
-**The problem:** `kit.bridge()` hangs indefinitely — no response from Circle's API. Same network access issue as the Polymarket relayer.
+**What works:** `kit.bridge()` executes successfully from a standard browser environment. The `@circle-fin/app-kit` SDK coordinates the full CCTP V2 flow: approve → burn on source chain → fetch attestation → mint on Arc. `bridgeToArc()` in `apps/web/src/lib/appkit.ts` creates a viem adapter from the browser wallet (MetaMask), instantiates `new AppKit()`, and calls `kit.bridge()` with source/destination chains and amount. The funding dialog UI (`apps/web/src/components/funding-dialog.tsx`) provides chain selector (Polygon Amoy, Base Sepolia, Arbitrum Sepolia, Ethereum Sepolia), amount input, and bridge button. Navbar has a "Fund" button.
 
-**Confirmed via arc-canteen context:** App Kit bridge docs (`docs.arc.network/app-kit/bridge.md`, `bridge-stablecoin.md`) confirm the API shape: `kit.bridge()` returns a `BridgeResult` with steps array containing `explorerUrl` per step. The four CCTP steps are approve → burn → fetchAttestation → mint. Error recovery via `kit.retry()`. Bridge operations do not require a kit key. Our implementation in `apps/web/src/lib/appkit.ts` is structurally consistent with the documented API. The hang is a network access issue, not a code bug.
-
-**What works:** `@circle-fin/app-kit` installed and resolving. `AppKit` class instantiates. `createViemAdapterFromPrivateKey()` works. `apps/web/src/lib/appkit.ts` — `bridgeToArc()` and `sendOnArc()` compile. `apps/web/src/components/funding-dialog.tsx` — UI with chain selector, amount input, bridge button. `apps/web/src/app/api/bridge/route.ts` — server-side API route. Navbar has "Fund" button. Web app builds clean.
-
-**Resolution paths:**
-1. **Vercel deployment** — test from the production URL. Vercel's serverless functions may reach Circle's API.
-2. **Different network** — test from a machine without the network restrictions.
-
-**Once resolved, complete these steps:**
-1. Deploy to Vercel
-2. Click "Fund" in navbar, select chain and amount
-3. Verify `bridge()` completes and funds arrive on Arc testnet
+**Note:** The build environment's network restrictions blocked Circle's API during development. The code was always structurally correct — the issue was environment, not code. From a standard browser with normal internet access, the bridge works end-to-end.
 
 ---
 
@@ -104,8 +93,8 @@ The original blocker was using the USYC token address instead of the Teller addr
 | Item | Blocker | Code status | Resolution |
 |------|---------|-------------|------------|
 | Polymarket Broadcast | Relayer unreachable | Production-ready (dry-run verified) | Try from Polymarket UI or Vercel |
-| Paymaster | Not applicable — Arc uses USDC natively for gas | Compiled (for ETH-gas chains) | No action needed |
-| App Kit Bridge | Circle API unreachable (code matches documented API) | Compiled, UI wired, timeout added | Try from Vercel; 30s timeout prevents hangs |
+| Paymaster | Not applicable — Arc uses USDC natively for gas | Compiled (for ETH-gas chains) | No action needed — Arc has native USDC gas |
+| App Kit Bridge | None — working | Live, confirmed from browser | CCTP V2 bridge operational via AppKit |
 | Treasury Yield | Teller is ERC-4626 (confirmed live); allowlisting pending (24-48hr) | Zero code changes needed | Wire `setYieldVault(TELLER)` once allowlisted |
 
-Paymaster is not applicable (Arc uses USDC natively). Treasury yield is resolved — waiting on Circle Support allowlisting. Two remain as external infra blockers.
+App Kit bridge confirmed working from browser. Paymaster not applicable (Arc uses USDC natively). Treasury yield resolved — waiting on Circle Support allowlisting. One external blocker remains (Polymarket relayer).
