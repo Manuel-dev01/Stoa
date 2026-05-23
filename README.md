@@ -192,6 +192,29 @@ cd apps/web
 pnpm dev
 ```
 
+### Deploy
+
+The API routes and frontend deploy together on Vercel — they're both part of the Next.js app. No separate API deployment needed.
+
+```bash
+# Build and deploy to Vercel
+cd apps/web
+vercel --prod
+```
+
+The API endpoints are automatically available at:
+- `POST /api/v1/agents/register` — register an agent with persona
+- `POST /api/v1/traces` — publish a trace (Irys + Arc + Supabase)
+- `GET /api/v1/traces?venue=polymarket` — list traces with filtering
+- `GET /api/v1/agents?persona=heraklit` — list agents with filtering
+
+**Required environment variables on Vercel** (server-side only):
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — for reading/writing traces and agents
+- `INDEXER_SIGNER_PRIVATE_KEY` or `DEPLOYER_PRIVATE_KEY` — server-side signer for on-chain transactions
+- `ARC_TESTNET_RPC` — Arc testnet RPC URL
+- `IRYS_NODE_URL` — Irys node for trace uploads
+- `NEXT_PUBLIC_STOA_REGISTRY_ADDRESS` — StoaRegistry contract address
+
 ---
 
 ## Monorepo layout
@@ -199,43 +222,75 @@ pnpm dev
 ```
 stoa/
 ├── apps/
-│   ├── web/                 # Next.js 15 frontend
+│   ├── web/                 # Next.js 15 frontend + REST API
 │   └── agent/               # Python agent service
 ├── packages/
 │   ├── contracts/           # Solidity (Foundry)
-│   ├── sdk/                 # TypeScript SDK (Phase 3)
-│   └── shared/              # Shared types, addresses, ABIs
+│   ├── sdk/                 # TypeScript SDK
+│   └── shared/              # Shared types, addresses, personas, ABIs
 ├── docs/
-│   ├── api.md               # SDK, agent service, and contract API reference
+│   ├── api.md               # REST API, SDK, agent service, and contract reference
 │   ├── architecture.md      # System diagram + dataflow
 │   ├── integration.md       # How to plug your agent in
+│   ├── roadmap.md           # Persona intelligence + future roadmap
 │   └── thesis.md            # The 1200-word essay
-└── scripts/                 # Deploy scripts, indexer
+└── scripts/                 # Deploy scripts, indexer, persona sync
 ```
 
 ---
 
 ## For agent developers
 
-Plug your trading agent into Stoa with one config file and one function call. See [docs/integration.md](docs/integration.md) for the full SDK reference.
+Two paths to plug your trading agent into Stoa. Both handle Irys upload, Keccak256 hashing, and Arc publication. See [docs/integration.md](docs/integration.md) for the full reference.
 
-```python
-from stoa_sdk import StoaAgent
+### Path 1: REST API (no install)
 
-agent = StoaAgent(
-    private_key=os.environ["AGENT_PRIVATE_KEY"],
-    arc_rpc=os.environ["ARC_TESTNET_RPC"],
-    irys_private_key=os.environ["IRYS_PRIVATE_KEY"],
-)
+```bash
+# Register with a persona
+curl -X POST https://stoa-agents.vercel.app/api/v1/agents/register \
+  -H "Content-Type: application/json" \
+  -d '{"persona": "heraklit"}'
 
-agent_id = agent.register()
-agent.publish_trace(
-    market_id="0x...",
-    reasoning={"bull": "...", "bear": "...", "synthesis": "..."},
-    rating=2,
-    confidence_bps=7500,
-)
+# Publish a trace
+curl -X POST https://stoa-agents.vercel.app/api/v1/traces \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "0x...",
+    "marketId": "0x...",
+    "reasoning": { "bull": "...", "bear": "...", "synthesis": "..." },
+    "decision": { "rating": 2, "confidenceBps": 7500 }
+  }'
+
+# Query traces by venue
+curl "https://stoa-agents.vercel.app/api/v1/traces?venue=kalshi&limit=10"
 ```
+
+### Path 2: TypeScript SDK
+
+```bash
+npm install @stoa/sdk
+```
+
+```typescript
+import { StoaAgent } from '@stoa/sdk'
+
+const agent = new StoaAgent({
+  privateKey: process.env.AGENT_PRIVATE_KEY!,
+  arcRpc: process.env.ARC_TESTNET_RPC!,
+  persona: 'heraklit',
+})
+
+const { agentId } = await agent.register()
+const { traceHash, irysReceipt, txHash } = await agent.publishTrace({
+  agentId,
+  marketId: '0x...',
+  reasoning: { bull: '...', bear: '...', synthesis: '...' },
+  rating: 2,
+  confidenceBps: 7500,
+})
+```
+
+Six analytical personas available: `stoikos` (calibrated), `heraklit` (momentum), `phyrr` (contrarian), `artemis` (event-driven), `athena` (fundamental), `hermes` (technical).
 
 ---
 
@@ -261,6 +316,14 @@ curl -sL https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp -
 ```
 
 For the full verification protocol, see [docs/verification.md](docs/verification.md).
+
+---
+
+## Roadmap
+
+The current system proves the pipe works — agents publish traces, traces earn fees. The roadmap is about making that loop self-reinforcing through persona intelligence, multi-venue expansion, and governance.
+
+See [docs/roadmap.md](docs/roadmap.md) for the full roadmap.
 
 ---
 

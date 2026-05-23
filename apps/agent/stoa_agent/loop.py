@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 from datetime import datetime, timezone
 
@@ -25,6 +26,14 @@ from stoa_agent.schemas import (
     TraceReasoning,
 )
 from stoa_agent.storage.irys import compute_trace_hash, upload_trace
+
+
+def _to_bytes32(value: str) -> str:
+    """Convert a string to a bytes32 hex value using Keccak-256."""
+    # Python's hashlib.sha3_256 is NOT Keccak-256. Use pysha3 or manual impl.
+    # For simplicity, use the same approach as the Solidity contract: abi.encodePacked + keccak256
+    from eth_utils import keccak
+    return "0x" + keccak(text=value).hex()
 
 
 def _log(msg: str) -> None:
@@ -167,6 +176,10 @@ class AgentLoop:
         venue = "kalshi" if market.condition_id.startswith("kalshi:") else "polymarket"
         _log(f"Analyzing [{venue}]: {market.question} (liquidity=${market.liquidity:,.0f})")
 
+        # For Kalshi, hash the ticker to bytes32 for on-chain anchoring
+        # For Polymarket, condition_id is already bytes32
+        on_chain_market_id = _to_bytes32(market.condition_id) if venue == "kalshi" else market.condition_id
+
         try:
             inference = await asyncio.to_thread(run_inference_direct, market, self._persona)
         except Exception as e:
@@ -180,7 +193,7 @@ class AgentLoop:
 
         trace = Trace(
             agent_id=self._settings.agent_id,
-            market_id=market.condition_id,
+            market_id=on_chain_market_id,
             generated_at=datetime.now(timezone.utc),
             market=TraceMarket(question=market.question, venue=venue, resolution_at=None),
             reasoning=TraceReasoning(
@@ -206,16 +219,12 @@ class AgentLoop:
 
         trace_hash = compute_trace_hash(trace_dict)
 
-        # For Kalshi markets, skip on-chain publish (no Arc contract for Kalshi)
-        if venue == "kalshi":
-            _log(f"PUBLISHED (Irys-only, Kalshi): {market.question} | rating={inference['rating']:+d} confidence={inference['confidence_bps'] / 100:.0f}%")
-            self._published.add(market.condition_id.lower())
-            return "published"
-
+        # Publish on-chain (both Polymarket and Kalshi traces are anchored on Arc)
+        arc_tx = None
         try:
             publish_kwargs: dict = dict(
                 agent_id=self._settings.agent_id,
-                market_id=market.condition_id,
+                market_id=on_chain_market_id,
                 trace_hash=trace_hash,
                 rating=inference["rating"],
                 confidence_bps=inference["confidence_bps"],
@@ -238,7 +247,7 @@ class AgentLoop:
                     arc_tx = await asyncio.to_thread(
                         self._arc_fallback.publish_trace,
                         agent_id=self._settings.agent_id,
-                        market_id=market.condition_id,
+                        market_id=on_chain_market_id,
                         trace_hash=trace_hash,
                         rating=inference["rating"],
                         confidence_bps=inference["confidence_bps"],
@@ -252,6 +261,19 @@ class AgentLoop:
             else:
                 self._mark_failed(market.condition_id)
                 return "error"
+
+        # Write to Supabase directly (indexer will also pick up on-chain events, but this ensures immediate availability)
+        # Store original market_id (e.g., "kalshi:KXBTCD-...") for querying, bytes32 is on-chain only
+        await self._write_trace_to_supabase(
+            trace_hash=trace_hash,
+            agent_id=self._settings.agent_id,
+            market_id=market.condition_id,
+            rating=inference["rating"],
+            confidence_bps=inference["confidence_bps"],
+            irys_receipt=irys_receipt,
+            arc_tx_hash=arc_tx,
+            venue=venue,
+        )
 
         self._published.add(market.condition_id.lower())
         # Clear failure count on success
@@ -299,3 +321,49 @@ class AgentLoop:
                 _log(f"Loaded {len(self._published)} published market IDs from Supabase.")
         except Exception as e:
             _log(f"Warning: Could not load state from Supabase: {e}")
+
+    async def _write_trace_to_supabase(
+        self,
+        trace_hash: str,
+        agent_id: str,
+        market_id: str,
+        rating: int,
+        confidence_bps: int,
+        irys_receipt: str,
+        arc_tx_hash: str | None,
+        venue: str,
+    ) -> None:
+        url = self._settings.supabase_url
+        key = self._settings.supabase_service_role_key
+        if not url or not key:
+            return
+
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                resp = await client.post(
+                    f"{url}/rest/v1/traces",
+                    headers={
+                        "apikey": key,
+                        "Authorization": f"Bearer {key}",
+                        "Content-Type": "application/json",
+                        "Prefer": "resolution=merge-duplicates",
+                    },
+                    json={
+                        "trace_hash": trace_hash,
+                        "agent_id": agent_id,
+                        "market_id": market_id,
+                        "rating": rating,
+                        "confidence_bps": confidence_bps,
+                        "irys_receipt": irys_receipt,
+                        "arc_tx_hash": arc_tx_hash or "",
+                        "block_number": 0,
+                        "published_at": datetime.now(timezone.utc).isoformat(),
+                        "venue": venue,
+                    },
+                )
+                if resp.status_code in (200, 201, 204):
+                    _log(f"  Supabase trace written ({venue})")
+                else:
+                    _log(f"  Supabase write failed: {resp.status_code} {resp.text[:100]}")
+        except Exception as e:
+            _log(f"  Supabase write error: {e}")

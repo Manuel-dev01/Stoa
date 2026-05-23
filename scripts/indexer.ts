@@ -141,6 +141,7 @@ async function insertTrace(params: {
   blockNumber: bigint
   publishedAt: string
 }): Promise<void> {
+  const venue = params.marketId.startsWith('0x6b616c7368693a') || params.marketId.toLowerCase().startsWith('kalshi:') ? 'kalshi' : 'polymarket'
   const { error } = await supabase.from('traces').upsert(
     {
       trace_hash: params.traceHash,
@@ -152,6 +153,7 @@ async function insertTrace(params: {
       arc_tx_hash: params.arcTxHash,
       block_number: Number(params.blockNumber),
       published_at: params.publishedAt,
+      venue,
     },
     { onConflict: 'trace_hash', ignoreDuplicates: true }
   )

@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, type Hex, encodeFunctionData } from 'viem'
+import { createPublicClient, createWalletClient, http, type Hex, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { STOA_REGISTRY } from '@stoa/shared'
 import type { StoaConfig, PublishTraceParams } from './types.js'
@@ -17,8 +17,8 @@ const REGISTRY_ABI = [
     stateMutability: 'nonpayable',
     inputs: [
       { name: 'agentId', type: 'bytes32' },
-      { name: 'traceHash', type: 'bytes32' },
       { name: 'marketId', type: 'bytes32' },
+      { name: 'traceHash', type: 'bytes32' },
       { name: 'rating', type: 'int8' },
       { name: 'confidenceBps', type: 'uint16' },
       { name: 'irysReceipt', type: 'string' },
@@ -52,8 +52,8 @@ export async function publishTrace(
     functionName: 'publishTrace',
     args: [
       params.agentId as Hex,
-      traceHash as Hex,
       params.marketId as Hex,
+      traceHash as Hex,
       params.trace.decision.rating,
       params.trace.decision.confidenceBps,
       params.irysReceipt,
@@ -63,10 +63,11 @@ export async function publishTrace(
   return hash
 }
 
+/**
+ * Hash a trace using Keccak256 (matching the Python agent's hash algorithm).
+ * Canonicalizes JSON with sorted keys before hashing.
+ */
 export async function hashTrace(trace: Record<string, unknown>): Promise<string> {
   const encoded = JSON.stringify(trace, Object.keys(trace).sort())
-  const msgBuffer = new TextEncoder().encode(encoded)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return '0x' + hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  return keccak256(toHex(encoded))
 }

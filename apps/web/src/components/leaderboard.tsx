@@ -2,22 +2,19 @@
 
 import { useMemo, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useTracesFromDB } from "@/lib/hooks"
+import { useAgentsWithTraceCounts } from "@/lib/hooks"
 import { truncateAddress } from "@/lib/contracts"
-import { type TraceRow } from "@/lib/supabase"
+import { type AgentWithTraceCount } from "@/lib/supabase"
+import { PERSONA_KEYS, getPersonaLabel } from "@stoa/shared"
 import Link from "next/link"
 
+const COMPACT_COUNT = 3
 const PAGE_SIZE = 5
 
-interface AgentRow {
-  agentId: string
-  traceCount: number
-  latestAt: string
-}
+const PERSONA_FILTERS = ["all", ...PERSONA_KEYS]
 
 function AgentMark({ agentId }: { agentId: string }) {
-  // Deterministic geometric mark from agent ID bytes
-  const hue = parseInt(agentId.slice(2, 6), 16) % 60 + 20 // amber range
+  const hue = parseInt(agentId.slice(2, 6), 16) % 60 + 20
   const rotation = parseInt(agentId.slice(6, 10), 16) % 360
   return (
     <div
@@ -53,35 +50,34 @@ function LeaderboardSkeleton() {
   )
 }
 
-export function Leaderboard() {
-  const { data: traces, isLoading } = useTracesFromDB()
+interface LeaderboardProps {
+  mode?: "compact" | "full"
+}
+
+export function Leaderboard({ mode = "compact" }: LeaderboardProps) {
+  const { data: agents, isLoading } = useAgentsWithTraceCounts()
+  const [personaFilter, setPersonaFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(0)
 
-  const agents = useMemo(() => {
-    if (!traces) return []
-    const map = new Map<string, AgentRow>()
-    for (const t of traces) {
-      const key = t.agent_id.toLowerCase()
-      const existing = map.get(key)
-      if (existing) {
-        existing.traceCount++
-        if (t.published_at > existing.latestAt) existing.latestAt = t.published_at
-      } else {
-        map.set(key, { agentId: t.agent_id, traceCount: 1, latestAt: t.published_at })
-      }
-    }
-    return Array.from(map.values()).sort((a, b) => b.traceCount - a.traceCount)
-  }, [traces])
+  const filtered = useMemo(() => {
+    if (!agents) return []
+    if (personaFilter === "all") return agents
+    return agents.filter(
+      (a) => (a.display_handle || "").toLowerCase() === personaFilter.toLowerCase()
+    )
+  }, [agents, personaFilter])
 
-  const totalPages = Math.ceil(agents.length / PAGE_SIZE)
-  const pageAgents = agents.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
-  const rankOffset = currentPage * PAGE_SIZE
+  const isCompact = mode === "compact"
+  const displayAgents = isCompact ? filtered.slice(0, COMPACT_COUNT) : filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
+  const totalPages = isCompact ? 1 : Math.ceil(filtered.length / PAGE_SIZE)
+  const rankOffset = isCompact ? 0 : currentPage * PAGE_SIZE
+  const totalCount = filtered.length
 
   if (isLoading) {
     return <LeaderboardSkeleton />
   }
 
-  if (agents.length === 0) {
+  if (!agents || agents.length === 0) {
     return (
       <p className="text-sm text-muted-foreground italic font-serif py-8">
         No agents registered yet.
@@ -90,22 +86,40 @@ export function Leaderboard() {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
+      {/* Persona filter pills */}
+      <div className="flex flex-wrap gap-2">
+        {PERSONA_FILTERS.map((key) => (
+          <button
+            key={key}
+            onClick={() => { setPersonaFilter(key); setCurrentPage(0) }}
+            className={`px-3 py-1 text-[10px] font-mono uppercase tracking-[0.12em] rounded-sm border transition-colors ${
+              personaFilter === key
+                ? "bg-amber-600/20 border-amber-500/50 text-amber-400"
+                : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
+            }`}
+          >
+            {key === "all" ? "All" : getPersonaLabel(key)}
+          </button>
+        ))}
+      </div>
+
       <div className="pantheon-rows">
         {/* Column header */}
         <div className="flex items-center gap-4 py-2 border-b border-border/60 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
           <div className="w-6 text-center">#</div>
           <div className="w-8" />
           <div className="flex-1">Agent</div>
+          <div className="w-20 text-right">Persona</div>
           <div className="w-16 text-right">Traces</div>
           <div className="w-24 text-right">Latest</div>
           <div className="w-16 text-center">On-chain</div>
         </div>
 
-        {pageAgents.map((agent, i) => (
+        {displayAgents.map((agent, i) => (
           <Link
-            key={agent.agentId}
-            href={`/agents/${agent.agentId}`}
+            key={agent.agent_id}
+            href={`/agents/${agent.agent_id}`}
             className="flex items-center gap-4 py-3.5 border-b border-border/30 hover:bg-secondary/30 transition-colors group"
           >
             {/* Rank */}
@@ -115,27 +129,34 @@ export function Leaderboard() {
 
             {/* Geometric mark */}
             <div className="w-8">
-              <AgentMark agentId={agent.agentId} />
+              <AgentMark agentId={agent.agent_id} />
             </div>
 
             {/* Agent identity */}
             <div className="flex-1 min-w-0">
               <div className="font-mono text-sm text-amber-500/80 group-hover:text-amber-400 transition-colors truncate">
-                {truncateAddress(agent.agentId)}
+                {truncateAddress(agent.agent_id)}
               </div>
               <div className="text-[10px] font-mono text-muted-foreground/60 truncate">
-                {agent.agentId}
+                {agent.agent_id}
               </div>
+            </div>
+
+            {/* Persona */}
+            <div className="w-20 text-right">
+              <span className="text-xs font-mono text-amber-500/70">
+                {agent.display_handle || "Stoikos"}
+              </span>
             </div>
 
             {/* Traces count */}
             <div className="w-16 text-right font-serif text-sm">
-              {agent.traceCount}
+              {agent.trace_count}
             </div>
 
             {/* Latest */}
             <div className="w-24 text-right text-xs font-mono text-muted-foreground">
-              {formatRelativeTime(agent.latestAt)}
+              {agent.latest_trace_at ? formatRelativeTime(agent.latest_trace_at) : "—"}
             </div>
 
             {/* On-chain indicator */}
@@ -146,8 +167,18 @@ export function Leaderboard() {
         ))}
       </div>
 
-      {/* Page controls */}
-      {totalPages > 1 && (
+      {/* Compact mode: "View all" link */}
+      {isCompact && totalCount > COMPACT_COUNT && (
+        <Link
+          href="/agents"
+          className="inline-flex items-center gap-1 text-xs font-mono text-amber-500/80 hover:text-amber-400 transition-colors pt-2"
+        >
+          View all {totalCount} agents →
+        </Link>
+      )}
+
+      {/* Full mode: page controls */}
+      {!isCompact && totalPages > 1 && (
         <div className="flex items-center justify-between pt-4 text-xs font-mono text-muted-foreground">
           <button
             onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}

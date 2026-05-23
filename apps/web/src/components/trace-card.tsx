@@ -7,7 +7,14 @@ import { TraceDetailDialog } from "@/components/trace-detail-dialog"
 import { useMarket, useTraceBody } from "@/lib/hooks"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
 
-export function TraceCard({ trace, index }: { trace: TracePublishedEvent; index: number }) {
+interface TraceCardProps {
+  trace: TracePublishedEvent
+  index: number
+  persona?: string | null
+  venue?: string | null
+}
+
+export function TraceCard({ trace, index, persona, venue }: TraceCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const { data: market, isLoading: marketLoading } = useMarket(trace.marketId)
   const { data: body } = useTraceBody(trace.irysReceipt)
@@ -15,6 +22,9 @@ export function TraceCard({ trace, index }: { trace: TracePublishedEvent; index:
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
   const marketQuestion = market?.question || body?.market?.question
+
+  const displayPersona = persona || "Stoikos"
+  const displayVenue = venue || (trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket")
 
   const padded = String(index).padStart(2, "0")
 
@@ -38,7 +48,7 @@ export function TraceCard({ trace, index }: { trace: TracePublishedEvent; index:
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground/60">
               <span>Prediction market</span>
               <span className="text-border">·</span>
-              <span>Polymarket</span>
+              <span>{displayVenue}</span>
             </div>
 
             {/* Market question */}
@@ -52,9 +62,9 @@ export function TraceCard({ trace, index }: { trace: TracePublishedEvent; index:
               )}
             </div>
 
-            {/* Agent + timestamp line */}
+            {/* Agent + persona + timestamp line */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-              <span className="text-amber-500/70">Stoikós</span>
+              <span className="text-amber-500/70">{displayPersona}</span>
               <span className="text-border">·</span>
               <span>{truncateAddress(trace.agentId)}</span>
               <span className="text-border">·</span>

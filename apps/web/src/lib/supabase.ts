@@ -28,6 +28,7 @@ export interface TraceRow {
   arc_tx_hash: string
   block_number: number
   published_at: string
+  venue: string | null
 }
 
 export interface FillRow {
@@ -67,6 +68,60 @@ export async function getTraces(): Promise<TraceRow[]> {
     return []
   }
   return data ?? []
+}
+
+export interface AgentWithTraceCount extends AgentRow {
+  trace_count: number
+  latest_trace_at: string | null
+}
+
+export async function getAgentsWithTraceCounts(): Promise<AgentWithTraceCount[]> {
+  if (!supabase) return []
+
+  // Get all agents
+  const { data: agents, error: agentError } = await supabase
+    .from('agents')
+    .select('*')
+    .order('registered_at', { ascending: false })
+
+  if (agentError) {
+    console.error('[supabase] getAgentsWithTraceCounts:', agentError.message)
+    return []
+  }
+  if (!agents) return []
+
+  // Get trace counts per agent
+  const { data: traces, error: traceError } = await supabase
+    .from('traces')
+    .select('agent_id, published_at')
+
+  if (traceError) {
+    console.error('[supabase] trace counts:', traceError.message)
+    // Return agents with 0 traces
+    return agents.map(a => ({ ...a, trace_count: 0, latest_trace_at: null }))
+  }
+
+  // Count traces per agent
+  const countMap = new Map<string, { count: number; latest: string }>()
+  for (const t of traces ?? []) {
+    const key = t.agent_id.toLowerCase()
+    const existing = countMap.get(key)
+    if (existing) {
+      existing.count++
+      if (t.published_at > existing.latest) existing.latest = t.published_at
+    } else {
+      countMap.set(key, { count: 1, latest: t.published_at })
+    }
+  }
+
+  return agents.map(a => {
+    const stats = countMap.get(a.agent_id.toLowerCase())
+    return {
+      ...a,
+      trace_count: stats?.count ?? 0,
+      latest_trace_at: stats?.latest ?? null,
+    }
+  }).sort((a, b) => b.trace_count - a.trace_count)
 }
 
 export async function getTracesByAgent(agentId: string): Promise<TraceRow[]> {

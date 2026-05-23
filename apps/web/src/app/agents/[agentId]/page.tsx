@@ -206,7 +206,7 @@ function AgentTraceEntry({ trace, index }: { trace: TracePublishedEvent; index: 
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground/60">
               <span>Prediction market</span>
               <span className="text-border">·</span>
-              <span>Polymarket</span>
+              <span>{trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket"}</span>
             </div>
 
             <div>

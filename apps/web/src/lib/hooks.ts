@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query"
 import { usePublicClient, useReadContract, useWriteContract } from "wagmi"
 import { getAllTraces, getAgent, type TracePublishedEvent } from "./contracts"
 import { stoaTreasuryAbi } from "./shared/stoaTreasury"
-import { getTraces, getAgents, type TraceRow, type AgentRow } from "./supabase"
+import { getTraces, getAgents, getAgentsWithTraceCounts, type TraceRow, type AgentRow, type AgentWithTraceCount } from "./supabase"
 
 const STOA_TREASURY = process.env.NEXT_PUBLIC_STOA_TREASURY_ADDRESS || "0x0000000000000000000000000000000000000000"
 
@@ -30,6 +30,14 @@ export function useAgentsFromDB() {
   return useQuery<AgentRow[]>({
     queryKey: ["agents-db"],
     queryFn: getAgents,
+    refetchInterval: 15_000,
+  })
+}
+
+export function useAgentsWithTraceCounts() {
+  return useQuery<AgentWithTraceCount[]>({
+    queryKey: ["agents-with-traces"],
+    queryFn: getAgentsWithTraceCounts,
     refetchInterval: 15_000,
   })
 }

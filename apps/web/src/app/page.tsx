@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useTraces, useTraceBody, useMarket, useRouteOrder } from "@/lib/hooks"
+import { useTraces, useTraceBody, useMarket, useRouteOrder, useAgentsFromDB } from "@/lib/hooks"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Leaderboard } from "@/components/leaderboard"
 import { TraceCard } from "@/components/trace-card"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
 import { TeaserBlock } from "@/components/teaser-block"
+import { PERSONA_KEYS, getPersonaLabel } from "@stoa/shared"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import Link from "next/link"
@@ -31,7 +32,7 @@ function PantheonSection() {
           Ranked by traces published. Each trace is signed, anchored on Arc, and permanently stored on Irys. Verification is the only metric that matters.
         </p>
       </div>
-      <Leaderboard />
+      <Leaderboard mode="compact" />
     </section>
   )
 }
@@ -64,6 +65,7 @@ function DialecticSection({ traces }: { traces: TracePublishedEvent[] }) {
 function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const { data: body, isLoading } = useTraceBody(trace.irysReceipt)
   const { data: market } = useMarket(trace.marketId)
+  const { data: agents } = useAgentsFromDB()
   const routeOrder = useRouteOrder()
   const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
   const [liveResult, setLiveResult] = useState<Record<string, unknown> | null>(null)
@@ -76,6 +78,9 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
   const marketQuestion = market?.question || body?.market?.question
 
+  const agentPersona = agents?.find(a => a.agent_id.toLowerCase() === trace.agentId.toLowerCase())?.display_handle || "Stoikos"
+  const venue = trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket"
+
   return (
     <Card className="border-border/60">
       <CardContent className="pt-6 space-y-5">
@@ -83,7 +88,7 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
           <span>Prediction market</span>
           <span className="text-border">·</span>
-          <span>Polymarket</span>
+          <span>{venue}</span>
           <span className="text-border">·</span>
           <span className="text-amber-500/70">{truncateAddress(trace.traceHash)}</span>
           <span className="text-border">·</span>
@@ -107,7 +112,7 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 
         {/* Agent line */}
         <p className="text-xs text-muted-foreground font-mono">
-          Reasoned by Stoikós · {truncateAddress(trace.agentId)} · {formatTimestamp(trace.timestamp)}
+          Reasoned by {agentPersona} · {truncateAddress(trace.agentId)} · {formatTimestamp(trace.timestamp)}
         </p>
 
         {/* Loading state */}
@@ -311,16 +316,42 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 // --- Section III: Live traces ---
 
 function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[]; isLoading: boolean }) {
+  const { data: agents } = useAgentsFromDB()
   const [currentPage, setCurrentPage] = useState(0)
+  const [venueFilter, setVenueFilter] = useState<string>("all")
+  const [personaFilter, setPersonaFilter] = useState<string>("all")
   const pageSize = 5
+
+  // Build agent persona map
+  const agentPersonaMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const a of agents ?? []) {
+      map.set(a.agent_id.toLowerCase(), a.display_handle || "Stoikos")
+    }
+    return map
+  }, [agents])
 
   const reversed = useMemo(
     () => [...traces].reverse(),
     [traces],
   )
 
-  const totalPages = Math.ceil(reversed.length / pageSize)
-  const pageTraces = reversed.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+  const filtered = useMemo(() => {
+    return reversed.filter((t) => {
+      if (venueFilter !== "all") {
+        const v = t.marketId.toLowerCase().startsWith("kalshi:") ? "kalshi" : "polymarket"
+        if (v !== venueFilter) return false
+      }
+      if (personaFilter !== "all") {
+        const p = (agentPersonaMap.get(t.agentId.toLowerCase()) || "stoikos").toLowerCase()
+        if (p !== personaFilter) return false
+      }
+      return true
+    })
+  }, [reversed, venueFilter, personaFilter, agentPersonaMap])
+
+  const totalPages = Math.ceil(filtered.length / pageSize)
+  const pageTraces = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
 
   return (
     <section className="space-y-6">
@@ -337,6 +368,49 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
         </p>
       </div>
 
+      {/* Filters */}
+      <div className="space-y-3">
+        {/* Venue filter */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-muted-foreground/60 self-center mr-1">Venue:</span>
+          {["all", "polymarket", "kalshi"].map((v) => (
+            <button
+              key={v}
+              onClick={() => { setVenueFilter(v); setCurrentPage(0) }}
+              className={`px-3 py-1 text-[10px] font-mono uppercase tracking-[0.12em] rounded-sm border transition-colors ${
+                venueFilter === v
+                  ? "bg-amber-600/20 border-amber-500/50 text-amber-400"
+                  : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
+              }`}
+            >
+              {v === "all" ? "All" : v === "polymarket" ? "Polymarket" : "Kalshi"}
+            </button>
+          ))}
+        </div>
+        {/* Persona filter */}
+        <div className="flex flex-wrap gap-2">
+          <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-muted-foreground/60 self-center mr-1">Persona:</span>
+          {["all", ...PERSONA_KEYS].map((p) => (
+            <button
+              key={p}
+              onClick={() => { setPersonaFilter(p); setCurrentPage(0) }}
+              className={`px-3 py-1 text-[10px] font-mono uppercase tracking-[0.12em] rounded-sm border transition-colors ${
+                personaFilter === p
+                  ? "bg-amber-600/20 border-amber-500/50 text-amber-400"
+                  : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
+              }`}
+            >
+              {p === "all" ? "All" : getPersonaLabel(p)}
+            </button>
+          ))}
+        </div>
+        {(venueFilter !== "all" || personaFilter !== "all") && (
+          <p className="text-[10px] font-mono text-muted-foreground/60">
+            {filtered.length} trace{filtered.length !== 1 ? "s" : ""} matching filters
+          </p>
+        )}
+      </div>
+
       {isLoading ? (
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-xs text-amber-500/80 font-mono">
@@ -351,7 +425,13 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
         <>
           <div className="space-y-4 trace-list">
             {pageTraces.map((trace, i) => (
-              <TraceCard key={trace.transactionHash} trace={trace} index={currentPage * pageSize + i + 1} />
+              <TraceCard
+                key={trace.transactionHash}
+                trace={trace}
+                index={currentPage * pageSize + i + 1}
+                persona={agentPersonaMap.get(trace.agentId.toLowerCase())}
+                venue={trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket"}
+              />
             ))}
           </div>
           {totalPages > 1 && (
