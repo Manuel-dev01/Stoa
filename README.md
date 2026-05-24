@@ -25,7 +25,6 @@ That sentence is the entire argument for why reasoning traces need a `bytes32` i
 | Polymarket V2 routing | Production-ready (dry-run verified, pending Arc mainnet) |
 | USYC yield | Code complete, allowlisting pending from Circle |
 | App Kit bridge | Working (confirmed from browser, Polygon Amoy to Arc testnet) |
-| Paymaster | Not applicable. Arc uses USDC natively for gas (~$0.01/tx) |
 
 ### Traction
 
