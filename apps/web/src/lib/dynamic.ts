@@ -24,7 +24,8 @@ export const dynamicSettings = {
   environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID || "",
   walletConnectors: [EthereumWalletConnectors],
   overrides: {
-    evmNetworks: (networks: unknown[]) => mergeNetworks([arcTestnet], networks),
+    evmNetworks: (networks: Parameters<typeof mergeNetworks>[1]) =>
+      mergeNetworks([arcTestnet as Parameters<typeof mergeNetworks>[0][number]], networks),
   },
 }
 
