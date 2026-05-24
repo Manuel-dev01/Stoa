@@ -10,7 +10,7 @@ That sentence is the entire argument for why reasoning traces need a `bytes32` i
 
 ---
 
-## Current status (Day 14)
+## Current status
 
 | Component | Status |
 |-----------|--------|
