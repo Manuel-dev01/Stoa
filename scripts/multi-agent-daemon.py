@@ -19,6 +19,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import httpx
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "apps" / "agent"))
 
 from stoa_agent.chain.circle_client import CircleArcClient
@@ -136,10 +138,44 @@ async def publish_trace(
         )
         log(f"    Arc: {arc_tx[:16]}... ({venue})")
         log(f"    PUBLISHED: {inference['rating']:+d} @ {inference['confidence_bps'] / 100:.0f}%")
-        return True
     except ArcSubmitError as e:
         log(f"    Arc error: {e}")
         return False
+
+    # Write directly to Supabase with the correct venue. The indexer's venue
+    # detection runs off the on-chain market_id, which loses the kalshi: prefix
+    # once it's hashed to bytes32, so without this the row is mislabeled
+    # polymarket and never renders as a Kalshi trace in the ledger.
+    if settings.supabase_url and settings.supabase_service_role_key:
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                resp = await client.post(
+                    f"{settings.supabase_url}/rest/v1/traces",
+                    headers={
+                        "apikey": settings.supabase_service_role_key,
+                        "Authorization": f"Bearer {settings.supabase_service_role_key}",
+                        "Content-Type": "application/json",
+                        "Prefer": "resolution=merge-duplicates",
+                    },
+                    json={
+                        "trace_hash": trace_hash,
+                        "agent_id": agent["agent_id"],
+                        "market_id": on_chain_market_id,
+                        "rating": inference["rating"],
+                        "confidence_bps": inference["confidence_bps"],
+                        "irys_receipt": irys_receipt,
+                        "arc_tx_hash": arc_tx or "",
+                        "block_number": 0,
+                        "published_at": datetime.now(timezone.utc).isoformat(),
+                        "venue": venue,
+                    },
+                )
+                if resp.status_code not in (200, 201, 204):
+                    log(f"    Supabase write failed: {resp.status_code} {resp.text[:120]}")
+        except Exception as e:
+            log(f"    Supabase write error: {e}")
+
+    return True
 
 
 async def main():
@@ -180,13 +216,15 @@ async def main():
             agent_id = agent["agent_id"]
             persona = agent.get("persona", "stoikos")
 
-            # Pick a market this agent hasn't published on
+            # Pick a market this agent hasn't published on. Random choice
+            # (not the head of the list) so each agent in a cycle gets a
+            # different question and Kalshi markets actually get sampled.
             available = [m for m in markets if m.condition_id.lower() not in published[agent_id]]
             if not available:
                 log(f"  Agent {agent['index']} ({persona}): no new markets")
                 continue
 
-            market = available[0]
+            market = random.choice(available)
             log(f"  Agent {agent['index']} ({persona}): {market.question[:50]}...")
 
             success = await publish_trace(settings, circle_client, agent, market)

@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useTraces, useTraceBody, useMarket, useRouteOrder, useAgentsFromDB } from "@/lib/hooks"
+import { useTraces, useTraceBody, useMarket, useRouteOrder, useAgentsFromDB, useTracesFromDB } from "@/lib/hooks"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -66,6 +66,7 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const { data: body, isLoading } = useTraceBody(trace.irysReceipt)
   const { data: market } = useMarket(trace.marketId)
   const { data: agents } = useAgentsFromDB()
+  const { data: dbTraces } = useTracesFromDB()
   const routeOrder = useRouteOrder()
   const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
   const [liveResult, setLiveResult] = useState<Record<string, unknown> | null>(null)
@@ -79,7 +80,14 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const marketQuestion = market?.question || body?.market?.question
 
   const agentPersona = agents?.find(a => a.agent_id.toLowerCase() === trace.agentId.toLowerCase())?.display_handle || "Stoikos"
-  const venue = trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket"
+  // Supabase carries the authoritative venue (the daemon writes it at publish).
+  // Falling back to marketId-prefix only matters for pre-daemon legacy traces.
+  const dbVenue = dbTraces?.find(t => t.trace_hash?.toLowerCase() === trace.traceHash.toLowerCase())?.venue
+  const venue = dbVenue === "kalshi"
+    ? "Kalshi"
+    : trace.marketId.toLowerCase().startsWith("kalshi:")
+      ? "Kalshi"
+      : "Polymarket"
 
   return (
     <Card className="border-border/60">
@@ -317,6 +325,7 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 
 function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[]; isLoading: boolean }) {
   const { data: agents } = useAgentsFromDB()
+  const { data: dbTraces } = useTracesFromDB()
   const [currentPage, setCurrentPage] = useState(0)
   const [venueFilter, setVenueFilter] = useState<string>("all")
   const [personaFilter, setPersonaFilter] = useState<string>("all")
@@ -331,6 +340,24 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
     return map
   }, [agents])
 
+  // trace_hash → venue. The on-chain TracePublishedEvent has the marketId as
+  // raw bytes32, so we can't tell Kalshi from Polymarket from the on-chain
+  // shape once Kalshi IDs are hashed. Supabase stores the venue alongside
+  // each trace_hash (written by the daemon at publish time); we look it up.
+  const traceVenueMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const t of dbTraces ?? []) {
+      if (t.trace_hash && t.venue) map.set(t.trace_hash.toLowerCase(), t.venue.toLowerCase())
+    }
+    return map
+  }, [dbTraces])
+
+  function venueFor(t: TracePublishedEvent): string {
+    const v = traceVenueMap.get(t.traceHash.toLowerCase())
+    if (v) return v
+    return t.marketId.toLowerCase().startsWith("kalshi:") ? "kalshi" : "polymarket"
+  }
+
   const reversed = useMemo(
     () => [...traces].reverse(),
     [traces],
@@ -339,8 +366,7 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
   const filtered = useMemo(() => {
     return reversed.filter((t) => {
       if (venueFilter !== "all") {
-        const v = t.marketId.toLowerCase().startsWith("kalshi:") ? "kalshi" : "polymarket"
-        if (v !== venueFilter) return false
+        if (venueFor(t) !== venueFilter) return false
       }
       if (personaFilter !== "all") {
         const p = (agentPersonaMap.get(t.agentId.toLowerCase()) || "stoikos").toLowerCase()
@@ -348,7 +374,8 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
       }
       return true
     })
-  }, [reversed, venueFilter, personaFilter, agentPersonaMap])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reversed, venueFilter, personaFilter, agentPersonaMap, traceVenueMap])
 
   const totalPages = Math.ceil(filtered.length / pageSize)
   const pageTraces = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
@@ -430,7 +457,7 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
                 trace={trace}
                 index={currentPage * pageSize + i + 1}
                 persona={agentPersonaMap.get(trace.agentId.toLowerCase())}
-                venue={trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket"}
+                venue={venueFor(trace) === "kalshi" ? "Kalshi" : "Polymarket"}
               />
             ))}
           </div>
