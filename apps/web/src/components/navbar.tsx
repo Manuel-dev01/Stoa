@@ -1,31 +1,42 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useAccount, useDisconnect } from "wagmi"
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
 import { FundingDialog } from "@/components/funding-dialog"
 import { truncateAddress } from "@/lib/contracts"
 
 const hasDynamicId = Boolean(process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID)
 
+function DisabledConnectButton({ title }: { title?: string }) {
+  return (
+    <button
+      disabled
+      className="text-sm font-mono bg-amber-500/50 text-[#0f0e0d] px-3 py-1.5 rounded-md cursor-not-allowed font-medium"
+      title={title}
+    >
+      Connect Wallet
+    </button>
+  )
+}
+
 function ConnectButton() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   if (!hasDynamicId) {
-    return (
-      <button
-        disabled
-        className="text-sm font-mono bg-amber-500/50 text-[#0f0e0d] px-3 py-1.5 rounded-md cursor-not-allowed font-medium"
-        title="Set NEXT_PUBLIC_DYNAMIC_ENV_ID to enable wallet connection"
-      >
-        Connect Wallet
-      </button>
-    )
+    return <DisabledConnectButton title="Set NEXT_PUBLIC_DYNAMIC_ENV_ID to enable wallet connection" />
+  }
+
+  if (!mounted) {
+    return <DisabledConnectButton />
   }
 
   return <DynamicConnectButton />
 }
 
 function DynamicConnectButton() {
-  const { useDynamicContext } = require("@dynamic-labs/sdk-react-core")
   const { setShowAuthFlow } = useDynamicContext()
   return (
     <button

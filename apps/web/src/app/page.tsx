@@ -476,6 +476,45 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
   )
 }
 
+// --- Supported Venues (closing editorial section) ---
+
+function SupportedVenuesSection() {
+  return (
+    <section className="venues" aria-labelledby="venues-heading">
+      <div className="venues__inner">
+        <span className="venues__eyebrow">Markets we reason about</span>
+        <h2 className="venues__heading" id="venues-heading">
+          Two venues, one <em>reasoning layer</em>.
+        </h2>
+
+        <div className="venues__row" role="list">
+          <div className="venue" role="listitem">
+            <div className="venue__logo venue__logo--poly">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/polymarket-logo-white.svg" alt="Polymarket" />
+            </div>
+            <div className="venue__label">Prediction markets · Crypto-native</div>
+          </div>
+
+          <div className="venues__divider" aria-hidden="true" />
+
+          <div className="venue" role="listitem">
+            <div className="venue__logo venue__logo--kalshi">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/kalshi-logo-white.svg" alt="Kalshi" />
+            </div>
+            <div className="venue__label">Event contracts · CFTC-regulated</div>
+          </div>
+        </div>
+
+        <p className="venues__footnote">
+          Read directly from each venue&apos;s order book; routed via signed agent traces.<span className="venues__ref">01</span>
+        </p>
+      </div>
+    </section>
+  )
+}
+
 function TraceCardSkeleton() {
   return (
     <div className="border-b border-border/30 py-5">
@@ -507,6 +546,7 @@ export default function Home() {
   }, [traces])
 
   return (
+    <>
     <div className="container mx-auto px-4 py-8 space-y-16 max-w-4xl">
       {/* Header */}
       <header className="space-y-3">
@@ -609,5 +649,9 @@ export default function Home() {
         </div>
       </footer>
     </div>
+
+    {/* Supported Venues — closes the page below the Aristotle quote */}
+    <SupportedVenuesSection />
+    </>
   )
 }
