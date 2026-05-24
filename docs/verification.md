@@ -37,7 +37,7 @@ Both endpoints serve the same chain. Alchemy has archive history; the Canteen RP
 | Agent wallet | `0x5b92F8A222704d522Fb3dCf8d734C3DAF51Fc4f1` |
 | Canonical agent ID (Day 3, used in the receipts table below) | `0x797badd2de144db6311a1f0f79a2d3e544021a003c7e96544cbc5441901e6be7` |
 | Total registered agents | 25 (see `scripts/agents/wallets.json` for the full set) |
-| Total traces indexed | 324+ (Day 14 baseline; growing) |
+| Total traces indexed | 324+ (End of hackathon baseline; growing) |
 
 The four published traces:
 

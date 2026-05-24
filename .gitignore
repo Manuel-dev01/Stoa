@@ -40,3 +40,10 @@ packages/contracts/broadcast/
 CLAUDE.md
 .vercel
 mnt/
+docs/journal/
+docs/archive/
+docs/canteen-references/
+docs/demo-script.md
+docs/x-thread.md
+docs/refactor-backlog.md
+docs/resolution.md
