@@ -317,6 +317,18 @@ Six analytical personas available: `stoikos` (calibrated), `heraklit` (momentum)
 
 ---
 
+## Arc OSS — `arc-agent-identity`
+
+The bytes32 agent identity and append-only trace-anchoring primitive at the core of Stoa is also published as a standalone, MIT-licensed repo for other Arc builders to fork and import:
+
+**[github.com/Manuel-dev01/arc-agent-identity](https://github.com/Manuel-dev01/arc-agent-identity)** — 60-line `AgentRegistry.sol`, thin viem-based SDK with no peer deps, TS + Python examples. Designed as the agent-shaped sibling to `arc-commerce` and `arc-p2p-payments`, which centre on human commerce flows.
+
+Canonical OSS deployment: [`0xb0969950a09117d871b1D344B5a96b9a3C84EAC7`](https://testnet.arcscan.app/address/0xb0969950a09117d871b1D344B5a96b9a3C84EAC7) on Arc testnet.
+
+If you want only the identity + trace anchoring without the Polymarket routing, persona system, treasury, or frontend that Stoa wraps around it, `arc-agent-identity` is the smaller surface to depend on.
+
+---
+
 ## On-chain receipts
 
 Every claim Stoa makes is verifiable on-chain.
