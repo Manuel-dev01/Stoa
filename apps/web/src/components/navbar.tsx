@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
+import {
+  useDynamicContext,
+  useDynamicModals,
+  useIsLoggedIn,
+} from "@dynamic-labs/sdk-react-core"
 import { FundingDialog } from "@/components/funding-dialog"
 import { truncateAddress } from "@/lib/contracts"
 
@@ -20,24 +24,41 @@ function DisabledConnectButton({ title }: { title?: string }) {
   )
 }
 
-function ConnectButton() {
+function ConnectButton({ label = "Connect Wallet" }: { label?: string }) {
   const { setShowAuthFlow } = useDynamicContext()
   return (
     <button
       onClick={() => setShowAuthFlow(true)}
       className="text-sm font-mono bg-amber-500 text-[#0f0e0d] px-3 py-1.5 rounded-md hover:bg-amber-400 transition-colors font-medium"
     >
-      Connect Wallet
+      {label}
+    </button>
+  )
+}
+
+function LinkWalletButton() {
+  const { setShowLinkNewWalletModal } = useDynamicModals()
+  return (
+    <button
+      onClick={() => setShowLinkNewWalletModal(true)}
+      className="text-sm font-mono bg-amber-500 text-[#0f0e0d] px-3 py-1.5 rounded-md hover:bg-amber-400 transition-colors font-medium"
+    >
+      Link Wallet
     </button>
   )
 }
 
 function WalletDisplay() {
+  const isLoggedIn = useIsLoggedIn()
   const { primaryWallet, handleLogOut } = useDynamicContext()
   const address = primaryWallet?.address
 
-  if (!address) {
+  if (!isLoggedIn) {
     return <ConnectButton />
+  }
+
+  if (!address) {
+    return <LinkWalletButton />
   }
 
   return (
