@@ -42,7 +42,15 @@ export function TraceDetailDialog({
   const [liveError, setLiveError] = useState<string | null>(null)
 
   const isBuy = rating > 0
-  const canRoute = rating !== 0
+  // Polymarket V2 is the only routable venue today. Kalshi traces are
+  // anchored on Arc but Kalshi has no on-chain CLOB, so the "Preview" /
+  // "Submit live" buttons would call Polymarket Gamma with a Kalshi hash
+  // and 404 with "Market not found". Disable the route for non-Polymarket
+  // traces and explain why in the UI.
+  const venue = (body?.market?.venue ?? "").toLowerCase()
+  const isKalshi = venue === "kalshi"
+  const isRoutableVenue = venue === "polymarket" || venue === ""
+  const canRoute = rating !== 0 && isRoutableVenue
 
   const ratingVariant = rating > 0 ? "positive" : rating < 0 ? "negative" : "neutral"
 
@@ -186,10 +194,14 @@ export function TraceDetailDialog({
                   >
                     {routeOrder.isPending
                       ? "Constructing order..."
+                      : isKalshi
+                      ? "Routing unavailable (Kalshi)"
                       : `Preview ${isBuy ? "BUY" : "SELL"} through agent`}
                   </Button>
                   <p className="text-[10px] text-muted-foreground/60 font-mono text-center mt-1">
-                    Preview only — order is signed but not submitted.
+                    {isKalshi
+                      ? "Kalshi traces are anchored on Arc but routing through Polymarket V2 only. A Kalshi-native router is on the roadmap."
+                      : "Preview only. Order is signed but not submitted."}
                   </p>
                 </>
               )}

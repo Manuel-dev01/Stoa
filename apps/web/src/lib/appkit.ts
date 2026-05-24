@@ -1,8 +1,11 @@
 /**
  * Circle App Kit integration for cross-chain USDC funding.
  *
- * Bridge and send use the connected browser wallet (MetaMask).
- * The adapter is created from the EIP1193 provider, not a private key.
+ * Signs using the wallet the user connected through Dynamic, not the raw
+ * `window.ethereum` injection. This is important because users sometimes
+ * have multiple accounts in MetaMask (including imported agent keys), and
+ * `window.ethereum` returns "whichever MetaMask happens to call its active
+ * account" rather than the one our UI shows as connected.
  */
 
 import { AppKit } from '@circle-fin/app-kit'
@@ -26,19 +29,26 @@ export type AppKitChain = (typeof APP_KIT_CHAINS)[keyof typeof APP_KIT_CHAINS]
 interface BridgeParams {
   fromChain: AppKitChain
   amount: string
+  // EIP-1193 provider sourced from the user's connected wallet (Dynamic primaryWallet).
+  // Pass `undefined` to fall back to window.ethereum for backwards compatibility.
+  provider?: unknown
 }
 
 /**
  * Bridge USDC from a source chain to Arc testnet via CCTP V2.
- * Uses the connected browser wallet (MetaMask) for signing.
  */
 export async function bridgeToArc(params: BridgeParams) {
-  if (typeof window === 'undefined' || !window.ethereum) {
-    throw new Error('No browser wallet detected. Connect MetaMask first.')
+  const provider =
+    params.provider ??
+    (typeof window !== 'undefined' ? (window as { ethereum?: unknown }).ethereum : undefined)
+
+  if (!provider) {
+    throw new Error('No browser wallet detected. Connect a wallet first.')
   }
 
   const adapter = await createViemAdapterFromProvider({
-    provider: window.ethereum as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    provider: provider as any,
   })
 
   const kit = new AppKit()

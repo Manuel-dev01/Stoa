@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { truncateAddress } from "@/lib/contracts"
 import type { AppKitChain } from "@/lib/appkit"
 
 const CHAINS: { id: AppKitChain; label: string; symbol: string }[] = [
@@ -18,20 +20,47 @@ interface FundingDialogProps {
 }
 
 export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
+  const { primaryWallet } = useDynamicContext()
+  const connectedAddress = primaryWallet?.address
+
   const [selectedChain, setSelectedChain] = useState<AppKitChain>("Polygon_Amoy_Testnet")
   const [amount, setAmount] = useState("10")
   const [status, setStatus] = useState<"idle" | "bridging" | "success" | "error">("idle")
   const [error, setError] = useState<string | null>(null)
+
+  // Reset transient state when the dialog reopens.
+  useEffect(() => {
+    if (open) {
+      setStatus("idle")
+      setError(null)
+    }
+  }, [open])
 
   async function handleBridge() {
     setStatus("bridging")
     setError(null)
 
     try {
+      // Pull the EIP-1193 provider from the wallet the user actually connected
+      // through Dynamic. Falls back to window.ethereum if Dynamic exposes
+      // nothing (e.g. embedded wallets that aren't EVM-1193 compatible).
+      let provider: unknown
+      if (primaryWallet?.connector) {
+        const c = primaryWallet.connector as unknown as {
+          getEthersProvider?: () => Promise<unknown>
+          getEthereumProvider?: () => Promise<unknown>
+          getWeb3Provider?: () => Promise<unknown>
+        }
+        if (c.getEthereumProvider) provider = await c.getEthereumProvider()
+        else if (c.getWeb3Provider) provider = await c.getWeb3Provider()
+        else if (c.getEthersProvider) provider = await c.getEthersProvider()
+      }
+
       const { bridgeToArc } = await import("@/lib/appkit")
       await bridgeToArc({
         fromChain: selectedChain,
         amount,
+        provider,
       })
       setStatus("success")
     } catch (e) {
@@ -47,9 +76,27 @@ export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
         <DialogHeader>
           <DialogTitle>Fund your Arc wallet</DialogTitle>
           <DialogDescription>
-            Bridge USDC from a testnet chain to Arc testnet via CCTP V2. Gas on Arc is paid in USDC — no native token needed.
+            Bridge USDC from a testnet chain to Arc testnet via CCTP V2. Gas on Arc is paid in USDC, no native token needed.
           </DialogDescription>
         </DialogHeader>
+
+        {connectedAddress ? (
+          <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs font-mono space-y-1">
+            <div className="text-muted-foreground">Signing wallet</div>
+            <div className="flex items-center justify-between">
+              <span className="text-amber-500">{truncateAddress(connectedAddress)}</span>
+              <span className="text-[10px] text-muted-foreground/60">via Dynamic</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground/70 leading-snug">
+              If this isn&apos;t the wallet you want, disconnect from the navbar, switch the active
+              account inside MetaMask (or your chosen wallet), then reconnect.
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs font-mono text-amber-500/90">
+            Connect a wallet first. The bridge needs a signer on the source chain.
+          </div>
+        )}
 
         <div className="space-y-4">
           <div>
@@ -107,10 +154,14 @@ export function FundingDialog({ open, onOpenChange }: FundingDialogProps) {
 
           <Button
             onClick={handleBridge}
-            disabled={status === "bridging" || !amount}
+            disabled={status === "bridging" || !amount || !connectedAddress}
             className="w-full bg-amber-500 text-[#0f0e0d] hover:bg-amber-400"
           >
-            {status === "bridging" ? "Bridging..." : `Bridge ${amount} USDC to Arc`}
+            {status === "bridging"
+              ? "Bridging..."
+              : !connectedAddress
+              ? "Connect wallet to bridge"
+              : `Bridge ${amount} USDC to Arc`}
           </Button>
 
           <p className="text-xs text-muted-foreground text-center">

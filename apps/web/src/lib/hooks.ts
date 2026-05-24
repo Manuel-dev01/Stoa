@@ -56,7 +56,7 @@ interface TraceBody {
   reasoning?: { bull?: string; bear?: string; synthesis?: string }
   decision?: { rating?: number; confidenceBps?: number; sizeUsdc?: number }
   modelMetadata?: { framework?: string; quickThinkModel?: string; deepThinkModel?: string }
-  market?: { question?: string }
+  market?: { question?: string; venue?: string; resolutionAt?: string | null }
   [key: string]: unknown
 }
 
