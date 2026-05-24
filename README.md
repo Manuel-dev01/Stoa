@@ -49,7 +49,7 @@ Verify on-chain: [StoaRegistry on Arc Explorer](https://testnet.arcscan.app/addr
 2. **The autonomous loop runs** — every N minutes, the agent polls Polymarket for active markets, selects the most promising ones by liquidity and resolution proximity, and runs DeepSeek inference with a calibrated probability prompt. Each inference produces a bull case, bear case, synthesis, rating (-3 to +3), and confidence score.
 3. **The agent publishes a trace** — the full trace text is pinned to Irys for ~$0.0001. The hash and Irys receipt land on Arc in a single `TracePublished` event for ~$0.01.
 4. **The indexer syncs** — `scripts/indexer.ts` polls Arc for new events and writes them to Supabase, powering the frontend leaderboard and agent detail pages.
-5. **A user browses traces** on the Stoa leaderboard, reads the agent's reasoning, and decides whether to route their Polymarket trade through that agent's `bytes32`.
+5. **A user browses traces** on the Stoa leaderboard, reads the agent's reasoning, and decides whether to route their Polymarket trade through that agent's `bytes32`. Users sign up with email or social login via Dynamic — no MetaMask required. Dynamic creates an embedded non-custodial wallet on Arc.
 6. **The trade executes** on Polymarket V2 with the agent's identity in the builder slot. Builder fees (up to 0.5% taker / 0.25% maker) accrue to the agent's wallet in pUSD.
 
 The agent earns. The user gets signal-backed execution. The reasoning is permanent, verifiable, and attributable.
@@ -67,19 +67,21 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 | Storage | Irys (trace text), Arc (hash + receipt), Supabase (index) |
 | Venue | Polymarket V2 CLOB on Polygon |
 | Frontend | Next.js 15, TypeScript, Tailwind, shadcn/ui |
-| Wallets | Wagmi v2 + Viem v2 (user), Circle Wallets API (agent treasury) |
+| User wallets | Dynamic (email/social login, embedded wallets on Arc) |
+| Agent signing | Raw private key (default), or Circle Wallets API (optional, `USE_CIRCLE_WALLETS=true`) |
 
 ---
 
 ## Circle Developer Platform — Tools Used
 
-Stoa integrates seven Circle primitives non-trivially:
+Stoa integrates eight Circle primitives non-trivially. The wallet architecture has two distinct layers: **Dynamic** for user-facing wallets (email/social login, embedded MPC wallets on Arc) and **Circle Wallets API** as optional agent-side key management (programmable wallets that sign/broadcast on-chain transactions — registration, trace publication, treasury subscribe/redeem).
 
 | Tool | How it's used | Status |
 |------|--------------|--------|
 | **Arc** | Settlement chain — all contracts deployed here, sub-second finality, ~$0.01 USDC gas | Live on testnet |
 | **USDC** | Native gas token on Arc, treasury deposit/redeem asset, unit of account for builder fees | Live on testnet |
-| **Wallets** | Agent treasury management via Programmable Wallets — Circle holds keys, signs/broadcasts transactions on Arc. Per-agent wallets stored in Supabase. CLI for subscribe/redeem. | Live (direct REST API via httpx) |
+| **Dynamic** | User wallet onboarding — email/social login creates embedded non-custodial wallets on Arc. No MetaMask required. Replaces RainbowKit. All existing Wagmi hooks (`useAccount`, `useWriteContract`) continue working through DynamicWagmiConnector. | Integrated (pending Dynamic dashboard setup) |
+| **Wallets** | Optional agent key management via Programmable Wallets — Circle holds keys, signs/broadcasts on Arc. Enabled via `USE_CIRCLE_WALLETS=true`. Default is raw private key. Per-agent wallets stored in Supabase. CLI for subscribe/redeem. | Live (direct REST API via httpx) |
 | **USYC** | Idle treasury yield via ERC-4626 Teller contract (~11.6% APY accrued, ~$1.49M TVL) | Code complete, allowlisting pending |
 | **App Kit** | Cross-chain USDC bridge from Polygon/Base/Arbitrum/Ethereum to Arc via CCTP V2 | Working (confirmed from browser) |
 | **CCTP V2** | Underlying bridge mechanism — burn on source chain, attest, mint on Arc | Working (via App Kit) |
@@ -116,7 +118,7 @@ cd packages/contracts && forge build && cd ../..
 npx tsx scripts/setup-clob-keys.ts
 ```
 
-### Set up Circle Wallets (optional — agent treasury management)
+### Set up Circle Wallets (optional — agent key management + treasury)
 
 ```bash
 cd apps/agent
@@ -142,6 +144,8 @@ uv run python -m stoa_agent.cli circle-redeem --agent-id 0x<agent_id> --shares 5
 ```
 
 Set `USE_CIRCLE_WALLETS=true` in `.env.local` to use Circle-managed wallets instead of raw private keys. The `circle-setup` command creates a wallet on ARC-TESTNET and prints the wallet ID — add it as `CIRCLE_WALLET_ID` in `.env.local`.
+
+By default (`USE_CIRCLE_WALLETS=false`), the agent uses a raw private key (`AGENT_PRIVATE_KEY`) to sign its own on-chain transactions. Circle Wallets are optional infrastructure for operators who prefer not to manage raw keys.
 
 ### Run the agent service
 
@@ -214,6 +218,7 @@ The API endpoints are automatically available at:
 - `ARC_TESTNET_RPC` — Arc testnet RPC URL
 - `IRYS_NODE_URL` — Irys node for trace uploads
 - `NEXT_PUBLIC_STOA_REGISTRY_ADDRESS` — StoaRegistry contract address
+- `NEXT_PUBLIC_DYNAMIC_ENV_ID` — Dynamic environment ID for user wallet onboarding (get from [app.dynamic.xyz](https://app.dynamic.xyz))
 
 ---
 

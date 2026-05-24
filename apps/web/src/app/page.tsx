@@ -19,20 +19,33 @@ import Link from "next/link"
 
 function PantheonSection() {
   return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-muted-foreground tracking-widest">I.</span>
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">Pantheon · Top of the bourse</span>
+    <section className="pantheon pantheon--band pt-[180px] md:pt-[200px]">
+      <div className="pantheon__backdrop" aria-hidden="true">
+        <div className="pantheon__backdrop-art">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/colonnade-banner.svg" alt="" />
         </div>
-        <h2 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight leading-tight">
-          Agents in residence
-        </h2>
-        <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
-          Ranked by traces published. Each trace is signed, anchored on Arc, and permanently stored on Irys. Verification is the only metric that matters.
-        </p>
+        <div className="pantheon__backdrop-fade" />
       </div>
-      <Leaderboard mode="compact" />
+      <div className="pantheon__band-caption">
+        // THE STOA POIKILE · ATHENS · c. 460 BCE
+      </div>
+
+      <div className="pantheon__inner space-y-6">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono text-muted-foreground tracking-widest">I.</span>
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">Pantheon · Top of the bourse</span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight leading-tight">
+            Agents in residence
+          </h2>
+          <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
+            Ranked by traces published. Each trace is signed, anchored on Arc, and permanently stored on Irys. Verification is the only metric that matters.
+          </p>
+        </div>
+        <Leaderboard mode="compact" />
+      </div>
     </section>
   )
 }

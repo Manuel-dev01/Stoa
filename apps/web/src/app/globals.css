@@ -278,6 +278,80 @@ details .details-body > div {
 .pantheon-rows > a:nth-child(5) { animation-delay: 200ms; }
 .pantheon-rows > a:nth-child(n+6) { animation-delay: 250ms; }
 
+/* Pantheon chapter-band backdrop
+   220px band at the top of the section holding a blurred, desaturated classical
+   scene, fading into pure --background before the table begins. */
+.pantheon {
+  position: relative;
+  isolation: isolate;
+}
+
+.pantheon__inner {
+  position: relative;
+  z-index: 2;
+}
+
+.pantheon__backdrop {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 220px;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pantheon__backdrop-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1600px;
+  height: 900px;
+  transform: translate(-50%, -50%);
+  opacity: 0.55;
+  filter: blur(1.5px) saturate(0.5) brightness(0.75);
+}
+
+.pantheon__backdrop-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 55%;
+  display: block;
+}
+
+.pantheon__backdrop-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 8, 7, 0.55) 0%,
+    rgba(10, 8, 7, 0.35) 40%,
+    rgba(10, 8, 7, 0.85) 85%,
+    hsl(var(--background)) 100%
+  );
+}
+
+.pantheon__band-caption {
+  position: absolute;
+  left: 32px;
+  top: 196px;
+  z-index: 3;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(32 90% 55% / 0.55);
+}
+
+@media (max-width: 720px) {
+  .pantheon__backdrop { height: 160px; }
+  .pantheon__band-caption {
+    left: 24px;
+    top: 138px;
+    font-size: 9px;
+  }
+}
+
 @layer utilities {
   .border-border {
     border-color: hsl(var(--border));

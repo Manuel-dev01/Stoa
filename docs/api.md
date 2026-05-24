@@ -458,6 +458,19 @@ These are server-side only (never exposed to the browser). Set in `apps/web/.env
 | `RELAYER_API_KEY_ADDRESS` | for proxy deployment | EOA address associated with relayer key |
 | `POLYGON_RPC` | no | Polygon RPC URL (default: public RPC) |
 
+### Frontend Environment Variables
+
+These are public (exposed to the browser via `NEXT_PUBLIC_` prefix). Set in `apps/web/.env.local` and Vercel project settings:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_DYNAMIC_ENV_ID` | yes | Dynamic environment ID for user wallet onboarding (email/social/embedded wallets). Get from [app.dynamic.xyz](https://app.dynamic.xyz). |
+| `NEXT_PUBLIC_STOA_REGISTRY_ADDRESS` | yes | StoaRegistry contract address on Arc |
+| `NEXT_PUBLIC_ARC_CHAIN_ID` | no | Arc testnet chain ID (default: 5042002) |
+| `NEXT_PUBLIC_ARC_RPC` | no | Arc RPC URL (default: proxied through `/api/rpc`) |
+
+**Dynamic setup:** Create a project at [app.dynamic.xyz](https://app.dynamic.xyz), enable email + social auth, embedded wallets, and add Arc Testnet (chain ID 5042002) as a supported chain. Copy the Environment ID into `NEXT_PUBLIC_DYNAMIC_ENV_ID`. Without this variable, the "Connect Wallet" button is disabled and users cannot connect.
+
 ### Error Classes
 
 All inherit from `StoaError`:
