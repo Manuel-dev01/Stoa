@@ -7,7 +7,7 @@ import httpx
 
 from stoa_agent.polymarket.gamma import Market
 
-KALSHI_BASE_URL = "https://trading-api.kalshi.com/trade-api/v2"
+KALSHI_BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"
 
 
 async def get_kalshi_markets(limit: int = 50) -> list[Market]:

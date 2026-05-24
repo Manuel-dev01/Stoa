@@ -90,9 +90,17 @@ async def publish_trace(
         log(f"    Low confidence ({inference['confidence_bps'] / 100:.0f}%), skipping")
         return False
 
+    # Kalshi tickers are strings (e.g. "kalshi:EXAMPLE-26DEC31"); hash to bytes32 for the registry.
+    # The trace schema enforces bytes32 too, so the hashed id flows through both layers.
+    if venue == "kalshi":
+        from eth_utils import keccak
+        on_chain_market_id = "0x" + keccak(text=market.condition_id).hex()
+    else:
+        on_chain_market_id = market.condition_id
+
     trace = Trace(
         agent_id=agent["agent_id"],
-        market_id=market.condition_id,
+        market_id=on_chain_market_id,
         generated_at=datetime.now(timezone.utc),
         market=TraceMarket(question=market.question, venue=venue, resolution_at=None),
         reasoning=TraceReasoning(
@@ -116,21 +124,17 @@ async def publish_trace(
 
     trace_hash = compute_trace_hash(trace_dict)
 
-    if venue == "kalshi":
-        log(f"    PUBLISHED (Irys-only, Kalshi): {inference['rating']:+d}")
-        return True
-
     try:
         arc_tx = circle_client.publish_trace(
             agent_id=agent["agent_id"],
-            market_id=market.condition_id,
+            market_id=on_chain_market_id,
             trace_hash=trace_hash,
             rating=inference["rating"],
             confidence_bps=inference["confidence_bps"],
             irys_receipt=irys_receipt,
             wallet_id=agent["wallet_id"],
         )
-        log(f"    Arc: {arc_tx[:16]}...")
+        log(f"    Arc: {arc_tx[:16]}... ({venue})")
         log(f"    PUBLISHED: {inference['rating']:+d} @ {inference['confidence_bps'] / 100:.0f}%")
         return True
     except ArcSubmitError as e:

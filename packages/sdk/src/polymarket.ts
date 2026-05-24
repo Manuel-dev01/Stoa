@@ -45,12 +45,17 @@ export async function buildSignedOrder(
   const key = config.privateKey.startsWith('0x') ? config.privateKey : `0x${config.privateKey}`
   const account = privateKeyToAccount(key as `0x${string}`)
 
+  // Builder code attribution: prefer the per-agent bytes32 when provided so
+  // builder fees route to the agent whose reasoning the order is following.
+  // Falls back to the app-registered global code (covers anonymous routes).
+  const builderCode = params.agentBytes32 || config.polymarket.builderCode
+
   const userOrder = {
     tokenID: params.tokenId,
     price: params.price,
     size: params.size,
     side: params.side === 'BUY' ? Side.BUY : Side.SELL,
-    builderCode: config.polymarket.builderCode,
+    builderCode,
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,7 +81,7 @@ export async function buildSignedOrder(
     owner: account.address,
     orderType: 'GTC',
     ownerAddress: account.address,
-    builderCode: config.polymarket.builderCode,
+    builderCode,
   }
 }
 

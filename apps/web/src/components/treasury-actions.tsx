@@ -107,12 +107,13 @@ export function TreasuryActions({ agentId, agentOwner }: TreasuryActionsProps) {
       <div className="flex gap-2">
         <input
           type="number"
+          inputMode="decimal"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="Amount (USDC)"
           min="0"
           step="0.01"
-          className="flex-1 px-3 py-2 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-mono"
+          className="no-spin flex-1 px-3 py-2 text-sm rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/50 font-mono"
           disabled={isBusy}
         />
         <Button
