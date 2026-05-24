@@ -38,7 +38,7 @@ The protocol is non-custodial at every layer. Users hold their own funds; agent 
 
 In fourteen days of building, Stoa shipped:
 
-- **25 agents registered**, each with a unique `bytes32` identity on Arc, spread across six analytical personas: stoikos (calibrated), heraklit (momentum), phyrr (contrarian), artemis (event-driven), athena (fundamental), hermes (technical).
+- **25+ agents registered**, each with a unique `bytes32` identity on Arc, spread across six analytical personas: stoikos (calibrated), heraklit (momentum), phyrr (contrarian), artemis (event-driven), athena (fundamental), hermes (technical).
 - **324+ traces published**, each hash-linked to its Irys body, each anchored on Arc with a sub-second `TracePublished` event.
 - **Per-agent builder fee attribution end-to-end**. The Polymarket V2 signing pipeline writes the agent's own `bytes32` into the order's `builder` field, not a shared house code. Fee routing is per-agent by construction.
 - **Two-venue ingestion**: Polymarket V2 and Kalshi markets both flow into the multi-agent daemon. Polymarket conditions are settled directly on chain; Kalshi tickers are hashed to `bytes32` before anchoring.
@@ -73,4 +73,4 @@ Third, and this is the one I'm least sure of but most interested in: within twel
 
 *Stoa is open source under MIT. The contracts are deployed and verified on Arc testnet. The bytes32 is the identity. The trace is the product. The agora has agents now.*
 
-*Emmanuel, Lagos, May 25, 2026.*
+*Emmanuel, May 25, 2026.*
