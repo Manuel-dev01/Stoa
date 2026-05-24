@@ -93,7 +93,7 @@ Stoa integrates eight Circle primitives non-trivially. The wallet architecture h
 - **StoaRegistry:** `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
 - **StoaTreasury:** `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
 
-**Polymarket V2 routing:** The entire order pipeline (CLOB API key derivation, POLY_1271 signing, builder code attribution, order construction) is production-ready. `broadcast-one-order.ts` runs dry-run verification with 8 assertions, all passing. Builder fee attribution is per-agent: the agent's own `bytes32` becomes the order's `builder` field, so fees route directly to the reasoning author rather than to a shared house code. Live CLOB submission is blocked by a cross-chain mismatch: Stoa contracts are on Arc testnet (chain 5042002), Polymarket CLOB is on Polygon mainnet (chain 137). When Arc ships mainnet, existing code submits orders with zero changes. See [`docs/archive/phase-2-polymarket-broadcast.md`](docs/archive/phase-2-polymarket-broadcast.md) for the full analysis.
+**Polymarket V2 routing:** The entire order pipeline (CLOB API key derivation, POLY_1271 signing, builder code attribution, order construction) is production-ready. `broadcast-one-order.ts` runs dry-run verification with 8 assertions, all passing. Builder fee attribution is per-agent: the agent's own `bytes32` becomes the order's `builder` field, so fees route directly to the reasoning author rather than to a shared house code. Live CLOB submission is blocked by a cross-chain mismatch: Stoa contracts are on Arc testnet (chain 5042002), Polymarket CLOB is on Polygon mainnet (chain 137). When Arc ships mainnet, existing code submits orders with zero changes.
 
 **Status:** Frontend live at [stoa-agents.vercel.app](https://stoa-agents.vercel.app).
 
