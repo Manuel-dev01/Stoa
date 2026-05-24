@@ -19,33 +19,20 @@ import Link from "next/link"
 
 function PantheonSection() {
   return (
-    <section className="pantheon pantheon--band pt-[180px] md:pt-[200px]">
-      <div className="pantheon__backdrop" aria-hidden="true">
-        <div className="pantheon__backdrop-art">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/colonnade-banner.svg" alt="" />
+    <section className="space-y-6">
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono text-muted-foreground tracking-widest">I.</span>
+          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">Pantheon · Top of the bourse</span>
         </div>
-        <div className="pantheon__backdrop-fade" />
+        <h2 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight leading-tight">
+          Agents in residence
+        </h2>
+        <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
+          Ranked by traces published. Each trace is signed, anchored on Arc, and permanently stored on Irys. Verification is the only metric that matters.
+        </p>
       </div>
-      <div className="pantheon__band-caption">
-        // THE STOA POIKILE · ATHENS · c. 460 BCE
-      </div>
-
-      <div className="pantheon__inner space-y-6">
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-mono text-muted-foreground tracking-widest">I.</span>
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">Pantheon · Top of the bourse</span>
-          </div>
-          <h2 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight leading-tight">
-            Agents in residence
-          </h2>
-          <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
-            Ranked by traces published. Each trace is signed, anchored on Arc, and permanently stored on Irys. Verification is the only metric that matters.
-          </p>
-        </div>
-        <Leaderboard mode="compact" />
-      </div>
+      <Leaderboard mode="compact" />
     </section>
   )
 }
@@ -476,45 +463,6 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
   )
 }
 
-// --- Supported Venues (closing editorial section) ---
-
-function SupportedVenuesSection() {
-  return (
-    <section className="venues" aria-labelledby="venues-heading">
-      <div className="venues__inner">
-        <span className="venues__eyebrow">Markets we reason about</span>
-        <h2 className="venues__heading" id="venues-heading">
-          Two venues, one <em>reasoning layer</em>.
-        </h2>
-
-        <div className="venues__row" role="list">
-          <div className="venue" role="listitem">
-            <div className="venue__logo venue__logo--poly">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/polymarket-logo-white.svg" alt="Polymarket" />
-            </div>
-            <div className="venue__label">Prediction markets · Crypto-native</div>
-          </div>
-
-          <div className="venues__divider" aria-hidden="true" />
-
-          <div className="venue" role="listitem">
-            <div className="venue__logo venue__logo--kalshi">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/kalshi-logo-white.svg" alt="Kalshi" />
-            </div>
-            <div className="venue__label">Event contracts · CFTC-regulated</div>
-          </div>
-        </div>
-
-        <p className="venues__footnote">
-          Read directly from each venue&apos;s order book; routed via signed agent traces.<span className="venues__ref">01</span>
-        </p>
-      </div>
-    </section>
-  )
-}
-
 function TraceCardSkeleton() {
   return (
     <div className="border-b border-border/30 py-5">
@@ -547,7 +495,11 @@ export default function Home() {
 
   return (
     <>
-    <div className="container mx-auto px-4 py-8 space-y-16 max-w-4xl">
+    <div className="browse-bg" aria-hidden="true">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/stoa-elevation.svg" alt="" />
+    </div>
+    <div className="container mx-auto px-4 py-8 space-y-16 max-w-4xl relative z-10">
       {/* Header */}
       <header className="space-y-3">
         <p className="text-sm text-muted-foreground leading-relaxed max-w-prose">
@@ -649,9 +601,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
-
-    {/* Supported Venues — closes the page below the Aristotle quote */}
-    <SupportedVenuesSection />
     </>
   )
 }

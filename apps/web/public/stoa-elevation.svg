@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 600" preserveAspectRatio="xMidYEnd slice" fill="none" stroke="#f3ece0" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+
+  <defs>
+    <g id="doric-column">
+      <rect x="-23" y="0" width="46" height="6"/>
+      <line x1="-23" y1="6" x2="-18" y2="15"/>
+      <line x1="23" y1="6" x2="18" y2="15"/>
+      <line x1="-18" y1="15" x2="18" y2="15"/>
+      <line x1="-18" y1="15" x2="-18" y2="375"/>
+      <line x1="18" y1="15" x2="18" y2="375"/>
+      <line x1="-12" y1="18" x2="-12" y2="372" stroke-width="0.5" opacity="0.55"/>
+      <line x1="-6" y1="18" x2="-6" y2="372" stroke-width="0.5" opacity="0.55"/>
+      <line x1="0" y1="18" x2="0" y2="372" stroke-width="0.5" opacity="0.55"/>
+      <line x1="6" y1="18" x2="6" y2="372" stroke-width="0.5" opacity="0.55"/>
+      <line x1="12" y1="18" x2="12" y2="372" stroke-width="0.5" opacity="0.55"/>
+      <rect x="-20" y="375" width="40" height="5"/>
+    </g>
+
+    <g id="triglyph" stroke-width="0.9">
+      <line x1="-7" y1="0" x2="-7" y2="30"/>
+      <line x1="-2.33" y1="0" x2="-2.33" y2="30"/>
+      <line x1="2.33" y1="0" x2="2.33" y2="30"/>
+      <line x1="7" y1="0" x2="7" y2="30"/>
+    </g>
+  </defs>
+
+  <line x1="0" y1="100" x2="2000" y2="100"/>
+  <line x1="0" y1="110" x2="2000" y2="110"/>
+
+  <line x1="0" y1="145" x2="2000" y2="145"/>
+
+  <use href="#triglyph" x="125" y="113"/>
+  <use href="#triglyph" x="250" y="113"/>
+  <use href="#triglyph" x="375" y="113"/>
+  <use href="#triglyph" x="500" y="113"/>
+  <use href="#triglyph" x="625" y="113"/>
+  <use href="#triglyph" x="750" y="113"/>
+  <use href="#triglyph" x="875" y="113"/>
+  <use href="#triglyph" x="1000" y="113"/>
+  <use href="#triglyph" x="1125" y="113"/>
+  <use href="#triglyph" x="1250" y="113"/>
+  <use href="#triglyph" x="1375" y="113"/>
+  <use href="#triglyph" x="1500" y="113"/>
+  <use href="#triglyph" x="1625" y="113"/>
+  <use href="#triglyph" x="1750" y="113"/>
+  <use href="#triglyph" x="1875" y="113"/>
+
+  <line x1="0" y1="165" x2="2000" y2="165"/>
+
+  <use href="#doric-column" x="125" y="165"/>
+  <use href="#doric-column" x="375" y="165"/>
+  <use href="#doric-column" x="625" y="165"/>
+  <use href="#doric-column" x="875" y="165"/>
+  <use href="#doric-column" x="1125" y="165"/>
+  <use href="#doric-column" x="1375" y="165"/>
+  <use href="#doric-column" x="1625" y="165"/>
+  <use href="#doric-column" x="1875" y="165"/>
+
+  <line x1="0" y1="540" x2="2000" y2="540"/>
+  <line x1="0" y1="548" x2="2000" y2="548"/>
+  <line x1="0" y1="556" x2="2000" y2="556"/>
+
+</svg>

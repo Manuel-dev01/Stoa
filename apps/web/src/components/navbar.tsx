@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useAccount, useDisconnect } from "wagmi"
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
 import { FundingDialog } from "@/components/funding-dialog"
 import { truncateAddress } from "@/lib/contracts"
@@ -22,21 +21,6 @@ function DisabledConnectButton({ title }: { title?: string }) {
 }
 
 function ConnectButton() {
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
-  if (!hasDynamicId) {
-    return <DisabledConnectButton title="Set NEXT_PUBLIC_DYNAMIC_ENV_ID to enable wallet connection" />
-  }
-
-  if (!mounted) {
-    return <DisabledConnectButton />
-  }
-
-  return <DynamicConnectButton />
-}
-
-function DynamicConnectButton() {
   const { setShowAuthFlow } = useDynamicContext()
   return (
     <button
@@ -48,10 +32,38 @@ function DynamicConnectButton() {
   )
 }
 
+function WalletDisplay() {
+  const { primaryWallet, handleLogOut } = useDynamicContext()
+  const address = primaryWallet?.address
+
+  if (!address) {
+    return <ConnectButton />
+  }
+
+  return (
+    <button
+      onClick={() => handleLogOut()}
+      className="text-sm font-mono text-amber-500/80 hover:text-amber-400 transition-colors px-3 py-1.5 rounded-md border border-border hover:border-amber-500/30"
+      title="Click to disconnect"
+    >
+      {truncateAddress(address)}
+    </button>
+  )
+}
+
 export function Navbar() {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
   const [fundingOpen, setFundingOpen] = useState(false)
-  const { address, isConnected } = useAccount()
-  const { disconnect } = useDisconnect()
+
+  let walletNode: React.ReactNode
+  if (!hasDynamicId) {
+    walletNode = <DisabledConnectButton title="Set NEXT_PUBLIC_DYNAMIC_ENV_ID to enable wallet connection" />
+  } else if (!mounted) {
+    walletNode = <DisabledConnectButton />
+  } else {
+    walletNode = <WalletDisplay />
+  }
 
   return (
     <header className="border-b border-border">
@@ -66,17 +78,7 @@ export function Navbar() {
           >
             Fund
           </button>
-          {isConnected && address ? (
-            <button
-              onClick={() => disconnect()}
-              className="text-sm font-mono text-amber-500/80 hover:text-amber-400 transition-colors px-3 py-1.5 rounded-md border border-border hover:border-amber-500/30"
-              title="Click to disconnect"
-            >
-              {truncateAddress(address)}
-            </button>
-          ) : (
-            <ConnectButton />
-          )}
+          {walletNode}
         </div>
       </div>
       <FundingDialog open={fundingOpen} onOpenChange={setFundingOpen} />
