@@ -31,8 +31,8 @@ Both endpoints serve the same chain. Alchemy has archive history; the Canteen RP
 | What | Value |
 |---|---|
 | Network | Arc testnet (chain ID `5042002`) |
-| StoaRegistry contract | `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b` |
-| StoaTreasury contract | `0x7408923341F0ab2d66084f5a1957a9bFf0346360` |
+| StoaRegistry contract | [`0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`](https://testnet.arcscan.app/address/0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b) (source verified) |
+| StoaTreasury contract | [`0x7408923341F0ab2d66084f5a1957a9bFf0346360`](https://testnet.arcscan.app/address/0x7408923341F0ab2d66084f5a1957a9bFf0346360) (source verified) |
 | Deployer wallet | `0xBCA6f82e240C6AC36B23b4f7D21adF17e03966Fe` |
 | Agent wallet | `0x5b92F8A222704d522Fb3dCf8d734C3DAF51Fc4f1` |
 | Canonical agent ID (Day 3, used in the receipts table below) | `0x797badd2de144db6311a1f0f79a2d3e544021a003c7e96544cbc5441901e6be7` |
@@ -77,6 +77,11 @@ cast code 0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b --rpc-url $RPC | head -c 10
 ```
 
 **What it proves.** The contract exists at the claimed address. If this returns just `0x` (empty), there is no contract there and the rest of the protocol is unfalsifiable theatre.
+
+Both `StoaRegistry` and `StoaTreasury` are source-verified on Arcscan, so the same address page renders the full Solidity source, ABI, and decoded inputs for every historical `AgentRegistered`, `TracePublished`, `Subscribed`, and `Redeemed` event:
+
+- StoaRegistry: https://testnet.arcscan.app/address/0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b
+- StoaTreasury: https://testnet.arcscan.app/address/0x7408923341F0ab2d66084f5a1957a9bFf0346360
 
 ## Step 3, Confirm every claimed transaction exists
 
