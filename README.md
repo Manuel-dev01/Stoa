@@ -340,7 +340,7 @@ curl -sL https://devnet.irys.xyz/FipMDzHKc8Uz9GVtWrHNRKf1yN3KwiyBVFHPP3tWEZdo -o
   [ "$COMPUTED" = "0xa7dceea054de8ea9af249495a1f679541e8284cc86b3a2bcc0de185605246b01" ] && echo "verified" || echo "FAILED"
 ```
 
-For the full verification protocol, see [docs/verification.md](docs/verification.md). For the Day-14 end-to-end audit (24+ rows of fresh tx hashes), see [docs/audit.md](docs/audit.md).
+For the full verification protocol, see [docs/verification.md](docs/verification.md). For end-to-end audit (24+ rows of fresh tx hashes), see [docs/audit.md](docs/audit.md).
 
 ---
 
