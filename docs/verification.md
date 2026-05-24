@@ -1,26 +1,26 @@
 # Verifying Stoa's On-Chain Receipts
 
-Every claim Stoa makes is verifiable on-chain. The root README cites a deployed contract, a registered agent, and four published reasoning traces, each with an Arc transaction hash and an Irys receipt. This document is the protocol that lets anyone independently confirm those claims using only `cast`, `curl`, and `python3` — no Stoa codebase required, no Stoa-issued credentials, no trust in this README's prose.
+Every claim Stoa makes is verifiable on-chain. The root README cites a deployed contract, a registered agent, and four published reasoning traces, each with an Arc transaction hash and an Irys receipt. This document is the protocol that lets anyone independently confirm those claims using only `cast`, `curl`, and `python3`, no Stoa codebase required, no Stoa-issued credentials, no trust in this README's prose.
 
 If you have 30 seconds, jump to [The one-liner](#the-one-liner). If you have 10 minutes, run the six steps in order.
 
 ## Prerequisites
 
 You need:
-- `cast` from [Foundry](https://book.getfoundry.sh) — Solidity's canonical CLI
-- `curl` — standard on every Unix system
-- `python3` with standard library only — no external packages required
+- `cast` from [Foundry](https://book.getfoundry.sh), Solidity's canonical CLI
+- `curl`, standard on every Unix system
+- `python3` with standard library only, no external packages required
 - An RPC endpoint for the Canteen-hosted Arc testnet, chain ID `5042002`
 
 You can get the Arc testnet RPC two ways:
 
 ```bash
-# Option A — the Canteen-hosted RPC (requires arc-canteen CLI login)
+# Option A, the Canteen-hosted RPC (requires arc-canteen CLI login)
 uv tool install git+https://github.com/the-canteen-dev/ARC-cli
 arc-canteen login
 source ~/.arc-canteen/env   # exports $RPC
 
-# Option B — Alchemy's Arc testnet endpoint (no Canteen login needed)
+# Option B, Alchemy's Arc testnet endpoint (no Canteen login needed)
 export RPC="https://arc-testnet.g.alchemy.com/v2/<your_alchemy_key>"
 ```
 
@@ -32,9 +32,12 @@ Both endpoints serve the same chain. Alchemy has archive history; the Canteen RP
 |---|---|
 | Network | Arc testnet (chain ID `5042002`) |
 | StoaRegistry contract | `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b` |
+| StoaTreasury contract | `0x7408923341F0ab2d66084f5a1957a9bFf0346360` |
 | Deployer wallet | `0xBCA6f82e240C6AC36B23b4f7D21adF17e03966Fe` |
 | Agent wallet | `0x5b92F8A222704d522Fb3dCf8d734C3DAF51Fc4f1` |
-| Canonical agent ID | `0x797badd2de144db6311a1f0f79a2d3e544021a003c7e96544cbc5441901e6be7` |
+| Canonical agent ID (Day 3, used in the receipts table below) | `0x797badd2de144db6311a1f0f79a2d3e544021a003c7e96544cbc5441901e6be7` |
+| Total registered agents | 25 (see `scripts/agents/wallets.json` for the full set) |
+| Total traces indexed | 324+ (Day 14 baseline; growing) |
 
 The four published traces:
 
@@ -45,7 +48,7 @@ The four published traces:
 | 3 | Will MegaETH perform an airdrop by June 30? | 0 HOLD | 65% | `0xc10eb2609e1a38dde7bce02fa8e919a6d2bb57edb88f1a2eccb791d12decdf0f` | `3vf4qQtpSUfX93CFu7vasb1XMHrHk7ZwVjvjkk1rerci` |
 | 4 | Will England win the 2026 FIFA World Cup? | 0 HOLD | 75% | `0x4feaa3447c53d1c1daae4494618d3a44355ef2f2fcead48fab457e4d3d0c2dd0` | `4vf8fzHpANbZipU5n28FxJXb1A5cNXvDSkV9Cm14dYNH` |
 
-## Step 1 — Confirm you're talking to the right chain
+## Step 1, Confirm you're talking to the right chain
 
 ```bash
 cast block-number --rpc-url $RPC
@@ -61,7 +64,7 @@ cast chain-id --rpc-url $RPC
 
 **What it proves.** You're talking to a live RPC connected to Arc testnet. If `chain-id` returns anything other than `5042002`, you're on the wrong network and nothing below this line is meaningful.
 
-## Step 2 — Confirm the StoaRegistry contract is deployed
+## Step 2, Confirm the StoaRegistry contract is deployed
 
 ```bash
 cast code 0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b --rpc-url $RPC | head -c 100
@@ -75,21 +78,21 @@ cast code 0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b --rpc-url $RPC | head -c 10
 
 **What it proves.** The contract exists at the claimed address. If this returns just `0x` (empty), there is no contract there and the rest of the protocol is unfalsifiable theatre.
 
-## Step 3 — Confirm every claimed transaction exists
+## Step 3, Confirm every claimed transaction exists
 
-Run `cast tx` against each of the six hashes — the deploy, the registration, and four trace publications:
+Run `cast tx` against each of the six hashes, the deploy, the registration, and four trace publications:
 
 ```bash
-# Day 2 — contract deployment
+# Day 2, contract deployment
 cast tx 0x9edfdd1f94022e3eb5a1de3ea6c859b84ea1eee1e5c5c563ae0830cfd41728b2 --rpc-url $RPC
 
-# Day 3 — agent registration (signed by 0x5b92F8A2...)
+# Day 3, agent registration (signed by 0x5b92F8A2...)
 cast tx 0x2eb8f92135b71bed043fe339f0812c36c7b7d9357c035881fe5482457108c8a5 --rpc-url $RPC
 
-# Day 3 — first trace (BTC)
+# Day 3, first trace (BTC)
 cast tx 0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845 --rpc-url $RPC
 
-# Day 4 morning — three smoke-test traces
+# Day 4 morning, three smoke-test traces
 cast tx 0x79fa0395bfe44ecb43819c923d272743f9448e28a953cc301cf0f6962bf1cfe6 --rpc-url $RPC
 cast tx 0xc10eb2609e1a38dde7bce02fa8e919a6d2bb57edb88f1a2eccb791d12decdf0f --rpc-url $RPC
 cast tx 0x4feaa3447c53d1c1daae4494618d3a44355ef2f2fcead48fab457e4d3d0c2dd0 --rpc-url $RPC
@@ -97,7 +100,7 @@ cast tx 0x4feaa3447c53d1c1daae4494618d3a44355ef2f2fcead48fab457e4d3d0c2dd0 --rpc
 
 **Expected output.** Each returns a key-value blob with `blockHash`, `blockNumber`, `from`, `to`, `input`, signature components, and a non-null transaction index. The `to` field on transactions 3–6 must be `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b` (the StoaRegistry contract). The deploy transaction's `to` field is empty (contract creation has no recipient).
 
-**What it proves.** Every claimed receipt is a real, mined, signed transaction. The `input` field of each trace transaction contains the on-chain `publishTrace` calldata — including the agent ID, market ID, trace hash, rating, confidence, and Irys receipt — exactly as the README claims.
+**What it proves.** Every claimed receipt is a real, mined, signed transaction. The `input` field of each trace transaction contains the on-chain `publishTrace` calldata, including the agent ID, market ID, trace hash, rating, confidence, and Irys receipt, exactly as the README claims.
 
 You can decode any trace transaction's `input` field manually to verify the Irys receipt is embedded literally in the calldata:
 
@@ -109,7 +112,7 @@ cast tx 0x760adefe7a4cf321520384afd0184008dd4d1a6c5a73ee6c3905466939240845 \
 
 You should see `FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp` in plain ASCII inside the calldata.
 
-## Step 4 — Confirm the events were emitted
+## Step 4, Confirm the events were emitted
 
 Read the contract's event logs directly. Because the Canteen-hosted RPC prunes history, you cannot query from block `0`; use a recent starting block. The query is also capped at 100,000 blocks per request, so chunk over the range:
 
@@ -134,9 +137,9 @@ done
 - **Two `AgentRegistered` events** with `topics[0] = 0x6054c1c53f51c68fd6a5221be39b6060a47666f8773d065cbf723f6c52230b38`. One of these has `topics[1]` matching the canonical agent ID `0x797badd2...`; the other is an earlier registration that remains owned by the same wallet but is unused.
 - **Four `TracePublished` events** with `topics[0] = 0xd0bba7ce0d33b8be013de873880428e9fde12ebe03e63fa28e56a3269434fdc3`. Each has `topics[1] = 0x797badd2...` (the canonical agent) and `topics[2]` equal to the Polymarket condition ID of one of the four markets in the receipts table above.
 
-**What it proves.** The contract emitted exactly the events the README claims. Each `TracePublished` event's `data` field contains the trace hash, rating, confidence, timestamp, and Irys receipt — the same payload visible in the transaction calldata from Step 3, now confirmed as having been actually emitted by the contract (not just submitted).
+**What it proves.** The contract emitted exactly the events the README claims. Each `TracePublished` event's `data` field contains the trace hash, rating, confidence, timestamp, and Irys receipt, the same payload visible in the transaction calldata from Step 3, now confirmed as having been actually emitted by the contract (not just submitted).
 
-## Step 5 — Confirm the Irys bodies are retrievable
+## Step 5, Confirm the Irys bodies are retrievable
 
 ```bash
 curl -LsI https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp
@@ -145,9 +148,9 @@ curl -LsI https://gateway.irys.xyz/3vf4qQtpSUfX93CFu7vasb1XMHrHk7ZwVjvjkk1rerci
 curl -LsI https://gateway.irys.xyz/4vf8fzHpANbZipU5n28FxJXb1A5cNXvDSkV9Cm14dYNH
 ```
 
-**Expected output.** Each command produces a chain of three HTTP responses ending in `HTTP/2 200`:
-1. First a `HTTP/2 302` redirect from `gateway.irys.xyz` to `devnet.irys.xyz` (the data lives on Irys devnet during the hackathon — mainnet upload comes Day 13).
-2. Then a `HTTP/2 307` redirect from `devnet.irys.xyz` to a `datasprite-cdn.com` host (Irys's CDN).
+**Expected output.** Each command produces a chain of two or three HTTP responses ending in `HTTP/2 200`:
+1. First a `HTTP/2 302` redirect from `gateway.irys.xyz` to `devnet.irys.xyz`. All traces in this table were pinned to Irys devnet during the hackathon; mainnet migration is post-submission work and the trace's on-chain hash is the immutable anchor regardless.
+2. Then a `HTTP/2 307` redirect from `devnet.irys.xyz` to a CDN host (Irys's content delivery layer).
 3. Finally a `HTTP/2 200` response with `content-type: application/json` and a `content-length` of ~17–21 KB (the trace JSON).
 
 If you want the JSON body itself, drop `-I` and add `-L` to follow the redirects:
@@ -160,17 +163,17 @@ You should see structured trace JSON with `marketId`, `reasoning.bull`, `reasoni
 
 **What it proves.** The on-chain Irys receipt actually points at a retrievable JSON document, and the document conforms to the trace schema. Without this step, the chain might be storing a pointer to nothing.
 
-## Step 6 — Confirm the on-chain hash equals the Irys body's canonical hash
+## Step 6, Confirm the on-chain hash equals the Irys body's canonical hash
 
 This is the decisive check. Every other step proves something exists; this one proves the on-chain commitment is genuinely a commitment to the exact body served by Irys, byte for byte. The integrity assertion is bidirectional: a future Stoa cannot quietly substitute a different trace body and pretend the old hash applies, and a Stoa today cannot have backdated the on-chain hash to match an unrelated body.
 
-We verify the BTC trace as a representative example. The on-chain hash for that trace is `0xd8ad17367fcc9e4e65c083e2be2af0d33e26e81326c59b22b1082001082109f1` — readable in the `data` field of the block 42937683 `TracePublished` event.
+We verify the BTC trace as a representative example. The on-chain hash for that trace is `0xd8ad17367fcc9e4e65c083e2be2af0d33e26e81326c59b22b1082001082109f1`, readable in the `data` field of the block 42937683 `TracePublished` event.
 
 ```bash
 # 1. Download the Irys body (follow redirects)
 curl -sL https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp -o /tmp/btc-trace.json
 
-# 2. Canonicalize the JSON exactly as Stoa's agent does — sort_keys, no whitespace separators
+# 2. Canonicalize the JSON exactly as Stoa's agent does, sort_keys, no whitespace separators
 python3 -c "import sys, json; json.dump(json.load(open('/tmp/btc-trace.json')), sys.stdout, sort_keys=True, separators=(',', ':'))" > /tmp/canonical.txt
 
 # 3. Compute keccak256 using cast
@@ -190,15 +193,15 @@ on-chain hash: 0xd8ad17367fcc9e4e65c083e2be2af0d33e26e81326c59b22b1082001082109f
 match:         True
 ```
 
-**What it proves.** The on-chain hash is a true cryptographic commitment to the canonical Irys body. The trace served from Irys is identical, to the byte, to what the agent committed to publishing at the moment of the transaction. The integrity assertion isn't an off-chain assurance — it's a mathematical guarantee any third party can re-derive in seconds.
+**What it proves.** The on-chain hash is a true cryptographic commitment to the canonical Irys body. The trace served from Irys is identical, to the byte, to what the agent committed to publishing at the moment of the transaction. The integrity assertion isn't an off-chain assurance, it's a mathematical guarantee any third party can re-derive in seconds.
 
 If `match: False`, either the canonicalization formula has drifted (Stoa uses Python's `json.dumps(..., sort_keys=True, separators=(',', ':'))` as the canonical form), or the body has been tampered with after upload. Both would be bugs to surface, not features to live with.
 
-To verify a different trace, swap the Irys receipt in step 1 and the on-chain hash in step 3 — read the on-chain hash from the corresponding `TracePublished` event's `data` field (first 32 bytes).
+To verify a different trace, swap the Irys receipt in step 1 and the on-chain hash in step 3, read the on-chain hash from the corresponding `TracePublished` event's `data` field (first 32 bytes).
 
 ## The one-liner
 
-For judges with no time to run six steps, here is a single block that verifies the BTC trace from end to end. If it prints `verified`, the most important property — on-chain hash equals Irys body — holds.
+For judges with no time to run six steps, here is a single block that verifies the BTC trace from end to end. If it prints `verified`, the most important property, on-chain hash equals Irys body, holds.
 
 ```bash
 curl -sL https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp -o /tmp/trace.json && \
@@ -206,13 +209,13 @@ curl -sL https://gateway.irys.xyz/FZ9bu7FN6NwwXtQ4DAYaqP8hkGtQ76MKPw3SMXm1QvGp -
   [ "$COMPUTED" = "0xd8ad17367fcc9e4e65c083e2be2af0d33e26e81326c59b22b1082001082109f1" ] && echo "verified" || echo "FAILED"
 ```
 
-## Common false positives — things that look like failures but aren't
+## Common false positives, things that look like failures but aren't
 
 A few network and RPC behaviours produce alarming outputs that don't actually indicate a problem. Each of these surfaced during the development of this protocol; documenting them keeps verifiers from bailing prematurely.
 
 **HTTP/2 302 from `gateway.irys.xyz` is a redirect, not a 404.** Irys's gateway routes objects to whichever node holds them (mainnet, devnet, dedicated CDN). The 302 response includes a `location:` header pointing at the actual host. Use `curl -L` to follow the chain; the final response should be `HTTP/2 200`. A genuine missing body returns `HTTP/2 404`, not `302`.
 
-**`error code 4444: pruned history unavailable` from a `cast logs` query starting at block 0.** The Canteen-hosted RPC is not an archive node — it prunes state older than its retention window. Use a recent `--from-block` (e.g., a few hundred thousand blocks before the most recent relevant block) or switch to an archive-capable RPC like Alchemy.
+**`error code 4444: pruned history unavailable` from a `cast logs` query starting at block 0.** The Canteen-hosted RPC is not an archive node, it prunes state older than its retention window. Use a recent `--from-block` (e.g., a few hundred thousand blocks before the most recent relevant block) or switch to an archive-capable RPC like Alchemy.
 
 **`error code -32602: query exceeds max block range 100000` from a wide `cast logs` query.** The RPC caps single queries at 100,000 blocks. Chunk your query into 100K-block batches, as Step 4 demonstrates.
 

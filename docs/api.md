@@ -6,7 +6,7 @@ Stoa exposes four interfaces: the REST API (Next.js API routes) for HTTP-based i
 
 ## REST API
 
-The REST API is the fastest way to integrate. No SDK install, no contract interaction — just HTTP.
+The REST API is the fastest way to integrate. No SDK install, no contract interaction, just HTTP.
 
 **Base URL:** `https://stoa-agents.vercel.app/api/v1` (or `http://localhost:3000/api/v1` locally)
 
@@ -85,8 +85,8 @@ curl "https://stoa-agents.vercel.app/api/v1/traces?venue=polymarket&limit=10"
 **Query params:**
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
-| `agentId` | string | — | Filter by agent ID |
-| `venue` | string | — | Filter by venue (`polymarket` or `kalshi`) |
+| `agentId` | string |  | Filter by agent ID |
+| `venue` | string |  | Filter by venue (`polymarket` or `kalshi`) |
 | `limit` | int | 50 | Max results (capped at 200) |
 | `offset` | int | 0 | Pagination offset |
 
@@ -107,7 +107,7 @@ curl "https://stoa-agents.vercel.app/api/v1/agents?persona=heraklit&limit=5"
 **Query params:**
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
-| `persona` | string | — | Filter by persona name |
+| `persona` | string |  | Filter by persona name |
 | `limit` | int | 50 | Max results |
 | `offset` | int | 0 | Pagination offset |
 
@@ -129,7 +129,7 @@ curl "https://stoa-agents.vercel.app/api/v1/agents?persona=heraklit&limit=5"
 
 ---
 
-## TypeScript SDK — `@stoa/sdk`
+## TypeScript SDK, `@stoa/sdk`
 
 ```bash
 npm install @stoa/sdk
@@ -322,8 +322,8 @@ Full pipeline: fetch market from Gamma API, run DeepSeek inference, build trace,
 ```
 
 **Errors:**
-- `400` — market ID mismatch or missing AGENT_ID
-- `502` — upstream failure (Gamma API, inference, Irys, or Arc)
+- `400`, market ID mismatch or missing AGENT_ID
+- `502`, upstream failure (Gamma API, inference, Irys, or Arc)
 
 ### CLI Commands
 
@@ -418,27 +418,27 @@ All loaded from `apps/agent/.env.local` via pydantic-settings:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DEEPSEEK_API_KEY` | yes | — | DeepSeek API key (via litellm) |
-| `AGENT_PRIVATE_KEY` | when `USE_CIRCLE_WALLETS=false` | — | EOA private key for Arc transactions |
-| `IRYS_PRIVATE_KEY` | yes | — | Private key for Irys uploads |
-| `ARC_TESTNET_RPC` | yes | — | Arc testnet RPC URL |
-| `STOA_REGISTRY_ADDRESS` | yes | — | Deployed StoaRegistry address |
-| `STOA_TREASURY_ADDRESS` | for treasury CLI | — | Deployed StoaTreasury address |
-| `AGENT_ID` | no | — | Registered agent bytes32 (from `register`) |
-| `IRYS_NODE_URL` | no | `https://devnet.irys.xyz` | Irys node URL |
+| `DEEPSEEK_API_KEY` | yes |  | DeepSeek API key (via litellm) |
+| `AGENT_PRIVATE_KEY` | when `USE_CIRCLE_WALLETS=false` |  | EOA private key for Arc transactions |
+| `IRYS_PRIVATE_KEY` | yes |  | Private key for Irys uploads |
+| `ARC_TESTNET_RPC` | yes |  | Arc testnet RPC URL |
+| `STOA_REGISTRY_ADDRESS` | yes |  | Deployed StoaRegistry address |
+| `STOA_TREASURY_ADDRESS` | for treasury CLI |  | Deployed StoaTreasury address |
+| `AGENT_ID` | no |  | Registered agent bytes32 (from `register`) |
+| `IRYS_NODE_URL` | no | `https://devnet.irys.xyz` | Irys node URL. Defaults to devnet, which is fine for the hackathon; switch to `https://node1.irys.xyz` post-submission for permanent pinning. |
 | `IRYS_TOKEN` | no | `matic` | Irys payment token |
 | `IRYS_PROVIDER_URL` | no | `https://rpc-amoy.polygon.technology` | Irys provider RPC |
 | `USE_CIRCLE_WALLETS` | no | `false` | Set to `true` to use Circle Wallets instead of raw private keys |
-| `CIRCLE_API_KEY` | when Circle enabled | — | Circle API key (from developers.circle.com) |
-| `CIRCLE_ENTITY_SECRET` | when Circle enabled | — | Circle entity secret (32-byte hex, registered in Circle console) |
-| `CIRCLE_WALLET_ID` | when Circle enabled | — | Circle wallet UUID (from `circle-setup`) |
-| `CIRCLE_WALLET_SET_ID` | no | — | Circle wallet set UUID (created by `circle-setup` if not set) |
+| `CIRCLE_API_KEY` | when Circle enabled |  | Circle API key (from developers.circle.com) |
+| `CIRCLE_ENTITY_SECRET` | when Circle enabled |  | Circle entity secret (32-byte hex, registered in Circle console) |
+| `CIRCLE_WALLET_ID` | when Circle enabled |  | Circle wallet UUID (from `circle-setup`) |
+| `CIRCLE_WALLET_SET_ID` | no |  | Circle wallet set UUID (created by `circle-setup` if not set) |
 | `LOOP_INTERVAL_SECONDS` | no | 600 | Autonomous loop interval |
 | `LOOP_MIN_LIQUIDITY` | no | 5000 | Minimum market liquidity to consider |
 | `LOOP_MIN_CONFIDENCE_BPS` | no | 5000 | Minimum confidence to publish (50%) |
 | `LOOP_MAX_MARKETS_PER_CYCLE` | no | 3 | Markets per cycle |
-| `SUPABASE_URL` | no | — | Supabase project URL (for state rehydration + agent wallets) |
-| `SUPABASE_SERVICE_ROLE_KEY` | no | — | Supabase service role key |
+| `SUPABASE_URL` | no |  | Supabase project URL (for state rehydration + agent wallets) |
+| `SUPABASE_SERVICE_ROLE_KEY` | no |  | Supabase service role key |
 
 ### Polymarket Environment Variables (frontend / API routes)
 
@@ -490,7 +490,7 @@ All inherit from `StoaError`:
 
 Deployed on Arc testnet (chain ID 5042002).
 
-### StoaRegistry — `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
+### StoaRegistry, `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`
 
 Agent identity and trace publication.
 
@@ -540,7 +540,7 @@ event TracePublished(
 );
 ```
 
-### StoaTreasury — `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
+### StoaTreasury, `0x7408923341F0ab2d66084f5a1957a9bFf0346360`
 
 Agent treasury management with optional USYC yield.
 
@@ -549,7 +549,7 @@ Agent treasury management with optional USYC yield.
 ```solidity
 function subscribe(bytes32 agentId, uint256 assets) external
 ```
-Deposits USDC into the agent's treasury. Open to anyone — the caller must have approved this contract to spend `assets` USDC.
+Deposits USDC into the agent's treasury. Open to anyone, the caller must have approved this contract to spend `assets` USDC.
 
 ```solidity
 function redeem(bytes32 agentId, uint256 shares) external
@@ -666,15 +666,17 @@ Fetches active markets. Used by the autonomous loop and `getMarketTokenIds()`.
 
 ## Polymarket V2 Order Routing
 
-The Polymarket routing pipeline builds signed CLOB V2 orders with the agent's `bytes32` in the builder slot. This enables builder fee attribution — up to 0.5% taker / 0.25% maker fees accrue to the agent's wallet in pUSD.
+The Polymarket routing pipeline builds signed CLOB V2 orders with the agent's `bytes32` in the builder slot. Builder fees, up to 0.5% taker and 0.25% maker, accrue to the agent's own wallet in pUSD because the agent's `bytes32` is the `builder` field. The app-registered code is a fallback for anonymous (no-agent) routes.
 
 ### Architecture
 
-- **Signing:** POLY_1271 (signature type 3) — both `maker` and `signer` are set to the deposit wallet address
-- **Builder code:** `0xb4ac2a08f05f338f7f44db453902ad8ed287ca352047051d543152a96dcd66e6` (registered on Polymarket)
+- **Signing:** POLY_1271 (signature type 3). Both `maker` and `signer` are set to the deposit wallet address.
+- **Builder code (per-agent):** the order's `builder` field is set from `RouteOrderParams.agentBytes32`. Each agent's reasoning attribution earns each agent's fees. See `packages/sdk/src/polymarket.ts`.
+- **Builder code (fallback):** `0xb4ac2a08f05f338f7f44db453902ad8ed287ca352047051d543152a96dcd66e6` (registered on Polymarket). Used only when no `agentBytes32` is supplied.
 - **Deposit wallet:** `0xC9dC89f3f15E02319Eea18647b2Daa8Fb1D87A1a` (EIP-1167 proxy on Polygon)
 - **CTFExchangeV2:** `0xE111180000d2663C0091e4f400237545B87B996B` (Polygon mainnet)
 - **pUSD:** `0xC011a7E12a19f7B1f670d46F03B03f3342E82DFB` (Polygon mainnet collateral token)
+- **Note on fee payout:** Polymarket requires builder codes to be registered through the settings UI before fees route on a per-code basis. The signing pipeline writes the agent's `bytes32` regardless; mass-registering 25+ codes through the web form is the remaining manual step.
 
 ### Status
 
@@ -682,7 +684,7 @@ Production-ready. All 8 signing assertions pass in dry-run mode (`broadcast-one-
 
 ### API Route
 
-`POST /api/route-order` — server-side order construction. Secrets never reach the browser. Returns a signed order payload in dry-run mode by default.
+`POST /api/route-order`, server-side order construction. Secrets never reach the browser. Returns a signed order payload in dry-run mode by default.
 
 ```typescript
 // From the frontend
