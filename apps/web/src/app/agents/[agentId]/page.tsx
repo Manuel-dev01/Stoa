@@ -1,12 +1,13 @@
 "use client"
 
 import { use, useMemo, useState } from "react"
-import { useTraces, useAgent, useMarket, useTraceBody, useTreasuryValue } from "@/lib/hooks"
+import { useTraces, useAgent, useMarket, useTraceBody, useTreasuryValue, useTracesFromDB } from "@/lib/hooks"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TraceDetailDialog } from "@/components/trace-detail-dialog"
 import { TreasuryActions } from "@/components/treasury-actions"
+import { getPersonaLabel } from "@stoa-agents/shared"
 import Link from "next/link"
 
 export default function AgentPage({ params }: { params: Promise<{ agentId: string }> }) {
@@ -14,6 +15,7 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
   const fullAgentId = agentId.startsWith("0x") ? agentId : `0x${agentId}`
   const { data: agent, isLoading: agentLoading } = useAgent(fullAgentId as `0x${string}`)
   const { data: traces, isLoading: tracesLoading } = useTraces()
+  const { data: dbTraces } = useTracesFromDB()
   const { data: treasuryValue } = useTreasuryValue(fullAgentId as `0x${string}`)
 
   const agentTraces = useMemo(() => {
@@ -22,6 +24,30 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
       .filter((t) => t.agentId.toLowerCase() === fullAgentId.toLowerCase())
       .sort((a, b) => Number(b.timestamp - a.timestamp))
   }, [traces, fullAgentId])
+
+  // Reasoning-style breakdown: histogram of classified personas across this
+  // agent's published traces. Pulled from Supabase where the classifier
+  // writes asynchronously after each publish.
+  const personaBreakdown = useMemo(() => {
+    if (!dbTraces) return { total: 0, entries: [] as Array<{ persona: string; count: number; pct: number }> }
+    const mine = dbTraces.filter(
+      (t) => t.agent_id.toLowerCase() === fullAgentId.toLowerCase() && t.classified_persona,
+    )
+    if (mine.length === 0) return { total: 0, entries: [] }
+    const counts = new Map<string, number>()
+    for (const t of mine) {
+      const key = (t.classified_persona as string).toLowerCase()
+      counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
+    const entries = Array.from(counts.entries())
+      .map(([persona, count]) => ({
+        persona,
+        count,
+        pct: Math.round((count / mine.length) * 100),
+      }))
+      .sort((a, b) => b.count - a.count)
+    return { total: mine.length, entries }
+  }, [dbTraces, fullAgentId])
 
   const stats = useMemo(() => {
     if (agentTraces.length === 0) return { count: 0, avgConfidence: 0, latest: 0n }
@@ -96,6 +122,26 @@ export default function AgentPage({ params }: { params: Promise<{ agentId: strin
           />
         </div>
       </section>
+
+      {/* Reasoning style — classified by Stoa across this agent's traces */}
+      {personaBreakdown.total > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">
+              Reasoning style · classified across {personaBreakdown.total} trace{personaBreakdown.total !== 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono text-muted-foreground">
+            {personaBreakdown.entries.map((e, i) => (
+              <span key={e.persona} className="flex items-center gap-1">
+                {i > 0 && <span className="text-border">·</span>}
+                <span className="text-amber-500/80">{getPersonaLabel(e.persona)}</span>
+                <span>{e.pct}%</span>
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Treasury deposit/withdraw */}
       <TreasuryActions agentId={fullAgentId as `0x${string}`} agentOwner={agent?.owner} />

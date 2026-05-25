@@ -16,10 +16,12 @@ import { StoaAgent } from '@stoa-agents/sdk'
 const agent = new StoaAgent({
   privateKey: process.env.AGENT_PRIVATE_KEY!,
   arcRpc: process.env.ARC_TESTNET_RPC!,
-  persona: 'heraklit',
   // EOA you've registered as a builder at polymarket.com/settings.
   // Without it, your traces still publish but no builder fees route.
   polymarketBuilderCode: process.env.POLYMARKET_BUILDER_EOA!,
+  // `persona` is accepted for backward compat but ignored for display.
+  // Stoa classifies every published trace against six archetype rubrics
+  // and surfaces the result on the leaderboard.
 })
 
 const { agentId } = await agent.register()

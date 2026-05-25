@@ -30,6 +30,12 @@ export interface TraceRow {
   block_number: number
   published_at: string
   venue: string | null
+  /** Persona classification of the trace's reasoning style. Written by the
+   *  classifier (async after publish) or backfill script. Null until landed. */
+  classified_persona: string | null
+  classification_confidence_bps: number | null
+  classification_rationale: string | null
+  classified_at: string | null
 }
 
 export interface FillRow {
@@ -74,6 +80,9 @@ export async function getTraces(): Promise<TraceRow[]> {
 export interface AgentWithTraceCount extends AgentRow {
   trace_count: number
   latest_trace_at: string | null
+  /** Most-frequent classified persona across this agent's traces (mode).
+   *  Null when the agent has no classified traces yet. */
+  dominant_classified_persona: string | null
 }
 
 export async function getAgentsWithTraceCounts(): Promise<AgentWithTraceCount[]> {
@@ -91,38 +100,67 @@ export async function getAgentsWithTraceCounts(): Promise<AgentWithTraceCount[]>
   }
   if (!agents) return []
 
-  // Get trace counts per agent
+  // Get trace counts + classified personas per agent
   const { data: traces, error: traceError } = await supabase
     .from('traces')
-    .select('agent_id, published_at')
+    .select('agent_id, published_at, classified_persona')
 
   if (traceError) {
     console.error('[supabase] trace counts:', traceError.message)
-    // Return agents with 0 traces
-    return agents.map(a => ({ ...a, trace_count: 0, latest_trace_at: null }))
+    return agents.map(a => ({
+      ...a,
+      trace_count: 0,
+      latest_trace_at: null,
+      dominant_classified_persona: null,
+    }))
   }
 
-  // Count traces per agent
-  const countMap = new Map<string, { count: number; latest: string }>()
+  // Aggregate per agent: total count, latest publish time, persona histogram.
+  interface AgentStats {
+    count: number
+    latest: string
+    personaCounts: Map<string, number>
+  }
+  const stats = new Map<string, AgentStats>()
   for (const t of traces ?? []) {
     const key = t.agent_id.toLowerCase()
-    const existing = countMap.get(key)
-    if (existing) {
-      existing.count++
-      if (t.published_at > existing.latest) existing.latest = t.published_at
-    } else {
-      countMap.set(key, { count: 1, latest: t.published_at })
+    const entry = stats.get(key) ?? {
+      count: 0,
+      latest: '',
+      personaCounts: new Map<string, number>(),
     }
+    entry.count++
+    if (t.published_at > entry.latest) entry.latest = t.published_at
+    if (t.classified_persona) {
+      const p = t.classified_persona.toLowerCase()
+      entry.personaCounts.set(p, (entry.personaCounts.get(p) ?? 0) + 1)
+    }
+    stats.set(key, entry)
   }
 
-  return agents.map(a => {
-    const stats = countMap.get(a.agent_id.toLowerCase())
-    return {
-      ...a,
-      trace_count: stats?.count ?? 0,
-      latest_trace_at: stats?.latest ?? null,
-    }
-  }).sort((a, b) => b.trace_count - a.trace_count)
+  return agents
+    .map(a => {
+      const s = stats.get(a.agent_id.toLowerCase())
+      let dominant: string | null = null
+      if (s && s.personaCounts.size > 0) {
+        let best = ''
+        let bestCount = 0
+        for (const [persona, count] of s.personaCounts) {
+          if (count > bestCount) {
+            best = persona
+            bestCount = count
+          }
+        }
+        dominant = best
+      }
+      return {
+        ...a,
+        trace_count: s?.count ?? 0,
+        latest_trace_at: s?.latest || null,
+        dominant_classified_persona: dominant,
+      }
+    })
+    .sort((a, b) => b.trace_count - a.trace_count)
 }
 
 export async function getTracesByAgent(agentId: string): Promise<TraceRow[]> {

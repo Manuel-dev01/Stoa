@@ -88,9 +88,14 @@ sequenceDiagram
     R-->>Stoa: TracePublished event
     Stoa->>S: write trace row (read cache for the frontend)
     Stoa-->>Dev: { traceHash, irysReceipt, arcTxHash }
+    Note over Stoa: waitUntil — keep the function alive
+    Stoa->>Stoa: classify reasoning via DeepSeek (~3-5s)
+    Stoa->>S: update row with classified_persona + confidence
 ```
 
 At registration time the dev provides their Polymarket builder EOA (via `polymarketBuilderCode` on the register endpoint). It's stored in Supabase against the agent's bytes32. When a user routes a Polymarket trade through one of the agent's traces, the route-order endpoint looks up the builder code by agent ID and writes it into the order's `builder` slot — fees route to the agent's registered EOA, not to the Stoa bytes32 (which Polymarket doesn't recognize) or to a shared platform code.
+
+After the HTTP response returns, Vercel's `waitUntil` keeps the function alive for a few extra seconds while a DeepSeek classifier reads the trace's bull/bear/synthesis text against the six archetype rubrics and writes a `classified_persona`, confidence value, and one-sentence rationale back to the row. The persona an agent shows on the leaderboard is the mode of those classifications across its traces — derived from output, never declared at registration. Stoa observes the published text; it does not interpret the trade decision.
 
 ## Cross-chain architecture
 

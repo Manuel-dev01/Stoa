@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
-import { useTraces, useTraceBody, useMarket, useRouteOrder, useAgentsFromDB, useTracesFromDB } from "@/lib/hooks"
+import { useTraces, useTraceBody, useMarket, useRouteOrder, useTracesFromDB } from "@/lib/hooks"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -66,7 +66,6 @@ function DialecticSection({ traces }: { traces: TracePublishedEvent[] }) {
 function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const { data: body, isLoading } = useTraceBody(trace.irysReceipt)
   const { data: market } = useMarket(trace.marketId)
-  const { data: agents } = useAgentsFromDB()
   const { data: dbTraces } = useTracesFromDB()
   const routeOrder = useRouteOrder()
   const { primaryWallet, setShowAuthFlow } = useDynamicContext()
@@ -81,10 +80,16 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
   const marketQuestion = market?.question || body?.market?.question
 
-  const agentPersona = agents?.find(a => a.agent_id.toLowerCase() === trace.agentId.toLowerCase())?.display_handle || "Stoikos"
+  // Per-trace persona comes from the classifier (Supabase). When not yet
+  // classified, we show "—" rather than a misleading agent-level fallback.
+  const traceRow = dbTraces?.find(t => t.trace_hash?.toLowerCase() === trace.traceHash.toLowerCase())
+  const classifiedPersona = traceRow?.classified_persona
+    ? getPersonaLabel(traceRow.classified_persona)
+    : null
+  const agentPersona = classifiedPersona || "—"
   // Supabase carries the authoritative venue (the daemon writes it at publish).
   // Falling back to marketId-prefix only matters for pre-daemon legacy traces.
-  const dbVenue = dbTraces?.find(t => t.trace_hash?.toLowerCase() === trace.traceHash.toLowerCase())?.venue
+  const dbVenue = traceRow?.venue
   const isKalshi = dbVenue === "kalshi" || trace.marketId.toLowerCase().startsWith("kalshi:")
   const venue = isKalshi ? "Kalshi" : "Polymarket"
   // Polymarket V2 routing only resolves Polymarket condition_ids through Gamma;
@@ -347,21 +352,24 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 // --- Section III: Live traces ---
 
 function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[]; isLoading: boolean }) {
-  const { data: agents } = useAgentsFromDB()
   const { data: dbTraces } = useTracesFromDB()
   const [currentPage, setCurrentPage] = useState(0)
   const [venueFilter, setVenueFilter] = useState<string>("all")
   const [personaFilter, setPersonaFilter] = useState<string>("all")
   const pageSize = 5
 
-  // Build agent persona map
-  const agentPersonaMap = useMemo(() => {
+  // trace_hash → classified persona (key, e.g. "stoikos"). The classifier
+  // writes this asynchronously after publish; until it lands the map has no
+  // entry for that trace and the card falls back gracefully.
+  const traceClassifiedPersonaMap = useMemo(() => {
     const map = new Map<string, string>()
-    for (const a of agents ?? []) {
-      map.set(a.agent_id.toLowerCase(), a.display_handle || "Stoikos")
+    for (const t of dbTraces ?? []) {
+      if (t.trace_hash && t.classified_persona) {
+        map.set(t.trace_hash.toLowerCase(), t.classified_persona.toLowerCase())
+      }
     }
     return map
-  }, [agents])
+  }, [dbTraces])
 
   // trace_hash → venue. The on-chain TracePublishedEvent has the marketId as
   // raw bytes32, so we can't tell Kalshi from Polymarket from the on-chain
@@ -392,13 +400,15 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
         if (venueFor(t) !== venueFilter) return false
       }
       if (personaFilter !== "all") {
-        const p = (agentPersonaMap.get(t.agentId.toLowerCase()) || "stoikos").toLowerCase()
-        if (p !== personaFilter) return false
+        const classified = traceClassifiedPersonaMap.get(t.traceHash.toLowerCase())
+        // Unclassified traces are excluded from non-"all" filters — once the
+        // classifier catches up, they'll appear under the matching pill.
+        if (!classified || classified !== personaFilter) return false
       }
       return true
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reversed, venueFilter, personaFilter, agentPersonaMap, traceVenueMap])
+  }, [reversed, venueFilter, personaFilter, traceClassifiedPersonaMap, traceVenueMap])
 
   const totalPages = Math.ceil(filtered.length / pageSize)
   const pageTraces = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
@@ -474,15 +484,18 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
       ) : reversed.length > 0 ? (
         <>
           <div className="space-y-4 trace-list">
-            {pageTraces.map((trace, i) => (
-              <TraceCard
-                key={trace.transactionHash}
-                trace={trace}
-                index={currentPage * pageSize + i + 1}
-                persona={agentPersonaMap.get(trace.agentId.toLowerCase())}
-                venue={venueFor(trace) === "kalshi" ? "Kalshi" : "Polymarket"}
-              />
-            ))}
+            {pageTraces.map((trace, i) => {
+              const classifiedKey = traceClassifiedPersonaMap.get(trace.traceHash.toLowerCase())
+              return (
+                <TraceCard
+                  key={trace.transactionHash}
+                  trace={trace}
+                  index={currentPage * pageSize + i + 1}
+                  persona={classifiedKey ? getPersonaLabel(classifiedKey) : undefined}
+                  venue={venueFor(trace) === "kalshi" ? "Kalshi" : "Polymarket"}
+                />
+              )
+            })}
           </div>
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-2 text-xs font-mono text-muted-foreground">

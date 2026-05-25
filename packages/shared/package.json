@@ -9,15 +9,18 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     },
     "./addresses": {
       "types": "./dist/addresses.d.ts",
-      "import": "./dist/addresses.js"
+      "import": "./dist/addresses.js",
+      "default": "./dist/addresses.js"
     },
     "./abis/stoaRegistry": {
       "types": "./dist/abis/stoaRegistry.d.ts",
-      "import": "./dist/abis/stoaRegistry.js"
+      "import": "./dist/abis/stoaRegistry.js",
+      "default": "./dist/abis/stoaRegistry.js"
     }
   },
   "files": [

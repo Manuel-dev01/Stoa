@@ -65,8 +65,11 @@ export function Leaderboard({ mode = "compact" }: LeaderboardProps) {
     // appear, and the count needs to match the header's trace-derived agent count.
     const active = agents.filter((a) => a.trace_count > 0)
     if (personaFilter === "all") return active
+    // Filter by the agent's dominant classified persona (mode of trace
+    // classifications). Agents with no classified traces yet are excluded
+    // from non-"all" filters.
     return active.filter(
-      (a) => (a.display_handle || "").toLowerCase() === personaFilter.toLowerCase()
+      (a) => (a.dominant_classified_persona || "").toLowerCase() === personaFilter.toLowerCase()
     )
   }, [agents, personaFilter])
 
@@ -145,10 +148,12 @@ export function Leaderboard({ mode = "compact" }: LeaderboardProps) {
               </div>
             </div>
 
-            {/* Persona */}
+            {/* Persona — derived from the classifier across this agent's traces */}
             <div className="w-20 text-right">
               <span className="text-xs font-mono text-amber-500/70">
-                {agent.display_handle || "Stoikos"}
+                {agent.dominant_classified_persona
+                  ? getPersonaLabel(agent.dominant_classified_persona)
+                  : "—"}
               </span>
             </div>
 

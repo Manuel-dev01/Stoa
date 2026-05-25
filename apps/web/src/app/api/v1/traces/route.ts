@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
+import { waitUntil } from "@vercel/functions"
 import { createWalletClient, http, keccak256, toHex, encodeFunctionData } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import { createClient } from "@supabase/supabase-js"
 import { uploadToIrys, canonicalizeJson } from "@/lib/irys"
+import { classifyTraceReasoning } from "@/lib/persona-classifier"
 
 // Arc testnet chain config
 const ARC_CHAIN = {
@@ -151,6 +153,33 @@ export async function POST(req: NextRequest) {
           venue: resolvedVenue,
         },
         { onConflict: "trace_hash", ignoreDuplicates: true }
+      )
+
+      // Classify the reasoning style in the background. The HTTP response
+      // returns immediately; the classifier writes back to the row when done
+      // (typically ~3-5s later). Failures are logged and ignored — the trace
+      // is already anchored on Arc + Irys regardless.
+      waitUntil(
+        (async () => {
+          const result = await classifyTraceReasoning({
+            bull: reasoning.bull,
+            bear: reasoning.bear,
+            synthesis: reasoning.synthesis,
+          })
+          if (!result) return
+          const sb = createClient(supabaseUrl, supabaseKey)
+          await sb
+            .from("traces")
+            .update({
+              classified_persona: result.persona,
+              classification_confidence_bps: result.confidenceBps,
+              classification_rationale: result.rationale,
+              classified_at: new Date().toISOString(),
+            })
+            .eq("trace_hash", traceHash)
+        })().catch((err) =>
+          console.error("[api/v1/traces] background classify failed:", err),
+        ),
       )
     }
 
