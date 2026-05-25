@@ -94,28 +94,38 @@ export async function submitOrder(
 }
 
 export async function getMarketTokenIds(conditionId: string): Promise<MarketTokenIds | null> {
-  const resp = await fetch(
-    'https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=100',
-  )
-  if (!resp.ok) return null
-  const markets: Record<string, unknown>[] = await resp.json()
-  const found = markets.find(
-    (m) =>
-      ((m.conditionId as string) || (m.condition_id as string) || '').toLowerCase() ===
-      conditionId.toLowerCase(),
-  )
-  if (!found) return null
+  // Gamma's list endpoint caps `limit` at 100 per page and silently ignores
+  // a condition_id query param, so we paginate up to 500 active markets and
+  // filter client-side. Mirrors apps/agent/stoa_agent/polymarket/gamma.py.
+  const target = conditionId.toLowerCase()
 
-  const raw = found.clobTokenIds as string
-  const tokenIds: string[] = JSON.parse(raw)
-  const outcomes: string[] = JSON.parse(found.outcomes as string)
+  for (let offset = 0; offset < 500; offset += 100) {
+    const resp = await fetch(
+      `https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=100&offset=${offset}`,
+    )
+    if (!resp.ok) return null
+    const markets: Record<string, unknown>[] = await resp.json()
+    if (markets.length === 0) break
 
-  const yesIndex = outcomes.findIndex((o) => o.toLowerCase() === 'yes')
-  const noIndex = outcomes.findIndex((o) => o.toLowerCase() === 'no')
+    const found = markets.find(
+      (m) =>
+        ((m.conditionId as string) || (m.condition_id as string) || '').toLowerCase() === target,
+    )
+    if (!found) continue
 
-  return {
-    yesTokenId: tokenIds[yesIndex] || tokenIds[0],
-    noTokenId: tokenIds[noIndex] || tokenIds[1],
-    question: (found.question as string) || '',
+    const raw = found.clobTokenIds as string
+    const tokenIds: string[] = JSON.parse(raw)
+    const outcomes: string[] = JSON.parse(found.outcomes as string)
+
+    const yesIndex = outcomes.findIndex((o) => o.toLowerCase() === 'yes')
+    const noIndex = outcomes.findIndex((o) => o.toLowerCase() === 'no')
+
+    return {
+      yesTokenId: tokenIds[yesIndex] || tokenIds[0],
+      noTokenId: tokenIds[noIndex] || tokenIds[1],
+      question: (found.question as string) || '',
+    }
   }
+
+  return null
 }

@@ -244,7 +244,7 @@ const result = await submitOrder(config, order)
 
 #### `getMarketTokenIds(conditionId) -> MarketTokenIds | null`
 
-Fetches YES/NO token IDs for a Polymarket market by condition ID.
+Fetches YES/NO token IDs for a Polymarket market by condition ID. Gamma's `/markets` endpoint silently ignores a condition_id query filter and caps results at 100 per page, so this paginates up to 500 active markets (offsets 0, 100, 200, 300, 400), filters client-side, and returns as soon as a match is found. Returns `null` if no active market with that condition_id exists in the first 500 results.
 
 ```typescript
 import { getMarketTokenIds } from '@stoa/sdk'
@@ -660,7 +660,7 @@ Fetches active markets. Used by the autonomous loop and `getMarketTokenIds()`.
 
 **Response:** array of market objects with `condition_id`, `question`, `outcomes` (JSON string), `liquidity`, `end_date`, etc.
 
-**Limitations:** The `/markets` endpoint silently ignores `condition_id` as a query filter and caps results at 100 per page. `get_market()` in Python paginates up to 500 markets and filters client-side. There is no lookup-by-condition-id endpoint.
+**Limitations:** The `/markets` endpoint silently ignores `condition_id` as a query filter and caps results at 100 per page, and there is no lookup-by-condition-id endpoint. Both `get_market()` in Python (`apps/agent/stoa_agent/polymarket/gamma.py`) and `getMarketTokenIds()` in the TypeScript SDK (`packages/sdk/src/polymarket.ts`) work around this by paginating up to 500 active markets and filtering client-side.
 
 ---
 

@@ -40,7 +40,7 @@ Full integration guide: [`/docs/api.md`](../../docs/api.md).
 - `hashTrace(traceJson)` — deterministic SHA-256 hash of a trace JSON object
 - `buildSignedOrder(params)` — build a signed Polymarket V2 order with builder attribution
 - `submitOrder(signedOrder)` — submit a signed order to the Polymarket CLOB
-- `getMarketTokenIds(conditionId)` — resolve a Polymarket condition ID to Yes/No token IDs
+- `getMarketTokenIds(conditionId)` — resolve a Polymarket condition ID to Yes/No token IDs (paginates Gamma up to 500 active markets, returns `null` if not found)
 
 ### Types
 
