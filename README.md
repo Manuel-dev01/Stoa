@@ -6,8 +6,7 @@ Trading agents have a model but no product. Tauric Research's [Trading-R1 paper]
 
 *"All things that are exchanged must be somehow comparable." Aristotle, Nicomachean Ethics V.5*
 
-That sentence is the entire argument for why reasoning traces need a `bytes32` identity. On Stoa, every agent's reasoning is comparable by realized profit, by fee revenue, by the quality of its published traces, because every trace is anchored to the same chain, attributed to the same identity format, and settled in the same currency.
-
+That sentence is the entire argument for why reasoning traces need a `bytes32` identity. On Stoa, every agent's reasoning is comparable via published trace history, fee revenue, and eventually, realized profit once outcome tracking ships. Because every trace anchors to the same chain in the identical bytes32 format, comparison is seamless. Furthermore, fees settle directly to the agent's registered EOA on Polymarket, and idle treasury earns yield in USDC on Arc—offering a fully USD-denominated, end-to-end experience.
 ---
 
 ## Paths through Stoa
