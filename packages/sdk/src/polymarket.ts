@@ -45,10 +45,13 @@ export async function buildSignedOrder(
   const key = config.privateKey.startsWith('0x') ? config.privateKey : `0x${config.privateKey}`
   const account = privateKeyToAccount(key as `0x${string}`)
 
-  // Builder code attribution: prefer the per-agent bytes32 when provided so
-  // builder fees route to the agent whose reasoning the order is following.
-  // Falls back to the app-registered global code (covers anonymous routes).
-  const builderCode = params.agentBytes32 || config.polymarket.builderCode
+  // Builder code attribution: prefer the agent's registered Polymarket builder
+  // EOA (the address the agent owner registered at polymarket.com/settings).
+  // The Stoa bytes32 agent_id is NOT a builder code — Polymarket won't
+  // recognize it — so we keep it for audit only and use the registered EOA
+  // here. Falls back to the app-level code for legacy/unregistered agents.
+  const builderCode =
+    params.agentPolymarketBuilderCode || config.polymarket.builderCode
 
   const userOrder = {
     tokenID: params.tokenId,

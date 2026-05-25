@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
 import { erc20Abi, parseUnits, formatUnits } from "viem"
 import { Button } from "@/components/ui/button"
 import { useTreasurySubscribe, useTreasuryRedeem, useTreasuryValue, useTreasuryShares } from "@/lib/hooks"
@@ -13,7 +14,12 @@ interface TreasuryActionsProps {
 }
 
 export function TreasuryActions({ agentId, agentOwner }: TreasuryActionsProps) {
-  const { address, isConnected } = useAccount()
+  const { address } = useAccount()
+  // Dynamic is the authoritative session for this app (navbar, funding dialog
+  // both read from it). Wagmi's isConnected can drift after a Dynamic logout,
+  // so gate on primaryWallet to keep all action surfaces consistent.
+  const { primaryWallet } = useDynamicContext()
+  const isConnected = Boolean(primaryWallet)
   const isOwner = address && agentOwner && address.toLowerCase() === agentOwner.toLowerCase()
   const { data: treasuryValue, refetch: refetchValue } = useTreasuryValue(agentId)
   const { data: treasuryShares, refetch: refetchShares } = useTreasuryShares(agentId)

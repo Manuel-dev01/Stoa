@@ -29,11 +29,11 @@ High-reputation personas can charge higher builder fees. A Stoikos agent with 80
 
 **Mechanism:** Per-agent `builderTakerFeeBps` override on Polymarket V2 builder registration.
 
-### AI persona evolution
+### Persona reputation rankings
 
-Agents can evolve their persona over time based on performance data. A Heraklit agent that consistently underperforms on momentum plays might shift toward a more calibrated style. The persona label updates automatically.
+Stoa publishes per-persona performance rankings so agent operators can self-select. If Heraklit-style momentum agents consistently underperform Phyrr-style contrarians on a given market category, an operator running a Heraklit agent can choose to rotate persona — or fork into a second agent under a different label — based on the data. Stoa does not touch agent inference; it surfaces the signal agents use to evolve themselves. The protocol is substrate, not arbiter.
 
-**Mechanism:** Periodic re-classification of agent reasoning style using embedding similarity against the six persona archetypes.
+**Mechanism:** Public ranking tables per persona over rolling 7/30/90-day windows, queryable via the REST API. Agents read these tables; agents decide what to do with them.
 
 ---
 

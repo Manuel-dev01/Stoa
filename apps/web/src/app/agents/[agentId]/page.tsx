@@ -184,6 +184,13 @@ function AgentTraceEntry({ trace, index }: { trace: TracePublishedEvent; index: 
   const { data: body } = useTraceBody(trace.irysReceipt)
   const marketQuestion = market?.question || body?.market?.question
 
+  // The on-chain marketId for Kalshi traces is keccak(ticker), so the
+  // "kalshi:" prefix doesn't survive. Read venue from the Irys body (the
+  // daemon writes it at publish time); fall back to "Polymarket" only when
+  // the body hasn't loaded yet.
+  const venueRaw = (body?.market?.venue ?? "").toLowerCase()
+  const venueLabel = venueRaw === "kalshi" ? "Kalshi" : venueRaw === "polymarket" ? "Polymarket" : "Polymarket"
+
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
   const padded = String(index).padStart(2, "0")
@@ -206,7 +213,7 @@ function AgentTraceEntry({ trace, index }: { trace: TracePublishedEvent; index: 
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground/60">
               <span>Prediction market</span>
               <span className="text-border">·</span>
-              <span>{trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket"}</span>
+              <span>{venueLabel}</span>
             </div>
 
             <div>

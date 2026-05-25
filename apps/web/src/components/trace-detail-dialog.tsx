@@ -3,6 +3,7 @@
 import { useState } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -36,6 +37,8 @@ export function TraceDetailDialog({
 }: TraceDetailDialogProps) {
   const { data: body, isLoading, error, refetch } = useTraceBody(open ? irysReceipt : undefined)
   const routeOrder = useRouteOrder()
+  const { primaryWallet, setShowAuthFlow } = useDynamicContext()
+  const isWalletConnected = Boolean(primaryWallet)
   const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
   const [liveResult, setLiveResult] = useState<Record<string, unknown> | null>(null)
   const [isSubmittingLive, setIsSubmittingLive] = useState(false)
@@ -50,7 +53,10 @@ export function TraceDetailDialog({
   const venue = (body?.market?.venue ?? "").toLowerCase()
   const isKalshi = venue === "kalshi"
   const isRoutableVenue = venue === "polymarket" || venue === ""
-  const canRoute = rating !== 0 && isRoutableVenue
+  // Preview signs a server-side order; live submit posts it. Even though
+  // neither requires the user's key, gate on wallet connection so the
+  // attribution flow has an identifiable user behind it.
+  const canRoute = rating !== 0 && isRoutableVenue && isWalletConnected
 
   const ratingVariant = rating > 0 ? "positive" : rating < 0 ? "negative" : "neutral"
 
@@ -178,30 +184,41 @@ export function TraceDetailDialog({
             <div className="border-t border-border pt-3">
               {!routeResult && (
                 <>
-                  <Button
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
-                    disabled={!canRoute || routeOrder.isPending}
-                    onClick={async () => {
-                      const result = await routeOrder.mutateAsync({
-                        marketId,
-                        side: isBuy ? "BUY" : "SELL",
-                        price: 0.50,
-                        size: body?.decision?.sizeUsdc ?? 10,
-                        agentBytes32: agentId,
-                      })
-                      setRouteResult(result as Record<string, unknown>)
-                    }}
-                  >
-                    {routeOrder.isPending
-                      ? "Constructing order..."
-                      : isKalshi
-                      ? "Routing unavailable (Kalshi)"
-                      : `Preview ${isBuy ? "BUY" : "SELL"} through agent`}
-                  </Button>
+                  {!isWalletConnected && !isKalshi ? (
+                    <Button
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
+                      onClick={() => setShowAuthFlow(true)}
+                    >
+                      Connect wallet to route
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
+                      disabled={!canRoute || routeOrder.isPending}
+                      onClick={async () => {
+                        const result = await routeOrder.mutateAsync({
+                          marketId,
+                          side: isBuy ? "BUY" : "SELL",
+                          price: 0.50,
+                          size: body?.decision?.sizeUsdc ?? 10,
+                          agentBytes32: agentId,
+                        })
+                        setRouteResult(result as Record<string, unknown>)
+                      }}
+                    >
+                      {routeOrder.isPending
+                        ? "Constructing order..."
+                        : isKalshi
+                          ? "Routing unavailable (Kalshi)"
+                          : `Preview ${isBuy ? "BUY" : "SELL"} through agent`}
+                    </Button>
+                  )}
                   <p className="text-[10px] text-muted-foreground/60 font-mono text-center mt-1">
                     {isKalshi
                       ? "Kalshi traces are anchored on Arc but routing through Polymarket V2 only. A Kalshi-native router is on the roadmap."
-                      : "Preview only. Order is signed but not submitted."}
+                      : !isWalletConnected
+                        ? "Routing attributes the trade to your wallet. Sign in to preview."
+                        : "Preview only. Order is signed but not submitted."}
                   </p>
                 </>
               )}
@@ -216,7 +233,7 @@ export function TraceDetailDialog({
                   </p>
                   <Button
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-background active:scale-[0.98] transition-transform text-xs font-mono"
-                    disabled={isSubmittingLive}
+                    disabled={isSubmittingLive || !isWalletConnected}
                     onClick={async () => {
                       setIsSubmittingLive(true)
                       setLiveError(null)
@@ -245,7 +262,11 @@ export function TraceDetailDialog({
                       }
                     }}
                   >
-                    {isSubmittingLive ? "Submitting to Polymarket…" : "Submit live order"}
+                    {isSubmittingLive
+                      ? "Submitting to Polymarket…"
+                      : !isWalletConnected
+                        ? "Connect wallet to submit"
+                        : "Submit live order"}
                   </Button>
                   {liveError && (
                     <p className="text-xs text-red-400 font-mono">{liveError}</p>

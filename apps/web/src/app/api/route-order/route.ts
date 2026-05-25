@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { createClient } from "@supabase/supabase-js"
 import { buildSignedOrder, getMarketTokenIds, type RouteOrderParams } from "@/lib/polymarket"
 
 interface RouteOrderBody {
@@ -8,6 +9,29 @@ interface RouteOrderBody {
   size: number
   agentBytes32: string
   dryRun?: boolean
+}
+
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+// Look up the agent's registered Polymarket builder EOA from Supabase. The
+// Stoa bytes32 agent_id is the on-chain identity; the builder code is a
+// mutable off-chain association set at registration time. Returns null if the
+// agent has no builder code (daemon agents, or agents whose owners haven't
+// registered a builder at polymarket.com/settings).
+async function getAgentBuilderCode(agentId: string): Promise<string | null> {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+  const { data, error } = await supabase
+    .from("agents")
+    .select("polymarket_builder_code")
+    .eq("agent_id", agentId.toLowerCase())
+    .maybeSingle()
+  if (error) {
+    console.error("[route-order] builder code lookup:", error.message)
+    return null
+  }
+  return (data?.polymarket_builder_code as string | null) ?? null
 }
 
 export async function POST(req: NextRequest) {
@@ -50,12 +74,18 @@ export async function POST(req: NextRequest) {
 
   const tokenId = side === "BUY" ? marketInfo.yesTokenId : marketInfo.noTokenId
 
+  // Resolve the agent's registered Polymarket builder EOA. If the agent
+  // hasn't registered one, the order signs with no builder attribution —
+  // honest "N/A" rather than misattributing fees to the platform.
+  const agentPolymarketBuilderCode = (await getAgentBuilderCode(agentBytes32)) ?? undefined
+
   const orderParams: RouteOrderParams = {
     tokenId,
     side,
     price,
     size,
     agentBytes32,
+    agentPolymarketBuilderCode,
   }
 
   try {

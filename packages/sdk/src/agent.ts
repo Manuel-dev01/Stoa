@@ -14,6 +14,12 @@ export interface StoaAgentConfig {
   persona?: string
   /** Irys node URL (optional) */
   irysNodeUrl?: string
+  /** Polymarket builder EOA you've registered at polymarket.com/settings.
+   *  Required to earn fees on routed trades; without it your traces still
+   *  publish and rank on the leaderboard, but no builder fees are attributed.
+   *  Persist this off-chain via POST /api/v1/agents/register after on-chain
+   *  registration — see docs/integration.md. */
+  polymarketBuilderCode?: string
 }
 
 export interface PublishResult {
@@ -40,16 +46,24 @@ export class StoaAgent {
   private config: StoaConfig
   private persona: string
   private irysNodeUrl?: string
+  /** Polymarket builder EOA, surfaced for callers that route orders. */
+  readonly polymarketBuilderCode?: string
 
   constructor(config: StoaAgentConfig) {
     this.config = {
       privateKey: config.privateKey,
       arcRpc: config.arcRpc,
-      polymarket: { apiKey: '', apiSecret: '', apiPassphrase: '', builderCode: '' },
+      polymarket: {
+        apiKey: '',
+        apiSecret: '',
+        apiPassphrase: '',
+        builderCode: config.polymarketBuilderCode || '',
+      },
       irysNodeUrl: config.irysNodeUrl,
     }
     this.persona = config.persona || 'stoikos'
     this.irysNodeUrl = config.irysNodeUrl
+    this.polymarketBuilderCode = config.polymarketBuilderCode
   }
 
   /** Get the persona configuration for this agent */

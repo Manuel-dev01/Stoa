@@ -16,6 +16,7 @@ export interface AgentRow {
   registered_at: string
   display_handle: string | null
   framework: string | null
+  polymarket_builder_code: string | null
 }
 
 export interface TraceRow {

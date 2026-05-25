@@ -23,7 +23,13 @@ export interface RouteOrderParams {
   side: 'BUY' | 'SELL'
   price: number
   size: number
+  /** Stoa agent identity (bytes32). Used for audit/logging only; not passed
+   *  to Polymarket as the builder code. */
   agentBytes32: string
+  /** Optional EOA the agent owner has registered as a Polymarket builder
+   *  (polymarket.com/settings). If set, fees route to this address.
+   *  If omitted, the order has no builder attribution. */
+  agentPolymarketBuilderCode?: string
 }
 
 export interface SignedOrderPayload {

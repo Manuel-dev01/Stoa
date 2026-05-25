@@ -42,6 +42,10 @@ const agentRegisteredAbi = [
   },
 ] as const
 
+// 0x-prefixed 20-byte EOA address. Used to validate Polymarket builder codes
+// and the optional ownerAddress field.
+const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/
+
 /**
  * POST /api/v1/agents/register
  *
@@ -50,6 +54,10 @@ const agentRegisteredAbi = [
  * Body:
  *   ownerAddress?: string (defaults to signer address)
  *   persona?: string (one of PERSONA_KEYS, defaults to "stoikos")
+ *   polymarketBuilderCode?: string (0x-prefixed 20-byte EOA registered at
+ *     polymarket.com/settings — orders routed through this agent will
+ *     attribute builder fees to that address. Optional: agents without one
+ *     publish traces normally but earn no fees.)
  */
 export async function POST(req: NextRequest) {
   try {
@@ -62,10 +70,18 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}))
     const persona = (body.persona || "stoikos").toLowerCase()
+    const polymarketBuilderCode = body.polymarketBuilderCode as string | undefined
 
     if (!PERSONA_KEYS.includes(persona)) {
       return NextResponse.json(
         { error: `Invalid persona. Must be one of: ${PERSONA_KEYS.join(", ")}` },
+        { status: 400 }
+      )
+    }
+
+    if (polymarketBuilderCode !== undefined && polymarketBuilderCode !== "" && !ADDRESS_RE.test(polymarketBuilderCode)) {
+      return NextResponse.json(
+        { error: "polymarketBuilderCode must be a 0x-prefixed 20-byte EOA address" },
         { status: 400 }
       )
     }
@@ -120,17 +136,26 @@ export async function POST(req: NextRequest) {
     const displayHandle = getPersonaLabel(persona)
     if (supabaseUrl && supabaseKey) {
       const supabase = createClient(supabaseUrl, supabaseKey)
-      await supabase.from("agents").upsert(
-        {
-          agent_id: agentId,
-          owner_address: body.ownerAddress || account.address,
-          display_handle: displayHandle,
-        },
-        { onConflict: "agent_id", ignoreDuplicates: false }
-      )
+      const row: Record<string, string> = {
+        agent_id: agentId,
+        owner_address: body.ownerAddress || account.address,
+        display_handle: displayHandle,
+      }
+      if (polymarketBuilderCode) {
+        row.polymarket_builder_code = polymarketBuilderCode
+      }
+      await supabase.from("agents").upsert(row, {
+        onConflict: "agent_id",
+        ignoreDuplicates: false,
+      })
     }
 
-    return NextResponse.json({ agentId, txHash, persona: displayHandle })
+    return NextResponse.json({
+      agentId,
+      txHash,
+      persona: displayHandle,
+      polymarketBuilderCode: polymarketBuilderCode ?? null,
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal error"
     console.error("[api/v1/agents/register] POST error:", message)
