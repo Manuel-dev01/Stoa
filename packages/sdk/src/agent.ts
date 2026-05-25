@@ -1,5 +1,5 @@
-import type { Trace } from '@stoa/shared'
-import { PERSONAS, type Persona } from '@stoa/shared'
+import type { Trace } from '@stoa-agents/shared'
+import { PERSONAS, type Persona } from '@stoa-agents/shared'
 import { registerAgent, type RegisterResult } from './register.js'
 import { publishTrace, hashTrace } from './traces.js'
 import { uploadToIrys } from './irys.js'

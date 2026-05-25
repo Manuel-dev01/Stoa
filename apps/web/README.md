@@ -1,4 +1,4 @@
-# @stoa/web
+# @stoa-agents/web
 
 The Stoa frontend. Next.js 15, App Router, TypeScript, Tailwind, shadcn/ui.
 

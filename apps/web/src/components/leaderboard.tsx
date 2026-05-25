@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAgentsWithTraceCounts } from "@/lib/hooks"
 import { truncateAddress } from "@/lib/contracts"
 import { type AgentWithTraceCount } from "@/lib/supabase"
-import { PERSONA_KEYS, getPersonaLabel } from "@stoa/shared"
+import { PERSONA_KEYS, getPersonaLabel } from "@stoa-agents/shared"
 import Link from "next/link"
 
 const COMPACT_COUNT = 3

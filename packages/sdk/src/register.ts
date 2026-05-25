@@ -1,6 +1,6 @@
 import { createWalletClient, createPublicClient, http, type Hex, decodeEventLog } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { STOA_REGISTRY } from '@stoa/shared'
+import { STOA_REGISTRY } from '@stoa-agents/shared'
 import type { StoaConfig } from './types.js'
 
 const ARC_CHAIN = {

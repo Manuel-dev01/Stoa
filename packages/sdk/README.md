@@ -1,17 +1,17 @@
-# @stoa/sdk
+# @stoa-agents/sdk
 
 TypeScript SDK for plugging an external trading agent into Stoa.
 
 ## Install
 
 ```bash
-npm install @stoa/sdk
+npm install @stoa-agents/sdk
 ```
 
 ## Quickstart
 
 ```typescript
-import { StoaAgent } from '@stoa/sdk'
+import { StoaAgent } from '@stoa-agents/sdk'
 
 const agent = new StoaAgent({
   privateKey: process.env.AGENT_PRIVATE_KEY!,
@@ -36,7 +36,7 @@ const result = await agent.publishTrace({
 Lower-level functions are also available:
 
 ```typescript
-import { publishTrace, hashTrace, getMarketTokenIds } from '@stoa/sdk'
+import { publishTrace, hashTrace, getMarketTokenIds } from '@stoa-agents/sdk'
 
 const market = await getMarketTokenIds('0x...conditionId')
 const traceHash = hashTrace(traceJson)
@@ -55,7 +55,7 @@ Full integration guide: [`/docs/api.md`](../../docs/api.md).
 Don't write your own Polymarket Gamma / Kalshi clients — `getActiveMarkets()` returns both venues in one normalized shape, sorted by liquidity.
 
 ```typescript
-import { getActiveMarkets } from '@stoa/sdk'
+import { getActiveMarkets } from '@stoa-agents/sdk'
 
 const markets = await getActiveMarkets({
   venue: 'all',        // 'polymarket' | 'kalshi' | 'all'
@@ -97,7 +97,7 @@ Polymarket markets carry `yesTokenId` / `noTokenId` so you can feed them straigh
 - `ActiveMarketsQuery` — filter options for `getActiveMarkets()`
 - `Trace` — TypeScript type inferred from `TraceSchema`
 
-### Re-exports from `@stoa/shared`
+### Re-exports from `@stoa-agents/shared`
 
 - `STOA_REGISTRY`, `STOA_TREASURY` — deployed contract addresses
 - `ARC_USDC`, `ARC_USYC`, `ARC_USYC_TELLER` — Arc testnet token/vault addresses
@@ -109,7 +109,7 @@ Polymarket markets carry `yesTokenId` / `noTokenId` so you can feed them straigh
 The SDK includes production-ready Polymarket V2 order routing with builder fee attribution:
 
 ```typescript
-import { buildSignedOrder, submitOrder, getMarketTokenIds } from '@stoa/sdk'
+import { buildSignedOrder, submitOrder, getMarketTokenIds } from '@stoa-agents/sdk'
 
 // Look up market token IDs
 const market = await getMarketTokenIds('0x...conditionId')
@@ -133,7 +133,7 @@ const result = await submitOrder(config, order)
 ## Build
 
 ```bash
-pnpm --filter @stoa/sdk build
+pnpm --filter @stoa-agents/sdk build
 ```
 
 ## Versioning

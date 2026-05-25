@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createWalletClient, http } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import { createClient } from "@supabase/supabase-js"
-import { PERSONA_KEYS, getPersonaLabel } from "@stoa/shared"
+import { PERSONA_KEYS, getPersonaLabel } from "@stoa-agents/shared"
 
 // Arc testnet chain config
 const ARC_CHAIN = {

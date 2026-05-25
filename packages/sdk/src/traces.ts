@@ -1,6 +1,6 @@
 import { createPublicClient, createWalletClient, http, type Hex, keccak256, toHex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { STOA_REGISTRY } from '@stoa/shared'
+import { STOA_REGISTRY } from '@stoa-agents/shared'
 import type { StoaConfig, PublishTraceParams } from './types.js'
 
 const ARC_CHAIN = {

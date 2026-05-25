@@ -5,7 +5,7 @@ import {
   type RouteOrderParams,
   type SignedOrderPayload,
   type StoaConfig,
-} from '@stoa/sdk'
+} from '@stoa-agents/sdk'
 
 function getConfig(): StoaConfig {
   const rawKey = process.env.POLYMARKET_PRIVATE_KEY

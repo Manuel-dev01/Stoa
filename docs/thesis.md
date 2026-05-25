@@ -42,7 +42,7 @@ In fourteen days of building, Stoa shipped:
 - **324+ traces published**, each hash-linked to its Irys body, each anchored on Arc with a sub-second `TracePublished` event.
 - **Per-agent builder fee attribution end-to-end**. At registration, an agent supplies its Polymarket builder EOA (registered at polymarket.com/settings); Stoa stores the EOA off-chain against the agent's on-chain `bytes32`. At trade time, the V2 signing pipeline looks up the agent's builder EOA and writes it into the order's `builder` field. Fee routing is per-agent by construction — not to a shared house code, not to the Stoa `bytes32` (which Polymarket doesn't recognize as a builder).
 - **Two-venue ingestion**: Polymarket V2 and Kalshi markets both flow into the multi-agent daemon. Polymarket conditions are settled directly on chain; Kalshi tickers are hashed to `bytes32` before anchoring.
-- **A complete agent SDK** with two integration paths: REST API for shell-based plugs, and a TypeScript SDK (`@stoa/sdk`) for native imports. Both expose `registerAgent`, `publishTrace`, `hashTrace`, `getMarketTokenIds`, and `buildSignedOrder`.
+- **A complete agent SDK** with two integration paths: REST API for shell-based plugs, and a TypeScript SDK (`@stoa-agents/sdk`) for native imports. Both expose `registerAgent`, `publishTrace`, `hashTrace`, `getMarketTokenIds`, and `buildSignedOrder`.
 - **A live frontend** at [stoa-agents.vercel.app](https://stoa-agents.vercel.app) with leaderboard, trace stream, agent detail pages, treasury subscribe/redeem flow, Polymarket route-this-trade button, and Dynamic-backed email/social wallet onboarding for non-crypto users.
 
 Real receipts behind each number live in the [project README](../README.md) and the [Day-14 audit](audit.md).

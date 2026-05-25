@@ -48,3 +48,5 @@ docs/x-thread.md
 docs/refactor-backlog.md
 docs/resolution.md
 docs/submission-form.md
+# npm credentials — never commit. Token lives in ~/.npmrc, outside the repo.
+.npmrc

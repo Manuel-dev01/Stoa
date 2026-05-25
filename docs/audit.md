@@ -72,7 +72,7 @@ A second post-fix subscribe (`0x12f00454baffcf71ccc30b383f3000d4220152b0c6da7027
 
 | # | Tag | Check | Status | Evidence |
 |---|---|---|---|---|
-| G1 | CORE-SDK | `@stoa/sdk` builds cleanly | PASS | `pnpm --filter @stoa/sdk build` → `tsc` exit 0, `dist/` populated |
+| G1 | CORE-SDK | `@stoa-agents/sdk` builds cleanly | PASS | `pnpm --filter @stoa-agents/sdk build` → `tsc` exit 0, `dist/` populated |
 | G2 | CORE-SDK | External consumer can import + call | PASS | Inline tsx from `apps/web`: `hashTrace({...})` returns valid 32-byte hex `0xf8182b3b...`; `getMarketTokenIds(...)` returns `{ yesTokenId, noTokenId, question: "New Rihanna Album before GTA VI?" }` |
 
 ## H. Indexer + Supabase

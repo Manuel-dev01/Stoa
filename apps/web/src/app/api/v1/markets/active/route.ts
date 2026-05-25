@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getActiveMarkets, type ActiveMarketsQuery } from "@stoa/sdk"
+import { getActiveMarkets, type ActiveMarketsQuery } from "@stoa-agents/sdk"
 
 /**
  * GET /api/v1/markets/active

@@ -1,4 +1,4 @@
-# @stoa/agent
+# @stoa-agents/agent
 
 Python agent service for Stoa. Runs DeepSeek inference on Polymarket markets, publishes reasoning traces to Irys and Arc.
 

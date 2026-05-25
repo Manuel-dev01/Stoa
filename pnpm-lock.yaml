@@ -63,10 +63,10 @@ importers:
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.15))(@types/react@19.2.15)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
-      '@stoa/sdk':
+      '@stoa-agents/sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
-      '@stoa/shared':
+      '@stoa-agents/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       '@supabase/supabase-js':
@@ -136,8 +136,8 @@ importers:
       '@polymarket/clob-client-v2':
         specifier: ^1.0.6
         version: 1.0.6(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@6.0.6)(zod@4.4.3)
-      '@stoa/shared':
-        specifier: workspace:*
+      '@stoa-agents/shared':
+        specifier: workspace:^
         version: link:../shared
       viem:
         specifier: ^2.0.0

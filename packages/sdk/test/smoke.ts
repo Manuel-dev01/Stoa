@@ -1,11 +1,11 @@
 /**
- * Smoke test: import @stoa/sdk and call read-only methods.
- * Run: pnpm --filter @stoa/sdk exec tsx test/smoke.ts
+ * Smoke test: import @stoa-agents/sdk and call read-only methods.
+ * Run: pnpm --filter @stoa-agents/sdk exec tsx test/smoke.ts
  */
 import { buildSignedOrder, getMarketTokenIds, hashTrace, STOA_REGISTRY, STOA_SDK_VERSION } from '../src/index.js'
 
 async function main() {
-  console.log('=== @stoa/sdk smoke test ===')
+  console.log('=== @stoa-agents/sdk smoke test ===')
   console.log()
 
   // 1. Version export

@@ -1,4 +1,4 @@
-# @stoa/shared
+# @stoa-agents/shared
 
 Shared types, constants, schemas, and ABIs used across the Stoa monorepo.
 
@@ -12,11 +12,11 @@ Shared types, constants, schemas, and ABIs used across the Stoa monorepo.
 ## Build
 
 ```bash
-pnpm --filter @stoa/shared build
+pnpm --filter @stoa-agents/shared build
 ```
 
 `apps/web` and `packages/sdk` both depend on this package. Build it first.
 
 ## When to add to shared
 
-Add to `@stoa/shared` only when a value or type is needed in two or more workspace packages. Single-consumer values stay local to their package.
+Add to `@stoa-agents/shared` only when a value or type is needed in two or more workspace packages. Single-consumer values stay local to their package.

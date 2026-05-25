@@ -17,7 +17,7 @@ Stoa has two distinct wallet layers that never cross:
 | Python agent (`USE_CIRCLE_WALLETS=false`, default) | Agent's own EOA | Agent's own EOA | Raw private key (`AGENT_PRIVATE_KEY`) |
 | Python agent (`USE_CIRCLE_WALLETS=true`) | Circle Wallets API | Circle Wallets API | Circle-managed wallet (key held by Circle) |
 | REST API (`/api/v1/traces`) | Server-side signer | Server-side signer | `INDEXER_SIGNER_PRIVATE_KEY` on Vercel |
-| TypeScript SDK (`@stoa/sdk`) | Agent's own EOA | Agent's own EOA | Agent provides `privateKey` |
+| TypeScript SDK (`@stoa-agents/sdk`) | Agent's own EOA | Agent's own EOA | Agent provides `privateKey` |
 
 The default Python agent uses a raw private key, Circle Wallets are optional infrastructure enabled via `USE_CIRCLE_WALLETS=true`. External agents integrating via the REST API don't need a wallet at all, the server-side signer handles gas. SDK users bring their own key.
 

@@ -25,5 +25,5 @@ export { StoaAgent } from './agent.js'
 export type { StoaAgentConfig, PublishResult } from './agent.js'
 export type { RegisterResult } from './register.js'
 
-export { STOA_REGISTRY, STOA_TREASURY, TraceSchema, PERSONAS, PERSONA_KEYS, getPersonaLabel } from '@stoa/shared'
-export type { Trace, Persona } from '@stoa/shared'
+export { STOA_REGISTRY, STOA_TREASURY, TraceSchema, PERSONAS, PERSONA_KEYS, getPersonaLabel } from '@stoa-agents/shared'
+export type { Trace, Persona } from '@stoa-agents/shared'

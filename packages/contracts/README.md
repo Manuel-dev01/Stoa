@@ -1,4 +1,4 @@
-# @stoa/contracts
+# @stoa-agents/contracts
 
 Solidity contracts for Stoa. Foundry, Solidity 0.8.26+.
 

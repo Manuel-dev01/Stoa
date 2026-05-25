@@ -1,10 +1,10 @@
 {
-  "name": "@stoa/web",
+  "name": "@stoa-agents/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm --filter @stoa/shared build && pnpm --filter @stoa/sdk build && next build",
+    "build": "pnpm --filter @stoa-agents/shared build && pnpm --filter @stoa-agents/sdk build && next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -17,8 +17,8 @@
     "@polymarket/builder-relayer-client": "^0.0.9",
     "@polymarket/builder-signing-sdk": "^1.0.0",
     "@radix-ui/react-dialog": "^1.1.15",
-    "@stoa/sdk": "workspace:*",
-    "@stoa/shared": "workspace:*",
+    "@stoa-agents/sdk": "workspace:*",
+    "@stoa-agents/shared": "workspace:*",
     "@supabase/supabase-js": "^2.106.1",
     "@tanstack/react-query": "^5.100.11",
     "@vercel/analytics": "^2.0.1",

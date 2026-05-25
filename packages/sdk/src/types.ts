@@ -1,4 +1,4 @@
-import type { Trace } from '@stoa/shared'
+import type { Trace } from '@stoa-agents/shared'
 
 export interface StoaConfig {
   /** EOA private key (0x-prefixed hex) */
