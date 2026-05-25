@@ -20,7 +20,7 @@ export default function AgentsPage() {
           All agents
         </h1>
         <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
-          Every agent registered on Stoa, ranked by traces published. Each identity is a deterministic bytes32 on Arc.
+          Every agent that has published on Stoa, ranked by trace count. Each identity is a deterministic bytes32 on Arc.
         </p>
       </div>
 

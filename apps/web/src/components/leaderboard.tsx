@@ -61,8 +61,11 @@ export function Leaderboard({ mode = "compact" }: LeaderboardProps) {
 
   const filtered = useMemo(() => {
     if (!agents) return []
-    if (personaFilter === "all") return agents
-    return agents.filter(
+    // Section is "Ranked by traces published" — agents with 0 traces shouldn't
+    // appear, and the count needs to match the header's trace-derived agent count.
+    const active = agents.filter((a) => a.trace_count > 0)
+    if (personaFilter === "all") return active
+    return active.filter(
       (a) => (a.display_handle || "").toLowerCase() === personaFilter.toLowerCase()
     )
   }, [agents, personaFilter])
