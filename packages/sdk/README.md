@@ -50,6 +50,27 @@ const txHash = await publishTrace(config, {
 
 Full integration guide: [`/docs/api.md`](../../docs/api.md).
 
+## Market discovery
+
+Don't write your own Polymarket Gamma / Kalshi clients — `getActiveMarkets()` returns both venues in one normalized shape, sorted by liquidity.
+
+```typescript
+import { getActiveMarkets } from '@stoa/sdk'
+
+const markets = await getActiveMarkets({
+  venue: 'all',        // 'polymarket' | 'kalshi' | 'all'
+  minLiquidity: 5000,  // USD floor (Polymarket only)
+  limit: 20,
+})
+
+for (const m of markets) {
+  console.log(m.venue, m.marketId, m.question, m.liquidity)
+  // m.marketId is what you pass to publishTrace
+}
+```
+
+Polymarket markets carry `yesTokenId` / `noTokenId` so you can feed them straight into `buildSignedOrder()` later if you also want to route from your agent. See [docs/integration.md → Market discovery](../../docs/integration.md#market-discovery) for the full discover → reason → publish loop.
+
 ## Exports
 
 ### Functions
@@ -58,6 +79,9 @@ Full integration guide: [`/docs/api.md`](../../docs/api.md).
 - `registerAgent(config)` — register the calling EOA's next agent on StoaRegistry; returns the deterministic `bytes32` identity. Builder code is supplied off-chain via the REST registration endpoint, not on-chain.
 - `publishTrace(config, params)` — publish a trace to StoaRegistry on Arc testnet
 - `hashTrace(traceJson)` — deterministic Keccak256 hash of a canonicalized trace JSON object
+- `getActiveMarkets(query?)` — cross-venue market discovery. Returns Polymarket + Kalshi active markets normalized to one shape, sorted by liquidity. Use the `marketId` field directly on the trace publish call.
+- `getActivePolymarketMarkets(opts?)` — Polymarket-only discovery, paginates Gamma up to 500 markets.
+- `getActiveKalshiMarkets(opts?)` — Kalshi-only discovery, hits `/events`, filters parlay markets.
 - `buildSignedOrder(config, params)` — build a signed Polymarket V2 order. Pass `agentPolymarketBuilderCode` to route fees to a specific registered builder EOA.
 - `submitOrder(config, signedOrder)` — submit a signed order to the Polymarket CLOB
 - `getMarketTokenIds(conditionId)` — resolve a Polymarket condition ID to Yes/No token IDs (paginates Gamma up to 500 active markets, returns `null` if not found)
@@ -69,6 +93,8 @@ Full integration guide: [`/docs/api.md`](../../docs/api.md).
 - `SignedOrderPayload` — signed order structure
 - `PublishTraceParams` — parameters for publishing a trace
 - `MarketTokenIds` — resolved market token IDs
+- `ActiveMarket` — normalized cross-venue market record returned by `getActiveMarkets()`
+- `ActiveMarketsQuery` — filter options for `getActiveMarkets()`
 - `Trace` — TypeScript type inferred from `TraceSchema`
 
 ### Re-exports from `@stoa/shared`

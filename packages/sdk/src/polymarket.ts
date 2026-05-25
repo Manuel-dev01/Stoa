@@ -10,7 +10,7 @@ import { ClobClient, Chain, Side, SignatureTypeV2 } from '@polymarket/clob-clien
 import { createWalletClient, http } from 'viem'
 import { polygon } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
-import type { StoaConfig, RouteOrderParams, SignedOrderPayload, MarketTokenIds } from './types.js'
+import type { StoaConfig, RouteOrderParams, SignedOrderPayload, MarketTokenIds, ActiveMarket } from './types.js'
 
 const DEPOSIT_WALLET = '0xC9dC89f3f15E02319Eea18647b2Daa8Fb1D87A1a'
 
@@ -131,4 +131,58 @@ export async function getMarketTokenIds(conditionId: string): Promise<MarketToke
   }
 
   return null
+}
+
+/** Fetch active Polymarket markets, normalized to the cross-venue ActiveMarket
+ *  shape used by getActiveMarkets(). Paginates Gamma up to 500 markets and
+ *  filters by minLiquidity. */
+export async function getActivePolymarketMarkets(opts?: {
+  minLiquidity?: number
+  pages?: number
+}): Promise<ActiveMarket[]> {
+  const minLiquidity = opts?.minLiquidity ?? 1000
+  const pages = opts?.pages ?? 5
+  const results: ActiveMarket[] = []
+
+  for (let offset = 0; offset < pages * 100; offset += 100) {
+    const resp = await fetch(
+      `https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=100&offset=${offset}`,
+    )
+    if (!resp.ok) break
+    const page: Record<string, unknown>[] = await resp.json()
+    if (page.length === 0) break
+
+    for (const m of page) {
+      const conditionId = (m.conditionId as string) || (m.condition_id as string) || ''
+      if (!conditionId) continue
+      if (m.closed === true) continue
+      const liquidity = Number(m.liquidity ?? 0)
+      if (liquidity < minLiquidity) continue
+
+      let outcomes: string[] = []
+      let tokenIds: string[] = []
+      try {
+        outcomes = typeof m.outcomes === 'string' ? JSON.parse(m.outcomes as string) : []
+        tokenIds = typeof m.clobTokenIds === 'string' ? JSON.parse(m.clobTokenIds as string) : []
+      } catch {
+        continue
+      }
+
+      const yesIndex = outcomes.findIndex((o) => o.toLowerCase() === 'yes')
+      const noIndex = outcomes.findIndex((o) => o.toLowerCase() === 'no')
+
+      results.push({
+        venue: 'polymarket',
+        marketId: conditionId,
+        question: (m.question as string) || '',
+        endDate: (m.endDate as string) || (m.end_date as string) || null,
+        outcomes,
+        liquidity,
+        yesTokenId: tokenIds[yesIndex >= 0 ? yesIndex : 0],
+        noTokenId: tokenIds[noIndex >= 0 ? noIndex : 1],
+      })
+    }
+  }
+
+  return results
 }

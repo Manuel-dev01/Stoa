@@ -6,9 +6,18 @@ export type {
   SignedOrderPayload,
   PublishTraceParams,
   MarketTokenIds,
+  ActiveMarket,
+  ActiveMarketsQuery,
 } from './types.js'
 
-export { buildSignedOrder, submitOrder, getMarketTokenIds } from './polymarket.js'
+export {
+  buildSignedOrder,
+  submitOrder,
+  getMarketTokenIds,
+  getActivePolymarketMarkets,
+} from './polymarket.js'
+export { getActiveKalshiMarkets } from './kalshi.js'
+export { getActiveMarkets } from './markets.js'
 export { publishTrace, hashTrace } from './traces.js'
 export { registerAgent } from './register.js'
 export { uploadToIrys } from './irys.js'
