@@ -74,7 +74,6 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const [liveError, setLiveError] = useState<string | null>(null)
 
   const isBuy = trace.rating > 0
-  const canRoute = trace.rating !== 0
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
   const marketQuestion = market?.question || body?.market?.question
@@ -83,11 +82,11 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   // Supabase carries the authoritative venue (the daemon writes it at publish).
   // Falling back to marketId-prefix only matters for pre-daemon legacy traces.
   const dbVenue = dbTraces?.find(t => t.trace_hash?.toLowerCase() === trace.traceHash.toLowerCase())?.venue
-  const venue = dbVenue === "kalshi"
-    ? "Kalshi"
-    : trace.marketId.toLowerCase().startsWith("kalshi:")
-      ? "Kalshi"
-      : "Polymarket"
+  const isKalshi = dbVenue === "kalshi" || trace.marketId.toLowerCase().startsWith("kalshi:")
+  const venue = isKalshi ? "Kalshi" : "Polymarket"
+  // Polymarket V2 routing only resolves Polymarket condition_ids through Gamma;
+  // a Kalshi event_ticker hash will 404, so disable the route for Kalshi traces.
+  const canRoute = trace.rating !== 0 && !isKalshi
 
   return (
     <Card className="border-border/60">
@@ -205,10 +204,14 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
               >
                 {routeOrder.isPending
                   ? "Constructing order…"
-                  : `Preview ${isBuy ? "BUY" : "SELL"} through agent`}
+                  : isKalshi
+                    ? "Routing unavailable (Kalshi)"
+                    : `Preview ${isBuy ? "BUY" : "SELL"} through agent`}
               </Button>
               <p className="text-[10px] text-muted-foreground/60 font-mono text-center">
-                Preview only — order is signed but not submitted.
+                {isKalshi
+                  ? "Kalshi traces are anchored on Arc; routing is Polymarket V2 only. A Kalshi-native router is on the roadmap."
+                  : "Preview only — order is signed but not submitted."}
               </p>
             </>
           )}
