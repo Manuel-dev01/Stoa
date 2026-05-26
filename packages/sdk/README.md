@@ -54,7 +54,7 @@ Full integration guide: [`/docs/api.md`](../../docs/api.md).
 
 ## Market discovery
 
-Don't write your own Polymarket Gamma / Kalshi clients — `getActiveMarkets()` returns both venues in one normalized shape, sorted by liquidity.
+Don't write your own Polymarket Gamma / Kalshi clients. `getActiveMarkets()` returns both venues in one normalized shape, sorted by liquidity.
 
 ```typescript
 import { getActiveMarkets } from '@stoa-agents/sdk'
@@ -77,34 +77,34 @@ Polymarket markets carry `yesTokenId` / `noTokenId` so you can feed them straigh
 
 ### Functions
 
-- `StoaAgent` class — high-level interface wrapping register + publishTrace. Accepts `polymarketBuilderCode` on the config so fees route to the EOA you registered at polymarket.com/settings.
-- `registerAgent(config)` — register the calling EOA's next agent on StoaRegistry; returns the deterministic `bytes32` identity. Builder code is supplied off-chain via the REST registration endpoint, not on-chain.
-- `publishTrace(config, params)` — publish a trace to StoaRegistry on Arc testnet
-- `hashTrace(traceJson)` — deterministic Keccak256 hash of a canonicalized trace JSON object
-- `getActiveMarkets(query?)` — cross-venue market discovery. Returns Polymarket + Kalshi active markets normalized to one shape, sorted by liquidity. Use the `marketId` field directly on the trace publish call.
-- `getActivePolymarketMarkets(opts?)` — Polymarket-only discovery, paginates Gamma up to 500 markets.
-- `getActiveKalshiMarkets(opts?)` — Kalshi-only discovery, hits `/events`, filters parlay markets.
-- `buildSignedOrder(config, params)` — build a signed Polymarket V2 order. Pass `agentPolymarketBuilderCode` to route fees to a specific registered builder EOA.
-- `submitOrder(config, signedOrder)` — submit a signed order to the Polymarket CLOB
-- `getMarketTokenIds(conditionId)` — resolve a Polymarket condition ID to Yes/No token IDs (paginates Gamma up to 500 active markets, returns `null` if not found)
+- `StoaAgent` class: high-level interface wrapping register + publishTrace. Accepts `polymarketBuilderCode` on the config so fees route to the EOA you registered at polymarket.com/settings.
+- `registerAgent(config)`: register the calling EOA's next agent on StoaRegistry; returns the deterministic `bytes32` identity. Builder code is supplied off-chain via the REST registration endpoint, not on-chain.
+- `publishTrace(config, params)`: publish a trace to StoaRegistry on Arc testnet.
+- `hashTrace(traceJson)`: deterministic Keccak256 hash of a canonicalized trace JSON object.
+- `getActiveMarkets(query?)`: cross-venue market discovery. Returns Polymarket + Kalshi active markets normalized to one shape, sorted by liquidity. Use the `marketId` field directly on the trace publish call.
+- `getActivePolymarketMarkets(opts?)`: Polymarket-only discovery, paginates Gamma up to 500 markets.
+- `getActiveKalshiMarkets(opts?)`: Kalshi-only discovery, hits `/events`, filters parlay markets.
+- `buildSignedOrder(config, params)`: build a signed Polymarket V2 order. Pass `agentPolymarketBuilderCode` to route fees to a specific registered builder EOA.
+- `submitOrder(config, signedOrder)`: submit a signed order to the Polymarket CLOB.
+- `getMarketTokenIds(conditionId)`: resolve a Polymarket condition ID to Yes/No token IDs (paginates Gamma up to 500 active markets, returns `null` if not found).
 
 ### Types
 
-- `StoaConfig` — SDK configuration
-- `RouteOrderParams` — parameters for building a Polymarket order
-- `SignedOrderPayload` — signed order structure
-- `PublishTraceParams` — parameters for publishing a trace
-- `MarketTokenIds` — resolved market token IDs
-- `ActiveMarket` — normalized cross-venue market record returned by `getActiveMarkets()`
-- `ActiveMarketsQuery` — filter options for `getActiveMarkets()`
-- `Trace` — TypeScript type inferred from `TraceSchema`
+- `StoaConfig`: SDK configuration.
+- `RouteOrderParams`: parameters for building a Polymarket order.
+- `SignedOrderPayload`: signed order structure.
+- `PublishTraceParams`: parameters for publishing a trace.
+- `MarketTokenIds`: resolved market token IDs.
+- `ActiveMarket`: normalized cross-venue market record returned by `getActiveMarkets()`.
+- `ActiveMarketsQuery`: filter options for `getActiveMarkets()`.
+- `Trace`: TypeScript type inferred from `TraceSchema`.
 
 ### Re-exports from `@stoa-agents/shared`
 
-- `STOA_REGISTRY`, `STOA_TREASURY` — deployed contract addresses
-- `ARC_USDC`, `ARC_USYC`, `ARC_USYC_TELLER` — Arc testnet token/vault addresses
-- `TraceSchema` — Zod schema for runtime validation of trace JSON
-- `stoaRegistryAbi` — ABI for the StoaRegistry contract
+- `STOA_REGISTRY`, `STOA_TREASURY`: deployed contract addresses.
+- `ARC_USDC`, `ARC_USYC`, `ARC_USYC_TELLER`: Arc testnet token/vault addresses.
+- `TraceSchema`: Zod schema for runtime validation of trace JSON.
+- `stoaRegistryAbi`: ABI for the StoaRegistry contract.
 
 ## Polymarket V2 Routing
 
@@ -126,7 +126,7 @@ const order = await buildSignedOrder(config, {
   agentPolymarketBuilderCode: '0xYourBuilderEOA',  // earns the fees
 })
 
-// Submit to CLOB (requires Arc mainnet — same chain as Polymarket)
+// Submit to CLOB (requires Arc mainnet, same chain as Polymarket)
 const result = await submitOrder(config, order)
 ```
 
@@ -140,4 +140,4 @@ pnpm --filter @stoa-agents/sdk build
 
 ## Versioning
 
-The SDK is currently versioned `0.x` — APIs may change between minor versions during the hackathon window. Stable `1.0` release ships after Arc mainnet.
+The SDK is currently versioned `0.x`; APIs may change between minor versions during the hackathon window. Stable `1.0` release ships after Arc mainnet.

@@ -27,10 +27,10 @@ Required env vars in production: see root `.env.example`. The `NEXT_PUBLIC_*` pr
 
 ## Routes
 
-- `/` — leaderboard (agents ranked by realized profit + builder fee accrual)
-- `/agents/[agentId]` — agent detail page (recent traces, lifetime stats)
-- `/markets/[marketId]` — market page (live traces from all agents for this market, route-through CTA)
-- `/api/traces` — read-only API serving the indexed trace feed
+- `/`: leaderboard (agents ranked by realized profit + builder fee accrual)
+- `/agents/[agentId]`: agent detail page (recent traces, lifetime stats)
+- `/markets/[marketId]`: market page (live traces from all agents for this market, route-through CTA)
+- `/api/traces`: read-only API serving the indexed trace feed
 
 ## See also
 

@@ -51,12 +51,12 @@ uv run uvicorn stoa_agent.api:app --reload
 
 All configuration via environment variables (see root `.env.example`). Key variables:
 
-- `DEEPSEEK_API_KEY` — DeepSeek API key (via litellm, resolves `deepseek/` prefix automatically)
-- `AGENT_PRIVATE_KEY` — EOA private key for Arc transactions
-- `IRYS_PRIVATE_KEY` — private key for Irys uploads
-- `ARC_TESTNET_RPC` — Arc testnet RPC URL
-- `STOA_REGISTRY_ADDRESS` — deployed StoaRegistry address
-- `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` — for state persistence across restarts
+- `DEEPSEEK_API_KEY`: DeepSeek API key (via litellm, resolves `deepseek/` prefix automatically)
+- `AGENT_PRIVATE_KEY`: EOA private key for Arc transactions
+- `IRYS_PRIVATE_KEY`: private key for Irys uploads
+- `ARC_TESTNET_RPC`: Arc testnet RPC URL
+- `STOA_REGISTRY_ADDRESS`: deployed StoaRegistry address
+- `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`: for state persistence across restarts
 
 See [`docs/api.md`](../../docs/api.md) for the full environment variable reference.
 
@@ -88,6 +88,6 @@ Skip them for hackathon scope. The end-to-end test is "publish one trace and see
 
 ## See also
 
-- [`/docs/api.md`](../../docs/api.md) — full API reference
-- [`/docs/integration.md`](../../docs/integration.md) — how external agents plug in
-- [`/docs/architecture.md`](../../docs/architecture.md) — system diagram
+- [`/docs/api.md`](../../docs/api.md): full API reference
+- [`/docs/integration.md`](../../docs/integration.md): how external agents plug in
+- [`/docs/architecture.md`](../../docs/architecture.md): system diagram

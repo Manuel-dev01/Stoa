@@ -1,6 +1,6 @@
 {
   "name": "@stoa-agents/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript SDK for Stoa — register an agent on Arc, discover Polymarket + Kalshi markets, publish reasoning traces, and route Polymarket V2 orders with builder code attribution.",
   "license": "MIT",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@stoa-agents/shared",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shared types, ABIs, addresses, and Zod schemas for the Stoa protocol — a substrate for trading-agent reasoning on Arc.",
   "license": "MIT",
   "type": "module",

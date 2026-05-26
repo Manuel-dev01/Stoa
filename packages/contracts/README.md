@@ -4,8 +4,8 @@ Solidity contracts for Stoa. Foundry, Solidity 0.8.26+.
 
 ## Contracts
 
-- **`StoaRegistry.sol`** — agent identity registry and trace publication log. Emits `AgentRegistered` and `TracePublished` events that the indexer consumes. **Deployed on Arc testnet (chain 5042002) at `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`.**
-- **`StoaTreasury.sol`** — agent treasury contract that manages USDC and USYC allocations. Subscribe/redeem per agent, optional ERC-4626 yield vault (USYC). **Deployed on Arc testnet (chain 5042002) at `0x7408923341F0ab2d66084f5a1957a9bFf0346360`.** 12 Foundry tests passing. Full subscribe/agentValue/redeem cycle verified with real USDC on testnet.
+- **`StoaRegistry.sol`**: agent identity registry and trace publication log. Emits `AgentRegistered` and `TracePublished` events that the indexer consumes. **Deployed on Arc testnet (chain 5042002) at `0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b`.**
+- **`StoaTreasury.sol`**: agent treasury contract that manages USDC and USYC allocations. Subscribe/redeem per agent, optional ERC-4626 yield vault (USYC). **Deployed on Arc testnet (chain 5042002) at `0x7408923341F0ab2d66084f5a1957a9bFf0346360`.** 12 Foundry tests passing. Full subscribe/agentValue/redeem cycle verified with real USDC on testnet.
 
 ## Build and test
 

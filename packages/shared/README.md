@@ -4,10 +4,10 @@ Shared types, constants, schemas, and ABIs used across the Stoa monorepo.
 
 ## Exports
 
-- `addresses` — deployed contract addresses per network
-- `schemas` — Zod schemas (trace JSON, agent config, fee schedules)
-- `abis` — TypeScript-typed ABIs auto-exported from Foundry builds
-- `constants` — protocol constants (default fee schedules, confidence thresholds, etc.)
+- `addresses`: deployed contract addresses per network
+- `schemas`: Zod schemas (trace JSON, agent config, fee schedules)
+- `abis`: TypeScript-typed ABIs auto-exported from Foundry builds
+- `constants`: protocol constants (default fee schedules, confidence thresholds, etc.)
 
 ## Build
 
