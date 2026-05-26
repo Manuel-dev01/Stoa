@@ -38,7 +38,7 @@ Two fixes landed during the audit itself:
 | C2 | hygiene | Settings load from `.env.local` | PASS | `agent_id = 0xc14c7405342d3391aed943591b512d86742eaf7f1c97b3c4807df87bb4532f6c` |
 | C3 | CORE-TRACE | Byte-perfect integrity: on-chain trace hash == keccak256(Irys body) | PASS (via D1) | Fresh D1 trace: Irys body 2522 bytes from `https://devnet.irys.xyz/FipMDzHKc8Uz9GVtWrHNRKf1yN3KwiyBVFHPP3tWEZdo` → `cast keccak` → `0xa7dceea054de8ea9af249495a1f679541e8284cc86b3a2bcc0de185605246b01` == on-chain hash from D1's TracePublished event |
 
-**C3 drift note:** `IRYS_NODE_URL=https://devnet.irys.xyz`. The env is still on Irys devnet despite Day-12 doc planning a Day-13 mainnet move. Devnet items have a TTL; mainnet migration is needed for permanent pinning. On-chain hash is still the immutable anchor.
+**C3 drift note:** `IRYS_NODE_URL=https://devnet.irys.xyz`. The env is still on Irys devnet. Devnet items have a TTL; mainnet migration is needed for permanent pinning. On-chain hash is still the immutable anchor.
 
 ## D. Agent service: write (active sweep)
 
@@ -91,7 +91,7 @@ A second post-fix subscribe (`0x12f00454baffcf71ccc30b383f3000d4220152b0c6da7027
 | I2 | CORE-SURFACE | Page contains expected content tokens | PASS | SSR HTML contains `Stoa`, `agent`, `agents`, `trace`, `traces` |
 | I3 | CORE-SURFACE | `/api/rpc` proxies to Arc | PASS | `eth_chainId` → `0x4cef52` (5,042,002 decimal, matches Arc Testnet) |
 | I4 | CORE-WALLET | Dynamic wallet connect (manual UI flow) | PASS-CODE-LIVE | Dynamic env id `a5c80b81-5d11-49b3-b104-2b3cb89e4c0a` confirmed in deployed bundle `/_next/static/chunks/app/layout-a43e74285844cb65.js`. Earlier diagnosis of `Failed to create embedded wallet` resolved by adding `overrides.evmNetworks` registering Arc Testnet for Dynamic SDK (commit history). User-side click verification still recommended after each fresh Vercel deploy. |
-| I5 | CORE-FUNDING | App Kit bridge dialog (manual UI flow) | NEEDS-MANUAL | Code exists per Day-12 (30s timeout + Retry UX in `funding-dialog.tsx`). Headless audit can't simulate the click + Circle API roundtrip; user-side verification needed. |
+| I5 | CORE-FUNDING | App Kit bridge dialog (manual UI flow) | NEEDS-MANUAL |
 | I6 | CORE-SURFACE | Agent detail page renders Treasury actions | PASS | `/agents/0xc14c7405...` HTML contains `Treasury`, `Connect`, `Fund`, `agent`, `treasury` |
 
 ## J. Build + types (fast feedback)
