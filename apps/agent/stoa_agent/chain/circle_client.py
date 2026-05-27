@@ -51,6 +51,11 @@ _TERMINAL_STATES = {"COMPLETE", "FAILED", "DENIED", "CANCELLED"}
 _SUCCESS_STATES = {"COMPLETE"}
 _POLL_INTERVAL = 2.0
 _POLL_TIMEOUT = 90.0
+# Circle reports a tx COMPLETE before the public Arc RPC node necessarily has
+# the receipt indexed, so a bare get_transaction_receipt right after can throw
+# TransactionNotFound. Poll the RPC until the receipt lands.
+_RECEIPT_TIMEOUT = 60.0
+_RECEIPT_POLL = 1.0
 
 
 class CircleArcClient:
@@ -85,7 +90,7 @@ class CircleArcClient:
         tx = self._poll_transaction(tx_id)
         tx_hash = self._extract_tx_hash(tx, tx_id)
 
-        receipt = self._w3.eth.get_transaction_receipt(tx_hash)
+        receipt = self._await_receipt(tx_hash)
         if receipt["status"] != 1:
             raise ArcSubmitError(f"registerAgent reverted: {tx_hash}")
 
@@ -118,7 +123,7 @@ class CircleArcClient:
         tx = self._poll_transaction(tx_id)
         tx_hash = self._extract_tx_hash(tx, tx_id)
 
-        receipt = self._w3.eth.get_transaction_receipt(tx_hash)
+        receipt = self._await_receipt(tx_hash)
         if receipt["status"] != 1:
             raise ArcSubmitError(f"publishTrace reverted: {tx_hash}")
 
@@ -226,6 +231,25 @@ class CircleArcClient:
         raise ArcSubmitError(
             f"Circle transaction {transaction_id} timed out after {_POLL_TIMEOUT}s. Last state: {last_state}"
         )
+
+    def _await_receipt(self, tx_hash: str) -> dict:
+        """Wait for the Arc RPC to surface the receipt for a Circle-submitted tx.
+
+        Circle marks a tx COMPLETE once it's confirmed on its side, but the
+        public RPC node web3.py queries may lag by a few hundred ms to a couple
+        seconds before the receipt is retrievable. web3's wait_for_transaction_receipt
+        polls until it appears (or times out), which avoids the TransactionNotFound
+        we'd get from a bare get_transaction_receipt called too early.
+        """
+        try:
+            return self._w3.eth.wait_for_transaction_receipt(
+                tx_hash, timeout=_RECEIPT_TIMEOUT, poll_latency=_RECEIPT_POLL
+            )
+        except Exception as e:
+            raise ArcSubmitError(
+                f"Receipt for {tx_hash} not found within {_RECEIPT_TIMEOUT}s "
+                f"(Circle reported the tx complete, RPC has not surfaced it): {e}"
+            ) from e
 
     @staticmethod
     def _extract_tx_hash(tx: dict, transaction_id: str) -> str:
