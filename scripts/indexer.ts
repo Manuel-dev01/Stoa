@@ -10,6 +10,10 @@
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *   NEXT_PUBLIC_ARC_RPC, NEXT_PUBLIC_STOA_REGISTRY_ADDRESS
  *   INDEXER_START_BLOCK, INDEXER_POLL_INTERVAL_MS
+ * Optional:
+ *   STOA_APP_URL (default https://stoa-agents.vercel.app) — where to POST
+ *     newly-indexed trace hashes so the persona classifier runs.
+ *   INDEXER_AUTH_TOKEN — bearer token if the classify endpoint is gated.
  */
 
 import { config } from 'dotenv'
@@ -26,6 +30,8 @@ const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_STOA_REGISTRY_ADDRESS as `0x${s
 const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_STOA_TREASURY_ADDRESS as `0x${string}` | undefined
 const START_BLOCK = BigInt(process.env.INDEXER_START_BLOCK || '42766000')
 const POLL_INTERVAL = Number(process.env.INDEXER_POLL_INTERVAL_MS || '5000')
+const STOA_APP_URL = process.env.STOA_APP_URL || 'https://stoa-agents.vercel.app'
+const INDEXER_AUTH_TOKEN = process.env.INDEXER_AUTH_TOKEN || ''
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
@@ -130,6 +136,10 @@ async function ensureAgent(agentId: string, ownerAddress: string): Promise<void>
 
 // --- Insert trace ---
 
+// Returns true only when this call actually inserted a new row. With
+// ignoreDuplicates the upsert is ON CONFLICT DO NOTHING, so a chained
+// .select() returns the row on insert and nothing on a skipped duplicate —
+// that's the signal we use to decide whether to trigger classification.
 async function insertTrace(params: {
   traceHash: string
   agentId: string
@@ -140,9 +150,9 @@ async function insertTrace(params: {
   arcTxHash: string
   blockNumber: bigint
   publishedAt: string
-}): Promise<void> {
+}): Promise<boolean> {
   const venue = params.marketId.startsWith('0x6b616c7368693a') || params.marketId.toLowerCase().startsWith('kalshi:') ? 'kalshi' : 'polymarket'
-  const { error } = await supabase.from('traces').upsert(
+  const { data, error } = await supabase.from('traces').upsert(
     {
       trace_hash: params.traceHash,
       agent_id: params.agentId,
@@ -156,11 +166,36 @@ async function insertTrace(params: {
       venue,
     },
     { onConflict: 'trace_hash', ignoreDuplicates: true }
-  )
+  ).select('trace_hash')
   if (error) {
     if (!error.message.includes('duplicate key')) {
       console.error(`  [traces] insert error: ${error.message}`)
     }
+    return false
+  }
+  return Array.isArray(data) && data.length > 0
+}
+
+// Trigger server-side persona classification for a freshly-indexed trace.
+// The classify endpoint is idempotent and runs the work in the background,
+// so this is a quick fire-and-forget POST. Covers any publish path that
+// bypasses /api/v1/traces (SDK direct-to-chain, etc.).
+async function triggerClassification(traceHash: string): Promise<void> {
+  try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (INDEXER_AUTH_TOKEN) headers['Authorization'] = `Bearer ${INDEXER_AUTH_TOKEN}`
+    const resp = await fetch(`${STOA_APP_URL}/api/v1/internal/classify-trace`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ traceHash }),
+      signal: AbortSignal.timeout(8000),
+    })
+    if (resp.status !== 202 && resp.status !== 200) {
+      console.error(`  [classify] ${traceHash.slice(0, 12)}… returned ${resp.status}`)
+    }
+  } catch (err) {
+    // Classification is additive; never let it interrupt indexing.
+    console.error(`  [classify] ${traceHash.slice(0, 12)}… ${err instanceof Error ? err.message : String(err)}`)
   }
 }
 
@@ -204,7 +239,7 @@ async function processBlocks(client: PublicClient, fromBlock: bigint, toBlock: b
     // Ensure agent exists (in case we missed the AgentRegistered event)
     await ensureAgent(agentId, '0x0000000000000000000000000000000000000000')
 
-    await insertTrace({
+    const inserted = await insertTrace({
       traceHash,
       agentId,
       marketId,
@@ -215,6 +250,13 @@ async function processBlocks(client: PublicClient, fromBlock: bigint, toBlock: b
       blockNumber: log.blockNumber,
       publishedAt: timestampToDate(timestamp),
     })
+
+    // Only classify rows this indexer actually inserted. Traces that already
+    // existed (daemon/REST publishes, or a prior indexer run) are skipped, so
+    // catch-up after a restart never re-floods the classifier.
+    if (inserted) {
+      await triggerClassification(traceHash)
+    }
   }
 
   // Fetch treasury events if treasury is configured

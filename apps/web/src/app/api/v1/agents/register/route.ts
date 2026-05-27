@@ -15,7 +15,7 @@ const ARC_CHAIN = {
 const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_STOA_REGISTRY_ADDRESS as `0x${string}`
 const SIGNER_KEY = process.env.INDEXER_SIGNER_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY
 
-const supabaseUrl = process.env.SUPABASE_URL
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 // registerAgent ABI

@@ -17,7 +17,7 @@ const ARC_CHAIN = {
 const REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_STOA_REGISTRY_ADDRESS as `0x${string}`
 const SIGNER_KEY = process.env.INDEXER_SIGNER_PRIVATE_KEY || process.env.DEPLOYER_PRIVATE_KEY
 
-const supabaseUrl = process.env.SUPABASE_URL
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 // publishTrace ABI
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { agentId, marketId, reasoning, decision, venue } = body
+    const { agentId, marketId, reasoning, decision, venue, persona } = body
 
     // Validate required fields
     if (!agentId || !marketId || !reasoning || !decision) {
@@ -161,11 +161,17 @@ export async function POST(req: NextRequest) {
       // is already anchored on Arc + Irys regardless.
       waitUntil(
         (async () => {
-          const result = await classifyTraceReasoning({
-            bull: reasoning.bull,
-            bear: reasoning.bear,
-            synthesis: reasoning.synthesis,
-          })
+          const result = await classifyTraceReasoning(
+            {
+              bull: reasoning.bull,
+              bear: reasoning.bear,
+              synthesis: reasoning.synthesis,
+            },
+            // The legacy persona field (if the caller sent one) is a soft prior
+            // for the classifier — a tiebreaker when the style is ambiguous, not
+            // an override. External agents that omit it classify purely on style.
+            typeof persona === "string" ? persona : undefined,
+          )
           if (!result) return
           const sb = createClient(supabaseUrl, supabaseKey)
           await sb

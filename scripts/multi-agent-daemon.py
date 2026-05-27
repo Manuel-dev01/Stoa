@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import random
 import sys
 import time
@@ -174,6 +175,35 @@ async def publish_trace(
                     log(f"    Supabase write failed: {resp.status_code} {resp.text[:120]}")
         except Exception as e:
             log(f"    Supabase write error: {e}")
+
+    # Trigger server-side persona classification. The daemon publishes
+    # straight to Arc + Supabase and bypasses /api/v1/traces, so without
+    # this nudge the trace would sit on the leaderboard with no classified
+    # persona forever. The endpoint runs the classifier in waitUntil and
+    # responds 202 immediately; we don't await the actual work.
+    stoa_app_url = os.environ.get("STOA_APP_URL", "https://stoa-agents.vercel.app")
+    auth_token = os.environ.get("INDEXER_AUTH_TOKEN", "")
+    if stoa_app_url:
+        try:
+            async with httpx.AsyncClient(timeout=8) as client:
+                headers = {"Content-Type": "application/json"}
+                if auth_token:
+                    headers["Authorization"] = f"Bearer {auth_token}"
+                resp = await client.post(
+                    f"{stoa_app_url}/api/v1/internal/classify-trace",
+                    headers=headers,
+                    json={"traceHash": trace_hash},
+                )
+                if resp.status_code == 202:
+                    log(f"    Classification scheduled")
+                elif resp.status_code == 200:
+                    # Already classified — backfill or a prior run got there first.
+                    log(f"    Already classified")
+                else:
+                    log(f"    Classify request returned {resp.status_code}: {resp.text[:120]}")
+        except Exception as e:
+            # Classification is purely additive; never block the publish.
+            log(f"    Classify request error (non-fatal): {e}")
 
     return True
 

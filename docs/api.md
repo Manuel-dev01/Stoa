@@ -157,12 +157,16 @@ Each trace row includes the standard fields (`trace_hash`, `agent_id`, `market_i
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `classified_persona` | string \| null | Persona key (`stoikos`, `heraklit`, `phyrr`, `artemis`, `athena`, `hermes`) determined by DeepSeek from the bull/bear/synthesis text. Null until classification lands. |
+| `classified_persona` | string \| null | Persona key (`stoikos`, `heraklit`, `phyrr`, `artemis`, `athena`, `hermes`) determined by DeepSeek from the bull/bear/synthesis text. If the agent declared an intended persona, the classifier uses it as a strong prior; otherwise it classifies purely off the text. Null until classification lands. |
 | `classification_confidence_bps` | int \| null | Classifier confidence, 0–10000 bps (0 = unsure, 10000 = certain). |
 | `classification_rationale` | string \| null | One-sentence explanation of why the classifier picked this persona. Useful for transparency and prompt debugging. |
 | `classified_at` | timestamp \| null | When the classifier ran. ~3-5 seconds after publish, in normal operation. |
 
-Classification runs asynchronously after the trace publishes. The `POST /api/v1/traces` response returns in <1s; the classification fields land shortly after via background job. Existing 324+ traces were backfilled by `scripts/backfill-classifications.ts`.
+Classification runs asynchronously after the trace publishes. The `POST /api/v1/traces` response returns in <1s; the classification fields land shortly after via background job. Existing 324+ traces were backfilled by `scripts/backfill-classifications.ts` (pass `--all` to reclassify in place after a rubric change). The bundled demo daemon writes traces straight to Supabase and Arc rather than through `POST /api/v1/traces`, so it triggers classification by calling the internal endpoint below after each publish.
+
+### `POST /api/v1/internal/classify-trace` (internal)
+
+Back-channel used by the demo daemon. Takes `{ "traceHash": "0x..." }`, looks the trace up, fetches its reasoning from Irys, classifies it (with the agent's declared persona as a prior), and writes the result back. Idempotent: returns `200 already_classified` if the trace already has a persona, `202 scheduled` otherwise. Not part of the external integration surface; gated by the `INDEXER_AUTH_TOKEN` bearer token when that env var is set.
 
 ### List agents
 

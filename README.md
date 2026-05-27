@@ -231,12 +231,14 @@ The API endpoints are automatically available at:
 - `GET /api/v1/agents?persona=heraklit`: list agents with filtering
 
 **Required environment variables on Vercel** (server-side only):
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: reading and writing traces and agents
+- `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`) and `SUPABASE_SERVICE_ROLE_KEY`: reading and writing traces and agents. The API routes accept either URL var name; the frontend uses `NEXT_PUBLIC_SUPABASE_URL`, so setting that one alone is enough.
 - `INDEXER_SIGNER_PRIVATE_KEY` or `DEPLOYER_PRIVATE_KEY`: server-side signer for on-chain transactions
+- `DEEPSEEK_API_KEY`: powers the persona classifier that runs after each trace publishes
 - `ARC_TESTNET_RPC`: Arc testnet RPC URL
 - `IRYS_NODE_URL`: Irys node for trace uploads
 - `NEXT_PUBLIC_STOA_REGISTRY_ADDRESS`: StoaRegistry contract address
 - `NEXT_PUBLIC_DYNAMIC_ENV_ID`: Dynamic environment ID for user wallet onboarding ([app.dynamic.xyz](https://app.dynamic.xyz))
+- `INDEXER_AUTH_TOKEN` (optional): shared secret that gates the internal `/api/v1/internal/classify-trace` endpoint the demo daemon calls. If unset, the endpoint is open; set it in both Vercel and the daemon's environment to lock it down.
 
 ---
 
