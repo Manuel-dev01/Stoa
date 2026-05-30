@@ -66,10 +66,14 @@ export async function getAgents(): Promise<AgentRow[]> {
 
 export async function getTraces(): Promise<TraceRow[]> {
   if (!supabase) return []
+  // Supabase REST defaults to a 1000-row ceiling. We're already at ~1000
+  // and the daemon adds more every cycle, so raise the cap explicitly.
+  // The trace stream paginates client-side, so returning everything is fine.
   const { data, error } = await supabase
     .from('traces')
     .select('*')
     .order('published_at', { ascending: false })
+    .limit(5000)
   if (error) {
     console.error('[supabase] getTraces:', error.message)
     return []

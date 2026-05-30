@@ -2,19 +2,45 @@
 
 import { useQuery, useMutation } from "@tanstack/react-query"
 import { usePublicClient, useReadContract, useWriteContract } from "wagmi"
-import { getAllTraces, getAgent, type TracePublishedEvent } from "./contracts"
+import { getAgent, type TracePublishedEvent } from "./contracts"
 import { stoaTreasuryAbi } from "./shared/stoaTreasury"
 import { getTraces, getAgents, getAgentsWithTraceCounts, type TraceRow, type AgentRow, type AgentWithTraceCount } from "./supabase"
 
 const STOA_TREASURY = process.env.NEXT_PUBLIC_STOA_TREASURY_ADDRESS || "0x0000000000000000000000000000000000000000"
 
+/** Map a Supabase trace row into the on-chain-event shape the trace stream
+ *  components consume. The chain is still the source of truth, but the
+ *  indexer materializes every TracePublished event into Supabase as it
+ *  happens, and Supabase keeps that history forever — whereas the Arc RPC
+ *  prunes historical logs, so a direct getLogs walk fails for older traces
+ *  with "pruned history unavailable". Reading the indexed cache makes the
+ *  trace stream robust to RPC log retention.
+ */
+function rowToEvent(r: TraceRow): TracePublishedEvent {
+  return {
+    agentId: r.agent_id as `0x${string}`,
+    marketId: r.market_id as `0x${string}`,
+    traceHash: r.trace_hash as `0x${string}`,
+    rating: r.rating,
+    confidenceBps: r.confidence_bps,
+    irysReceipt: r.irys_receipt,
+    timestamp: BigInt(Math.floor(new Date(r.published_at).getTime() / 1000)),
+    blockNumber: BigInt(r.block_number || 0),
+    transactionHash: (r.arc_tx_hash || "0x0") as `0x${string}`,
+  }
+}
+
 export function useTraces() {
-  const client = usePublicClient()
   return useQuery<TracePublishedEvent[]>({
     queryKey: ["traces"],
-    queryFn: () => getAllTraces(client!),
-    enabled: !!client,
-    refetchInterval: 30_000,
+    queryFn: async () => {
+      // getTraces() returns rows newest-first; reverse to oldest-first so
+      // existing consumers that do `[...traces].reverse()` to get newest-on-top
+      // continue to behave identically to the old on-chain getLogs path.
+      const rows = await getTraces()
+      return rows.map(rowToEvent).reverse()
+    },
+    refetchInterval: 15_000,
   })
 }
 
