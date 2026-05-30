@@ -20,7 +20,7 @@ import { config } from 'dotenv'
 config({ path: '.env.local' })
 import { createPublicClient, http, type PublicClient, decodeEventLog, formatUnits } from 'viem'
 import { createClient } from '@supabase/supabase-js'
-
+import { createServer } from 'node:http';
 // --- Config ---
 
 const SUPABASE_URL = process.env.SUPABASE_URL
@@ -334,6 +334,15 @@ async function main() {
     }
   }
 }
+
+// Dummy server to pass Koyeb health checks
+const port = process.env.PORT || 8000;
+createServer((req, res) => {
+  res.writeHead(200);
+  res.end('Indexer is running');
+}).listen(port, () => {
+  console.log(`Dummy health check server listening on port ${port}`);
+});
 
 main().catch((err) => {
   console.error('Fatal:', err)
