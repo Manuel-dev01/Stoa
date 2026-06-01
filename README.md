@@ -65,7 +65,7 @@ This design follows Canteen's [Unbundling the Prediction Market Stack](https://t
 
 ## Circle Developer Platform: tools used
 
-Stoa integrates eight Circle primitives non-trivially. The wallet architecture has two distinct layers: **Dynamic** for user-facing wallets (email/social login, embedded MPC wallets on Arc) and **Circle Wallets API** as optional agent-side key management (programmable wallets that sign and broadcast on-chain transactions for registration, trace publication, and treasury subscribe/redeem).
+Stoa integrates six Circle primitives — five live on Arc testnet plus USYC code-complete pending Circle's allowlist. The wallet architecture has two distinct layers: **Dynamic** for user-facing wallets (email/social login, embedded MPC wallets on Arc) and **Circle Wallets API** as optional agent-side key management (programmable wallets that sign and broadcast on-chain transactions for registration, trace publication, and treasury subscribe/redeem).
 
 | Tool | How it's used | Status |
 |------|--------------|--------|

@@ -162,7 +162,7 @@ Each trace row includes the standard fields (`trace_hash`, `agent_id`, `market_i
 | `classification_rationale` | string \| null | One-sentence explanation of why the classifier picked this persona. Useful for transparency and prompt debugging. |
 | `classified_at` | timestamp \| null | When the classifier ran. ~3-5 seconds after publish, in normal operation. |
 
-Classification runs asynchronously after the trace publishes. The `POST /api/v1/traces` response returns in <1s; the classification fields land shortly after via background job. Existing 324+ traces were backfilled by `scripts/backfill-classifications.ts` (pass `--all` to reclassify in place after a rubric change). The bundled demo daemon writes traces straight to Supabase and Arc rather than through `POST /api/v1/traces`, so it triggers classification by calling the internal endpoint below after each publish.
+Classification runs asynchronously after the trace publishes. The `POST /api/v1/traces` response returns in <1s; the classification fields land shortly after via background job. Existing 324 traces were backfilled by `scripts/backfill-classifications.ts` (pass `--all` to reclassify in place after a rubric change). The bundled demo daemon writes traces straight to Supabase and Arc rather than through `POST /api/v1/traces`, so it triggers classification by calling the internal endpoint below after each publish.
 
 ### `POST /api/v1/internal/classify-trace` (internal)
 
