@@ -269,7 +269,9 @@ async function main() {
   const latestBlock = await client.getBlockNumber()
   console.log(`Catching up from block ${lastProcessedBlock} to ${latestBlock}...`)
 
-  const CHUNK = 10_000n
+  // Arc's eth_getLogs rejects wide block ranges (10k fails). Keep chunks small;
+  // override with INDEXER_BLOCK_CHUNK if a given RPC tolerates more.
+  const CHUNK = BigInt(process.env.INDEXER_BLOCK_CHUNK || '1000')
   let from = lastProcessedBlock
   while (from <= latestBlock) {
     const to = from + CHUNK > latestBlock ? latestBlock : from + CHUNK
