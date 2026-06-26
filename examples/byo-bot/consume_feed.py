@@ -40,7 +40,8 @@ def pay_toll(terms: dict) -> str:
     signed = acct.sign_transaction(tx)
     tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
     w3.eth.wait_for_transaction_receipt(tx_hash)
-    return tx_hash.hex()
+    # web3.py v7's HexBytes.hex() drops the 0x prefix; the verifier needs it.
+    return "0x" + tx_hash.hex().removeprefix("0x")
 
 
 def main() -> None:
