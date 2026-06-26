@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
 
@@ -8,15 +8,27 @@ class Settings(BaseSettings):
     deepseek_api_key: str
     openai_api_key: str = ""
 
-    # Additional LLM providers routed onto the Triad. The env names start with a
-    # digit (2_LLM_*, 3_LLM_*), which isn't a valid Python identifier, so the
-    # fields use validation_alias to map them.
-    provider_2_model: str = Field(default="", validation_alias="2_LLM_MODEL")
-    provider_2_api_key: str = Field(default="", validation_alias="2_LLM_API_KEY")
-    provider_2_base_url: str = Field(default="", validation_alias="2_LLM_BASE_URL")
-    provider_3_model: str = Field(default="", validation_alias="3_LLM_MODEL")
-    provider_3_api_key: str = Field(default="", validation_alias="3_LLM_API_KEY")
-    provider_3_base_url: str = Field(default="", validation_alias="3_LLM_BASE_URL")
+    # Additional LLM providers routed onto the Triad. The local env names start
+    # with a digit (2_LLM_*, 3_LLM_*); Render forbids env keys that start with a
+    # digit, so each field also accepts a Render-safe alias (LLM2_*, LLM3_*).
+    provider_2_model: str = Field(
+        default="", validation_alias=AliasChoices("2_LLM_MODEL", "LLM2_MODEL")
+    )
+    provider_2_api_key: str = Field(
+        default="", validation_alias=AliasChoices("2_LLM_API_KEY", "LLM2_API_KEY")
+    )
+    provider_2_base_url: str = Field(
+        default="", validation_alias=AliasChoices("2_LLM_BASE_URL", "LLM2_BASE_URL")
+    )
+    provider_3_model: str = Field(
+        default="", validation_alias=AliasChoices("3_LLM_MODEL", "LLM3_MODEL")
+    )
+    provider_3_api_key: str = Field(
+        default="", validation_alias=AliasChoices("3_LLM_API_KEY", "LLM3_API_KEY")
+    )
+    provider_3_base_url: str = Field(
+        default="", validation_alias=AliasChoices("3_LLM_BASE_URL", "LLM3_BASE_URL")
+    )
 
     # Macro data (FRED) for The Quantec's CPI / Fed-funds inputs.
     fred_api_key: str = ""

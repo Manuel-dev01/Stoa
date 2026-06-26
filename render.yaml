@@ -15,17 +15,19 @@ services:
     envVars:
       - key: DEEPSEEK_API_KEY
         sync: false
-      - key: 2_LLM_MODEL
+      # Render forbids env keys starting with a digit; config.py accepts these
+      # LLM2_*/LLM3_* aliases in addition to the local 2_LLM_*/3_LLM_* names.
+      - key: LLM2_MODEL
         sync: false
-      - key: 2_LLM_API_KEY
+      - key: LLM2_API_KEY
         sync: false
-      - key: 2_LLM_BASE_URL
+      - key: LLM2_BASE_URL
         sync: false
-      - key: 3_LLM_MODEL
+      - key: LLM3_MODEL
         sync: false
-      - key: 3_LLM_API_KEY
+      - key: LLM3_API_KEY
         sync: false
-      - key: 3_LLM_BASE_URL
+      - key: LLM3_BASE_URL
         sync: false
       - key: FRED_API_KEY
         sync: false
