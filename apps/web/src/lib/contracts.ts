@@ -1,14 +1,20 @@
 import { type PublicClient } from "viem"
 import { stoaRegistryAbi } from "@/lib/shared/stoaRegistry"
 
-const STOA_REGISTRY = process.env.NEXT_PUBLIC_STOA_REGISTRY_ADDRESS
-if (!STOA_REGISTRY) {
-  throw new Error(
-    "NEXT_PUBLIC_STOA_REGISTRY_ADDRESS is not set. Add it to .env.local or Vercel environment variables."
-  )
+// Resolve the registry address at call time, not module load. A top-level
+// throw makes every page/component that imports this file fail `next build`
+// when the env var is absent in the build environment.
+function registryAddress(): `0x${string}` {
+  const addr = process.env.NEXT_PUBLIC_STOA_REGISTRY_ADDRESS
+  if (!addr) {
+    throw new Error(
+      "NEXT_PUBLIC_STOA_REGISTRY_ADDRESS is not set. Add it to .env.local or Vercel environment variables."
+    )
+  }
+  return addr as `0x${string}`
 }
 
-export { STOA_REGISTRY }
+export { registryAddress as STOA_REGISTRY }
 
 export interface TracePublishedEvent {
   agentId: `0x${string}`
@@ -33,7 +39,7 @@ export async function getAllTraces(client: PublicClient): Promise<TracePublished
   while (from <= latestBlock) {
     const to = from + CHUNK_SIZE > latestBlock ? latestBlock : from + CHUNK_SIZE
     const logs = await client.getLogs({
-      address: STOA_REGISTRY as `0x${string}`,
+      address: registryAddress(),
       event: {
         type: "event",
         name: "TracePublished",
@@ -76,7 +82,7 @@ export async function getAgent(
   agentId: `0x${string}`
 ): Promise<{ owner: `0x${string}` }> {
   const owner = await client.readContract({
-    address: STOA_REGISTRY as `0x${string}`,
+    address: registryAddress(),
     abi: stoaRegistryAbi,
     functionName: "agentOwner",
     args: [agentId],
