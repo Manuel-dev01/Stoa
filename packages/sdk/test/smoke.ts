@@ -2,7 +2,7 @@
  * Smoke test: import @stoa-agents/sdk and call read-only methods.
  * Run: pnpm --filter @stoa-agents/sdk exec tsx test/smoke.ts
  */
-import { buildSignedOrder, getMarketTokenIds, hashTrace, STOA_REGISTRY, STOA_SDK_VERSION } from '../src/index.js'
+import { getMarketTokenIds, hashTrace, STOA_REGISTRY, STOA_SDK_VERSION } from '../src/index.js'
 
 async function main() {
   console.log('=== @stoa-agents/sdk smoke test ===')
@@ -16,13 +16,13 @@ async function main() {
 
   // 3. hashTrace — pure function, no network
   const sampleTrace = {
-    schemaVersion: 'stoa.trace.v1',
+    schemaVersion: 'stoa.triad.v1',
     agentId: '0x' + 'aa'.repeat(32),
     marketId: '0x' + 'bb'.repeat(32),
     generatedAt: new Date().toISOString(),
     market: { question: 'Test?', venue: 'polymarket', resolutionAt: null },
     reasoning: { bull: 'yes', bear: 'no', synthesis: 'maybe' },
-    decision: { rating: 2, confidenceBps: 7000, sizeUsdc: 10 },
+    decision: { rating: 2, confidenceBps: 7000, kellyFraction: 0.25, sizeUsdc: 10 },
     modelMetadata: { framework: 'test', quickThinkModel: 'test', deepThinkModel: 'test' },
   }
   const traceHash = await hashTrace(sampleTrace)

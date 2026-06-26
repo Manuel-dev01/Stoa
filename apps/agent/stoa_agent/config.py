@@ -1,11 +1,43 @@
 from __future__ import annotations
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     deepseek_api_key: str
     openai_api_key: str = ""
+
+    # Additional LLM providers routed onto the Triad. The local env names start
+    # with a digit (2_LLM_*, 3_LLM_*); Render forbids env keys that start with a
+    # digit, so each field also accepts a Render-safe alias (LLM2_*, LLM3_*).
+    provider_2_model: str = Field(
+        default="", validation_alias=AliasChoices("2_LLM_MODEL", "LLM2_MODEL")
+    )
+    provider_2_api_key: str = Field(
+        default="", validation_alias=AliasChoices("2_LLM_API_KEY", "LLM2_API_KEY")
+    )
+    provider_2_base_url: str = Field(
+        default="", validation_alias=AliasChoices("2_LLM_BASE_URL", "LLM2_BASE_URL")
+    )
+    provider_3_model: str = Field(
+        default="", validation_alias=AliasChoices("3_LLM_MODEL", "LLM3_MODEL")
+    )
+    provider_3_api_key: str = Field(
+        default="", validation_alias=AliasChoices("3_LLM_API_KEY", "LLM3_API_KEY")
+    )
+    provider_3_base_url: str = Field(
+        default="", validation_alias=AliasChoices("3_LLM_BASE_URL", "LLM3_BASE_URL")
+    )
+
+    # Macro data (FRED) for The Quantec's CPI / Fed-funds inputs.
+    fred_api_key: str = ""
+
+    # Embeddings for The Bayesian's pgvector memory. gemini-embedding-001 with
+    # dimensions=1536 matches the vector(1536) column in migration 007.
+    embedding_model: str = "gemini-embedding-001"
+    embedding_dims: int = 1536
+
     irys_private_key: str
     irys_node_url: str = "https://devnet.irys.xyz"
     irys_token: str = "matic"
@@ -35,7 +67,12 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = ""
 
-    model_config = {"env_file": ".env.local", "env_file_encoding": "utf-8"}
+    model_config = {
+        "env_file": ".env.local",
+        "env_file_encoding": "utf-8",
+        "populate_by_name": True,
+        "extra": "ignore",
+    }
 
 
 def load_settings() -> Settings:

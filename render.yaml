@@ -1,0 +1,86 @@
+# Render Blueprint — Triad daemon + Arc indexer as Docker background workers.
+# Build from this repo's Dockerfiles. Secrets are sync:false (set per-service in
+# the Render dashboard or via the API), non-secrets are inlined.
+#
+# Note: Render Background Workers are a paid instance type (no free tier).
+
+services:
+  - type: worker
+    name: stoa-triad-daemon
+    runtime: docker
+    dockerfilePath: ./deploy/daemon.Dockerfile
+    dockerContext: .
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      # Render forbids env keys starting with a digit; config.py accepts these
+      # LLM2_*/LLM3_* aliases in addition to the local 2_LLM_*/3_LLM_* names.
+      - key: LLM2_MODEL
+        sync: false
+      - key: LLM2_API_KEY
+        sync: false
+      - key: LLM2_BASE_URL
+        sync: false
+      - key: LLM3_MODEL
+        sync: false
+      - key: LLM3_API_KEY
+        sync: false
+      - key: LLM3_BASE_URL
+        sync: false
+      - key: FRED_API_KEY
+        sync: false
+      - key: IRYS_PRIVATE_KEY
+        sync: false
+      - key: IRYS_NODE_URL
+        value: https://devnet.irys.xyz
+      - key: IRYS_TOKEN
+        value: matic
+      - key: IRYS_PROVIDER_URL
+        value: https://rpc-amoy.polygon.technology
+      - key: ARC_TESTNET_RPC
+        sync: false
+      - key: STOA_REGISTRY_ADDRESS
+        value: "0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b"
+      - key: CIRCLE_API_KEY
+        sync: false
+      - key: CIRCLE_ENTITY_SECRET
+        sync: false
+      - key: CIRCLE_WALLET_SET_ID
+        sync: false
+      - key: CIRCLE_WALLET_ID
+        sync: false
+      - key: USE_CIRCLE_WALLETS
+        value: "true"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: TRIAD_TOP_N
+        value: "10"
+      - key: TRIAD_CYCLE_INTERVAL
+        value: "600"
+
+  - type: worker
+    name: stoa-indexer
+    runtime: docker
+    dockerfilePath: ./deploy/indexer.Dockerfile
+    dockerContext: .
+    plan: starter
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: NEXT_PUBLIC_ARC_RPC
+        sync: false
+      - key: NEXT_PUBLIC_STOA_REGISTRY_ADDRESS
+        value: "0x19Ea8a442802065a61c69cbc03bE97724Ad8cd9b"
+      - key: NEXT_PUBLIC_STOA_TREASURY_ADDRESS
+        value: "0x7408923341F0ab2d66084f5a1957a9bFf0346360"
+      - key: INDEXER_START_BLOCK
+        sync: false
+      - key: INDEXER_POLL_INTERVAL_MS
+        value: "5000"

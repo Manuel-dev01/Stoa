@@ -10,11 +10,10 @@ import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/li
 interface TraceCardProps {
   trace: TracePublishedEvent
   index: number
-  persona?: string | null
   venue?: string | null
 }
 
-export function TraceCard({ trace, index, persona, venue }: TraceCardProps) {
+export function TraceCard({ trace, index, venue }: TraceCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const { data: market, isLoading: marketLoading } = useMarket(trace.marketId)
   const { data: body } = useTraceBody(trace.irysReceipt)
@@ -23,7 +22,6 @@ export function TraceCard({ trace, index, persona, venue }: TraceCardProps) {
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
   const marketQuestion = market?.question || body?.market?.question
 
-  const displayPersona = persona || "Stoikos"
   const displayVenue = venue || (trace.marketId.toLowerCase().startsWith("kalshi:") ? "Kalshi" : "Polymarket")
 
   const padded = String(index).padStart(2, "0")
@@ -62,11 +60,9 @@ export function TraceCard({ trace, index, persona, venue }: TraceCardProps) {
               )}
             </div>
 
-            {/* Agent + persona + timestamp line */}
+            {/* Agent + timestamp line */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-              <span className="text-amber-500/70">{displayPersona}</span>
-              <span className="text-border">·</span>
-              <span>{truncateAddress(trace.agentId)}</span>
+              <span className="text-amber-500/70">{truncateAddress(trace.agentId)}</span>
               <span className="text-border">·</span>
               <span>{formatTimestamp(trace.timestamp)}</span>
             </div>

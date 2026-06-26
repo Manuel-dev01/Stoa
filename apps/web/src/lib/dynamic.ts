@@ -20,8 +20,14 @@ const arcTestnet = {
   vanityName: "Arc Testnet",
 }
 
+// DynamicContextProvider throws if environmentId is empty, which fails the
+// static prerender of any page mounting the provider when the env var is absent
+// (e.g. Preview builds). Fall back to a syntactically-valid placeholder UUID so
+// the provider mounts; it just won't authenticate. Production sets the real id.
+const PLACEHOLDER_DYNAMIC_ENV_ID = "00000000-0000-0000-0000-000000000000"
+
 export const dynamicSettings = {
-  environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID || "",
+  environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID || PLACEHOLDER_DYNAMIC_ENV_ID,
   walletConnectors: [EthereumWalletConnectors],
   overrides: {
     evmNetworks: (networks: Parameters<typeof mergeNetworks>[1]) =>

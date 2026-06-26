@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery, useMutation } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { usePublicClient, useReadContract, useWriteContract } from "wagmi"
 import { getAgent, type TracePublishedEvent } from "./contracts"
 import { stoaTreasuryAbi } from "./shared/stoaTreasury"
@@ -147,32 +147,6 @@ export function useMarket(conditionId: string | undefined) {
     },
     enabled: !!conditionId && !!allMarkets,
     staleTime: 5 * 60_000,
-  })
-}
-
-interface RouteOrderParams {
-  marketId: string
-  side: "BUY" | "SELL"
-  price: number
-  size: number
-  agentBytes32: string
-  dryRun?: boolean
-}
-
-export function useRouteOrder() {
-  return useMutation({
-    mutationFn: async (params: RouteOrderParams) => {
-      const resp = await fetch("/api/route-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(params),
-      })
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: resp.statusText }))
-        throw new Error(err.error || `HTTP ${resp.status}`)
-      }
-      return resp.json()
-    },
   })
 }
 
