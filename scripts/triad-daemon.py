@@ -163,13 +163,19 @@ async def run_cycle(
     published = 0
     for market in markets:
         log(f"  {market.question[:60]}…")
+        # Never let one market's failure (reasoning, Irys, Arc) kill the daemon.
+        # Log it and move on; the next cycle retries.
         try:
             synthesis = await run_triad_for_market(settings, market, cycle, agent["agent_id"])
         except Exception as e:
             log(f"    Triad error: {e}")
             continue
-        if await publish_feed_item(settings, circle_client, agent, market, cycle, synthesis):
-            published += 1
+        try:
+            if await publish_feed_item(settings, circle_client, agent, market, cycle, synthesis):
+                published += 1
+        except Exception as e:
+            log(f"    Publish error: {e}")
+            continue
 
     log(f"Cycle {cycle} done: {published} feed items published.")
 

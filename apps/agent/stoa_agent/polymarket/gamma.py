@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 
 import httpx
 from pydantic import BaseModel, field_validator
@@ -72,12 +73,19 @@ class Market(BaseModel):
         return []
 
 
+# Match keywords on word boundaries so short tokens like "eth"/"btc"/"fed" don't
+# substring-match inside unrelated words ("Netherlands", "Hegseth", "federal").
+_KEYWORD_RE = re.compile(
+    r"\b(?:" + "|".join(re.escape(k) for k in sorted(MACRO_CRYPTO_KEYWORDS, key=len, reverse=True)) + r")\b"
+)
+
+
 def is_macro_crypto(market: Market, allowlist: frozenset[str] = CONDITION_ID_ALLOWLIST) -> bool:
     """True if the market is a macro or crypto market by keyword/tag heuristic."""
     if market.condition_id.lower() in allowlist:
         return True
     haystack = " ".join([market.question, *market.tags]).lower()
-    return any(kw in haystack for kw in MACRO_CRYPTO_KEYWORDS)
+    return bool(_KEYWORD_RE.search(haystack))
 
 
 async def get_active_markets(min_liquidity: float = 1000, limit: int = 5) -> list[Market]:
