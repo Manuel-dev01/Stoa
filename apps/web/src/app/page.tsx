@@ -1,17 +1,14 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useDynamicContext } from "@dynamic-labs/sdk-react-core"
-import { useTraces, useTraceBody, useMarket, useRouteOrder, useTracesFromDB } from "@/lib/hooks"
+import { useTraces, useTraceBody, useMarket, useTracesFromDB } from "@/lib/hooks"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Leaderboard } from "@/components/leaderboard"
 import { TraceCard } from "@/components/trace-card"
 import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
 import { TeaserBlock } from "@/components/teaser-block"
-import { PERSONA_KEYS, getPersonaLabel } from "@stoa-agents/shared"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import Link from "next/link"
@@ -67,36 +64,17 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
   const { data: body, isLoading } = useTraceBody(trace.irysReceipt)
   const { data: market } = useMarket(trace.marketId)
   const { data: dbTraces } = useTracesFromDB()
-  const routeOrder = useRouteOrder()
-  const { primaryWallet, setShowAuthFlow } = useDynamicContext()
-  const isWalletConnected = Boolean(primaryWallet)
-  const [routeResult, setRouteResult] = useState<Record<string, unknown> | null>(null)
-  const [liveResult, setLiveResult] = useState<Record<string, unknown> | null>(null)
-  const [isSubmittingLive, setIsSubmittingLive] = useState(false)
-  const [liveError, setLiveError] = useState<string | null>(null)
 
-  const isBuy = trace.rating > 0
   const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
   const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
   const marketQuestion = market?.question || body?.market?.question
 
-  // Per-trace persona comes from the classifier (Supabase). When not yet
-  // classified, we show "—" rather than a misleading agent-level fallback.
   const traceRow = dbTraces?.find(t => t.trace_hash?.toLowerCase() === trace.traceHash.toLowerCase())
-  const classifiedPersona = traceRow?.classified_persona
-    ? getPersonaLabel(traceRow.classified_persona)
-    : null
-  const agentPersona = classifiedPersona || "—"
   // Supabase carries the authoritative venue (the daemon writes it at publish).
   // Falling back to marketId-prefix only matters for pre-daemon legacy traces.
   const dbVenue = traceRow?.venue
   const isKalshi = dbVenue === "kalshi" || trace.marketId.toLowerCase().startsWith("kalshi:")
   const venue = isKalshi ? "Kalshi" : "Polymarket"
-  // Polymarket V2 routing only resolves Polymarket condition_ids through Gamma;
-  // a Kalshi event_ticker hash will 404, so disable the route for Kalshi traces.
-  // Wallet gate keeps attribution honest — every other action surface in the
-  // app (treasury, dialog, navbar) reads from Dynamic, so do the same here.
-  const canRoute = trace.rating !== 0 && !isKalshi && isWalletConnected
 
   return (
     <Card className="border-border/60">
@@ -129,7 +107,7 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
 
         {/* Agent line */}
         <p className="text-xs text-muted-foreground font-mono">
-          Reasoned by {agentPersona} · {truncateAddress(trace.agentId)} · {formatTimestamp(trace.timestamp)}
+          Reasoned by {truncateAddress(trace.agentId)} · {formatTimestamp(trace.timestamp)}
         </p>
 
         {/* Loading state */}
@@ -194,131 +172,6 @@ function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
           </div>
         )}
 
-        {/* Route this trade */}
-        <div className="border-t border-border/50 pt-4 space-y-3">
-          {!routeResult && (
-            <>
-              {!isWalletConnected && !isKalshi ? (
-                <Button
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
-                  onClick={() => setShowAuthFlow(true)}
-                >
-                  Connect wallet to route
-                </Button>
-              ) : (
-                <Button
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-background active:scale-[0.98] transition-transform"
-                  disabled={!canRoute || routeOrder.isPending}
-                  onClick={async () => {
-                    const result = await routeOrder.mutateAsync({
-                      marketId: trace.marketId,
-                      side: isBuy ? "BUY" : "SELL",
-                      price: 0.50,
-                      size: body?.decision?.sizeUsdc ?? 10,
-                      agentBytes32: trace.agentId,
-                    })
-                    setRouteResult(result as Record<string, unknown>)
-                  }}
-                >
-                  {routeOrder.isPending
-                    ? "Constructing order…"
-                    : isKalshi
-                      ? "Routing unavailable (Kalshi)"
-                      : `Preview ${isBuy ? "BUY" : "SELL"} through agent`}
-                </Button>
-              )}
-              <p className="text-[10px] text-muted-foreground/60 font-mono text-center">
-                {isKalshi
-                  ? "Kalshi traces are anchored on Arc; routing is Polymarket V2 only. A Kalshi-native router is on the roadmap."
-                  : !isWalletConnected
-                    ? "Routing attributes the trade to your wallet. Sign in to preview."
-                    : "Preview only — order is signed but not submitted."}
-              </p>
-            </>
-          )}
-          {routeResult && !liveResult && (
-            <div className="space-y-3 animate-fade-in-up">
-              <Badge variant="positive" className="text-xs">Order signed</Badge>
-              <p className="text-xs text-muted-foreground font-mono">
-                Builder: {(routeResult.order as Record<string, unknown>)?.builder
-                  ? String((routeResult.order as Record<string, unknown>).builder).slice(0, 10) + "…"
-                  : "N/A"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Preview complete — order is signed with the agent&apos;s builder code.
-              </p>
-              <Button
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-background active:scale-[0.98] transition-transform text-xs font-mono"
-                disabled={isSubmittingLive || !isWalletConnected}
-                onClick={async () => {
-                  setIsSubmittingLive(true)
-                  setLiveError(null)
-                  try {
-                    const resp = await fetch("/api/route-order", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        marketId: trace.marketId,
-                        side: isBuy ? "BUY" : "SELL",
-                        price: 0.50,
-                        size: body?.decision?.sizeUsdc ?? 10,
-                        agentBytes32: trace.agentId,
-                        dryRun: false,
-                      }),
-                    })
-                    if (!resp.ok) {
-                      const err = await resp.json().catch(() => ({ error: resp.statusText }))
-                      throw new Error(err.error || `HTTP ${resp.status}`)
-                    }
-                    setLiveResult(await resp.json())
-                  } catch (e) {
-                    setLiveError(e instanceof Error ? e.message : "Submission failed")
-                  } finally {
-                    setIsSubmittingLive(false)
-                  }
-                }}
-              >
-                {isSubmittingLive
-                  ? "Submitting to Polymarket…"
-                  : !isWalletConnected
-                    ? "Connect wallet to submit"
-                    : "Submit live order"}
-              </Button>
-              {liveError && (
-                <p className="text-xs text-red-400 font-mono">{liveError}</p>
-              )}
-            </div>
-          )}
-          {liveResult && (
-            <div className="space-y-2 animate-fade-in-up">
-              <Badge variant="positive" className="text-xs">Order submitted to Polymarket</Badge>
-              {Boolean(liveResult.market) && (
-                <p className="text-sm text-foreground">
-                  {String(liveResult.market)}
-                </p>
-              )}
-              {Boolean((liveResult.result as Record<string, unknown>)?.orderID) && (
-                <p className="text-xs text-muted-foreground font-mono">
-                  Order ID: {String((liveResult.result as Record<string, unknown>).orderID).slice(0, 16)}…
-                </p>
-              )}
-              <a
-                href="https://polymarket.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-mono text-amber-500/80 hover:text-amber-400 transition-colors"
-              >
-                View on Polymarket ↗
-              </a>
-            </div>
-          )}
-          {routeOrder.isError && (
-            <p className="text-xs text-red-400 animate-fade-in">
-              {routeOrder.error instanceof Error ? routeOrder.error.message : "Routing failed"}
-            </p>
-          )}
-        </div>
-
         {/* Footer links */}
         <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border/50">
           <Link
@@ -355,21 +208,7 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
   const { data: dbTraces } = useTracesFromDB()
   const [currentPage, setCurrentPage] = useState(0)
   const [venueFilter, setVenueFilter] = useState<string>("all")
-  const [personaFilter, setPersonaFilter] = useState<string>("all")
   const pageSize = 5
-
-  // trace_hash → classified persona (key, e.g. "stoikos"). The classifier
-  // writes this asynchronously after publish; until it lands the map has no
-  // entry for that trace and the card falls back gracefully.
-  const traceClassifiedPersonaMap = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const t of dbTraces ?? []) {
-      if (t.trace_hash && t.classified_persona) {
-        map.set(t.trace_hash.toLowerCase(), t.classified_persona.toLowerCase())
-      }
-    }
-    return map
-  }, [dbTraces])
 
   // trace_hash → venue. The on-chain TracePublishedEvent has the marketId as
   // raw bytes32, so we can't tell Kalshi from Polymarket from the on-chain
@@ -399,16 +238,10 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
       if (venueFilter !== "all") {
         if (venueFor(t) !== venueFilter) return false
       }
-      if (personaFilter !== "all") {
-        const classified = traceClassifiedPersonaMap.get(t.traceHash.toLowerCase())
-        // Unclassified traces are excluded from non-"all" filters — once the
-        // classifier catches up, they'll appear under the matching pill.
-        if (!classified || classified !== personaFilter) return false
-      }
       return true
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reversed, venueFilter, personaFilter, traceClassifiedPersonaMap, traceVenueMap])
+  }, [reversed, venueFilter, traceVenueMap])
 
   const totalPages = Math.ceil(filtered.length / pageSize)
   const pageTraces = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
@@ -447,24 +280,7 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
             </button>
           ))}
         </div>
-        {/* Persona filter */}
-        <div className="flex flex-wrap gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-muted-foreground/60 self-center mr-1">Persona:</span>
-          {["all", ...PERSONA_KEYS].map((p) => (
-            <button
-              key={p}
-              onClick={() => { setPersonaFilter(p); setCurrentPage(0) }}
-              className={`px-3 py-1 text-[10px] font-mono uppercase tracking-[0.12em] rounded-sm border transition-colors ${
-                personaFilter === p
-                  ? "bg-amber-600/20 border-amber-500/50 text-amber-400"
-                  : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
-              }`}
-            >
-              {p === "all" ? "All" : getPersonaLabel(p)}
-            </button>
-          ))}
-        </div>
-        {(venueFilter !== "all" || personaFilter !== "all") && (
+        {venueFilter !== "all" && (
           <p className="text-[10px] font-mono text-muted-foreground/60">
             {filtered.length} trace{filtered.length !== 1 ? "s" : ""} matching filters
           </p>
@@ -484,18 +300,14 @@ function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[
       ) : reversed.length > 0 ? (
         <>
           <div className="space-y-4 trace-list">
-            {pageTraces.map((trace, i) => {
-              const classifiedKey = traceClassifiedPersonaMap.get(trace.traceHash.toLowerCase())
-              return (
-                <TraceCard
-                  key={trace.transactionHash}
-                  trace={trace}
-                  index={currentPage * pageSize + i + 1}
-                  persona={classifiedKey ? getPersonaLabel(classifiedKey) : undefined}
-                  venue={venueFor(trace) === "kalshi" ? "Kalshi" : "Polymarket"}
-                />
-              )
-            })}
+            {pageTraces.map((trace, i) => (
+              <TraceCard
+                key={trace.transactionHash}
+                trace={trace}
+                index={currentPage * pageSize + i + 1}
+                venue={venueFor(trace) === "kalshi" ? "Kalshi" : "Polymarket"}
+              />
+            ))}
           </div>
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-2 text-xs font-mono text-muted-foreground">
@@ -566,7 +378,7 @@ export default function Home() {
       {/* Header */}
       <header className="space-y-3">
         <p className="text-sm text-muted-foreground leading-relaxed max-w-prose">
-          A bourse for trading-agent reasoning. AI agents publish their market reasoning on-chain. The trace is the product.
+          A machine-readable feed of cross-calibrated macro & crypto market predictions, gated by an x402 nanopayment toll on Arc. The trace is the product — and machines pay for it.
         </p>
         <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground font-mono">
           {isLoading ? (
@@ -621,9 +433,9 @@ export default function Home() {
         </summary>
         <div className="details-body">
           <ol className="mt-3 space-y-2 text-sm text-muted-foreground list-decimal list-inside leading-relaxed">
-            <li>An AI agent reasons about a prediction market — bull case, bear case, synthesis.</li>
+            <li>The Triad — Quantec, Bayesian, Calibrator — reasons about a top macro/crypto market and outputs a cross-calibrated synthesis with a fractional-Kelly stake.</li>
             <li>The full reasoning is hashed onto Arc for ~$0.01 and stored permanently on Irys.</li>
-            <li>Route a trade through an agent&apos;s reasoning, and the agent earns a USDC builder fee on Polymarket.</li>
+            <li>A trading bot hits the feed, gets an HTTP 402, pays a sub-cent USDC toll on Arc, and ingests the alpha.</li>
           </ol>
         </div>
       </details>

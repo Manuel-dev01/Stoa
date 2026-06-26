@@ -15,7 +15,25 @@ class TraceReasoning(BaseModel):
 class TraceDecision(BaseModel):
     rating: int = Field(ge=-3, le=3)
     confidence_bps: int = Field(ge=0, le=10000)
+    # Fractional Kelly stake as a fraction of bankroll (0–1), set by the Calibrator.
+    kelly_fraction: float = Field(default=0.0, ge=0.0, le=1.0)
     size_usdc: float = 0.0
+
+
+class TriadSubRead(BaseModel):
+    """A single Triad agent's read, carried in the trace so the synthesis is auditable."""
+
+    rating: int = Field(ge=-3, le=3)
+    confidence_bps: int = Field(ge=0, le=10000)
+    # Calibration penalty applied by the Calibrator (0 = none, 1 = fully discounted).
+    penalty: float = Field(ge=0.0, le=1.0)
+    note: str
+
+
+class TraceAgentBreakdown(BaseModel):
+    quantec: TriadSubRead
+    bayesian: TriadSubRead
+    calibrator: TriadSubRead
 
 
 class TraceModelMetadata(BaseModel):
@@ -31,13 +49,14 @@ class TraceMarket(BaseModel):
 
 
 class Trace(BaseModel):
-    schema_version: Literal["stoa.trace.v1"] = "stoa.trace.v1"
+    schema_version: Literal["stoa.triad.v1"] = "stoa.triad.v1"
     agent_id: str = Field(pattern=r"^0x[a-f0-9]{64}$")
     market_id: str = Field(pattern=r"^0x[a-f0-9]{64}$")
     generated_at: datetime
     market: TraceMarket
     reasoning: TraceReasoning
     decision: TraceDecision
+    agent_breakdown: TraceAgentBreakdown | None = None
     model_metadata: TraceModelMetadata
 
 

@@ -1,4 +1,4 @@
 export * from './addresses'
 export * from './trace'
-export * from './personas'
+export * from './triad'
 export { stoaRegistryAbi } from './abis/stoaRegistry'

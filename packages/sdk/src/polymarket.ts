@@ -1,100 +1,11 @@
 /**
- * Polymarket V2 order routing.
+ * Polymarket market reads.
  *
- * Production-ready for mainnet: when Arc and Polygon share the same chain,
- * orders signed here will submit to the CLOB with the agent's builder code.
- * On testnet, use buildSignedOrder() to verify signing; submission will fail
- * due to cross-chain mismatch (Arc testnet != Polygon mainnet).
+ * Stoa no longer routes Polymarket orders — the monetization rail is the
+ * x402 feed toll, not builder fees. This module is read-only: it discovers
+ * markets and token IDs that the Triad reasons over.
  */
-import { ClobClient, Chain, Side, SignatureTypeV2 } from '@polymarket/clob-client-v2'
-import { createWalletClient, http } from 'viem'
-import { polygon } from 'viem/chains'
-import { privateKeyToAccount } from 'viem/accounts'
-import type { StoaConfig, RouteOrderParams, SignedOrderPayload, MarketTokenIds, ActiveMarket } from './types.js'
-
-const DEPOSIT_WALLET = '0xC9dC89f3f15E02319Eea18647b2Daa8Fb1D87A1a'
-
-function getClient(config: StoaConfig): ClobClient {
-  const key = config.privateKey.startsWith('0x') ? config.privateKey : `0x${config.privateKey}`
-  const account = privateKeyToAccount(key as `0x${string}`)
-  const polygonRpc = config.polygonRpc || 'https://polygon-bor-rpc.publicnode.com'
-  const signer = createWalletClient({ account, transport: http(polygonRpc) })
-
-  // Use POLY_1271 signature type with deposit wallet
-  // Both maker and signer will be set to the deposit wallet address
-  return new ClobClient({
-    host: 'https://clob.polymarket.com',
-    chain: Chain.POLYGON,
-    signer,
-    creds: {
-      key: config.polymarket.apiKey,
-      secret: config.polymarket.apiSecret,
-      passphrase: config.polymarket.apiPassphrase,
-    },
-    builderConfig: { builderCode: config.polymarket.builderCode },
-    signatureType: SignatureTypeV2.POLY_1271,
-    funderAddress: DEPOSIT_WALLET,
-  })
-}
-
-export async function buildSignedOrder(
-  config: StoaConfig,
-  params: RouteOrderParams,
-): Promise<SignedOrderPayload> {
-  const client = getClient(config)
-  const key = config.privateKey.startsWith('0x') ? config.privateKey : `0x${config.privateKey}`
-  const account = privateKeyToAccount(key as `0x${string}`)
-
-  // Builder code attribution: prefer the agent's registered Polymarket builder
-  // EOA (the address the agent owner registered at polymarket.com/settings).
-  // The Stoa bytes32 agent_id is NOT a builder code — Polymarket won't
-  // recognize it — so we keep it for audit only and use the registered EOA
-  // here. Falls back to the app-level code for legacy/unregistered agents.
-  const builderCode =
-    params.agentPolymarketBuilderCode || config.polymarket.builderCode
-
-  const userOrder = {
-    tokenID: params.tokenId,
-    price: params.price,
-    size: params.size,
-    side: params.side === 'BUY' ? Side.BUY : Side.SELL,
-    builderCode,
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const signedOrder: any = await client.createOrder(userOrder)
-
-  return {
-    order: {
-      salt: String(signedOrder.salt),
-      maker: signedOrder.maker,
-      signer: signedOrder.signer,
-      taker: signedOrder.taker || '0x0000000000000000000000000000000000000000',
-      tokenId: signedOrder.tokenId,
-      makerAmount: signedOrder.makerAmount,
-      takerAmount: signedOrder.takerAmount,
-      side: String(signedOrder.side),
-      signatureType: Number(signedOrder.signatureType),
-      timestamp: String(signedOrder.timestamp),
-      expiration: String(signedOrder.expiration || '0'),
-      metadata: signedOrder.metadata,
-      builder: signedOrder.builder,
-      signature: String(signedOrder.signature || ''),
-    },
-    owner: account.address,
-    orderType: 'GTC',
-    ownerAddress: account.address,
-    builderCode,
-  }
-}
-
-export async function submitOrder(
-  config: StoaConfig,
-  signedOrder: SignedOrderPayload,
-): Promise<unknown> {
-  const client = getClient(config)
-  return client.postOrder(signedOrder as unknown as Parameters<typeof client.postOrder>[0])
-}
+import type { MarketTokenIds, ActiveMarket } from './types.js'
 
 export async function getMarketTokenIds(conditionId: string): Promise<MarketTokenIds | null> {
   // Gamma's list endpoint caps `limit` at 100 per page and silently ignores

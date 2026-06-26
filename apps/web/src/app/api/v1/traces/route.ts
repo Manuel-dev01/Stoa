@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { waitUntil } from "@vercel/functions"
 import { createWalletClient, http, keccak256, toHex, encodeFunctionData } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import { createClient } from "@supabase/supabase-js"
 import { uploadToIrys, canonicalizeJson } from "@/lib/irys"
-import { classifyTraceReasoning } from "@/lib/persona-classifier"
 
 // Arc testnet chain config
 const ARC_CHAIN = {
@@ -61,7 +59,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { agentId, marketId, reasoning, decision, venue, persona } = body
+    const { agentId, marketId, reasoning, decision, venue } = body
 
     // Validate required fields
     if (!agentId || !marketId || !reasoning || !decision) {
@@ -79,7 +77,7 @@ export async function POST(req: NextRequest) {
 
     // Build trace object
     const trace = {
-      schemaVersion: "stoa.trace.v1",
+      schemaVersion: "stoa.triad.v1",
       agentId,
       marketId,
       generatedAt: new Date().toISOString(),
@@ -96,6 +94,7 @@ export async function POST(req: NextRequest) {
       decision: {
         rating: decision.rating,
         confidenceBps: decision.confidenceBps,
+        kellyFraction: typeof decision.kellyFraction === "number" ? decision.kellyFraction : 0,
         sizeUsdc: decision.sizeUsdc || 0,
       },
       modelMetadata: {
@@ -153,39 +152,6 @@ export async function POST(req: NextRequest) {
           venue: resolvedVenue,
         },
         { onConflict: "trace_hash", ignoreDuplicates: true }
-      )
-
-      // Classify the reasoning style in the background. The HTTP response
-      // returns immediately; the classifier writes back to the row when done
-      // (typically ~3-5s later). Failures are logged and ignored — the trace
-      // is already anchored on Arc + Irys regardless.
-      waitUntil(
-        (async () => {
-          const result = await classifyTraceReasoning(
-            {
-              bull: reasoning.bull,
-              bear: reasoning.bear,
-              synthesis: reasoning.synthesis,
-            },
-            // The legacy persona field (if the caller sent one) is a soft prior
-            // for the classifier — a tiebreaker when the style is ambiguous, not
-            // an override. External agents that omit it classify purely on style.
-            typeof persona === "string" ? persona : undefined,
-          )
-          if (!result) return
-          const sb = createClient(supabaseUrl, supabaseKey)
-          await sb
-            .from("traces")
-            .update({
-              classified_persona: result.persona,
-              classification_confidence_bps: result.confidenceBps,
-              classification_rationale: result.rationale,
-              classified_at: new Date().toISOString(),
-            })
-            .eq("trace_hash", traceHash)
-        })().catch((err) =>
-          console.error("[api/v1/traces] background classify failed:", err),
-        ),
       )
     }
 

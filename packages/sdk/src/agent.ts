@@ -1,5 +1,5 @@
 import type { Trace } from '@stoa-agents/shared'
-import { PERSONAS, type Persona } from '@stoa-agents/shared'
+import { getTriadAgent, type TriadAgent } from '@stoa-agents/shared'
 import { registerAgent, type RegisterResult } from './register.js'
 import { publishTrace, hashTrace } from './traces.js'
 import { uploadToIrys } from './irys.js'
@@ -10,16 +10,10 @@ export interface StoaAgentConfig {
   privateKey: string
   /** Arc testnet RPC URL */
   arcRpc: string
-  /** Agent persona (optional, defaults to "stoikos") */
-  persona?: string
+  /** Triad engine this agent runs as (optional, defaults to "calibrator") */
+  agent?: string
   /** Irys node URL (optional) */
   irysNodeUrl?: string
-  /** Polymarket builder EOA you've registered at polymarket.com/settings.
-   *  Required to earn fees on routed trades; without it your traces still
-   *  publish and rank on the leaderboard, but no builder fees are attributed.
-   *  Persist this off-chain via POST /api/v1/agents/register after on-chain
-   *  registration — see docs/integration.md. */
-  polymarketBuilderCode?: string
 }
 
 export interface PublishResult {
@@ -44,36 +38,27 @@ export interface PublishResult {
  */
 export class StoaAgent {
   private config: StoaConfig
-  private persona: string
+  private agentKey: string
   private irysNodeUrl?: string
-  /** Polymarket builder EOA, surfaced for callers that route orders. */
-  readonly polymarketBuilderCode?: string
 
   constructor(config: StoaAgentConfig) {
     this.config = {
       privateKey: config.privateKey,
       arcRpc: config.arcRpc,
-      polymarket: {
-        apiKey: '',
-        apiSecret: '',
-        apiPassphrase: '',
-        builderCode: config.polymarketBuilderCode || '',
-      },
       irysNodeUrl: config.irysNodeUrl,
     }
-    this.persona = config.persona || 'stoikos'
+    this.agentKey = config.agent || 'calibrator'
     this.irysNodeUrl = config.irysNodeUrl
-    this.polymarketBuilderCode = config.polymarketBuilderCode
   }
 
-  /** Get the persona configuration for this agent */
-  get personaConfig(): Persona | undefined {
-    return PERSONAS[this.persona]
+  /** Get the Triad engine configuration for this agent */
+  get triadConfig(): TriadAgent | undefined {
+    return getTriadAgent(this.agentKey)
   }
 
-  /** Get the persona label */
-  get personaLabel(): string {
-    return PERSONAS[this.persona]?.label ?? 'Stoikos'
+  /** Get the Triad engine label */
+  get triadLabel(): string {
+    return getTriadAgent(this.agentKey)?.label ?? 'The Calibrator'
   }
 
   /**
@@ -99,7 +84,7 @@ export class StoaAgent {
   }): Promise<PublishResult> {
     // Build trace
     const trace: Trace = {
-      schemaVersion: 'stoa.trace.v1',
+      schemaVersion: 'stoa.triad.v1',
       agentId: params.agentId,
       marketId: params.marketId,
       generatedAt: new Date().toISOString(),
@@ -112,6 +97,7 @@ export class StoaAgent {
       decision: {
         rating: params.rating,
         confidenceBps: params.confidenceBps,
+        kellyFraction: 0,
         sizeUsdc: 0,
       },
       modelMetadata: {

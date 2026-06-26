@@ -4,14 +4,10 @@ import { useMemo, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAgentsWithTraceCounts } from "@/lib/hooks"
 import { truncateAddress } from "@/lib/contracts"
-import { type AgentWithTraceCount } from "@/lib/supabase"
-import { PERSONA_KEYS, getPersonaLabel } from "@stoa-agents/shared"
 import Link from "next/link"
 
 const COMPACT_COUNT = 3
 const PAGE_SIZE = 5
-
-const PERSONA_FILTERS = ["all", ...PERSONA_KEYS]
 
 function AgentMark({ agentId }: { agentId: string }) {
   const hue = parseInt(agentId.slice(2, 6), 16) % 60 + 20
@@ -56,22 +52,14 @@ interface LeaderboardProps {
 
 export function Leaderboard({ mode = "compact" }: LeaderboardProps) {
   const { data: agents, isLoading } = useAgentsWithTraceCounts()
-  const [personaFilter, setPersonaFilter] = useState("all")
   const [currentPage, setCurrentPage] = useState(0)
 
   const filtered = useMemo(() => {
     if (!agents) return []
     // Section is "Ranked by traces published" — agents with 0 traces shouldn't
     // appear, and the count needs to match the header's trace-derived agent count.
-    const active = agents.filter((a) => a.trace_count > 0)
-    if (personaFilter === "all") return active
-    // Filter by the agent's dominant classified persona (mode of trace
-    // classifications). Agents with no classified traces yet are excluded
-    // from non-"all" filters.
-    return active.filter(
-      (a) => (a.dominant_classified_persona || "").toLowerCase() === personaFilter.toLowerCase()
-    )
-  }, [agents, personaFilter])
+    return agents.filter((a) => a.trace_count > 0)
+  }, [agents])
 
   const isCompact = mode === "compact"
   const displayAgents = isCompact ? filtered.slice(0, COMPACT_COUNT) : filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
@@ -93,30 +81,13 @@ export function Leaderboard({ mode = "compact" }: LeaderboardProps) {
 
   return (
     <div className="space-y-4">
-      {/* Persona filter pills */}
-      <div className="flex flex-wrap gap-2">
-        {PERSONA_FILTERS.map((key) => (
-          <button
-            key={key}
-            onClick={() => { setPersonaFilter(key); setCurrentPage(0) }}
-            className={`px-3 py-1 text-[10px] font-mono uppercase tracking-[0.12em] rounded-sm border transition-colors ${
-              personaFilter === key
-                ? "bg-amber-600/20 border-amber-500/50 text-amber-400"
-                : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
-            }`}
-          >
-            {key === "all" ? "All" : getPersonaLabel(key)}
-          </button>
-        ))}
-      </div>
-
       <div className="pantheon-rows">
         {/* Column header */}
         <div className="flex items-center gap-4 py-2 border-b border-border/60 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
           <div className="w-6 text-center">#</div>
           <div className="w-8" />
           <div className="flex-1">Agent</div>
-          <div className="w-20 text-right">Persona</div>
+          <div className="w-20 text-right">Engine</div>
           <div className="w-16 text-right">Traces</div>
           <div className="w-24 text-right">Latest</div>
           <div className="w-16 text-center">On-chain</div>
@@ -148,12 +119,10 @@ export function Leaderboard({ mode = "compact" }: LeaderboardProps) {
               </div>
             </div>
 
-            {/* Persona — derived from the classifier across this agent's traces */}
+            {/* Engine — which Triad agent this is (display handle) */}
             <div className="w-20 text-right">
               <span className="text-xs font-mono text-amber-500/70">
-                {agent.dominant_classified_persona
-                  ? getPersonaLabel(agent.dominant_classified_persona)
-                  : "—"}
+                {agent.display_handle || "—"}
               </span>
             </div>
 
