@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600&family=IBM+Plex+Mono:wght@400;500;600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:#0C0B09; color:#E9E3D6; font-family:'Hanken Grotesk',sans-serif; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  ::selection{ background:rgba(200,164,93,0.3); color:#F4EEE2; }
+  @keyframes livePulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(95,163,145,0.5); } 50%{ opacity:0.6; box-shadow:0 0 0 6px rgba(95,163,145,0); } }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:#0C0B09;">
+
+  <!-- TOP BAR -->
+  <div style="display:flex; align-items:center; justify-content:space-between; padding:22px 48px; border-bottom:1px solid #1A1712; position:sticky; top:0; z-index:30; background:rgba(12,11,9,0.85); backdrop-filter:blur(12px);">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><circle cx="8" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="24" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="6" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="24.5" r="3.2" fill="#C8A45D"></circle><path d="M8 22 L16 24.5 M24 22 L16 24.5 M16 6 L16 24.5" stroke="#3A352B" stroke-width="1.1"></path></svg>
+      <span style="font-family:'Cormorant',serif; font-weight:600; font-size:20px; letter-spacing:0.32em; padding-left:3px;">STOA</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:24px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#9A9384;">
+      <a href="Stoa%20Landing.dc.html" style="color:#9A9384; text-decoration:none;">← LANDING</a>
+      <span style="color:#C8A45D;">APP&nbsp;FLOW</span>
+      <a href="Stoa%20Brand%20Board.dc.html" style="color:#9A9384; text-decoration:none;">BRAND&nbsp;BOARD&nbsp;↗</a>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <div style="max-width:1180px; margin:0 auto; padding:64px 48px 0;">
+    <div style="display:flex; align-items:baseline; gap:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#5FA391; margin-bottom:30px;">
+      <span style="color:#C8A45D;">THE PRODUCT</span><span style="height:1px; background:#221F19; width:80px;"></span><span>ONE LOOP · NO HUMAN</span>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:28px; margin-bottom:40px;">
+      <h1 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(38px,5.5vw,76px); line-height:1.0; letter-spacing:-0.01em; margin:0; max-width:15ch;">From locked endpoint to verified trace.</h1>
+      <p style="max-width:36ch; font-size:15px; line-height:1.6; color:#9A9384; margin:0;">The entire loop a trading bot runs against Stoa — six steps, settled in under half a second. No login, no key, no human in the path.</p>
+    </div>
+
+    <!-- loop summary -->
+    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:18px 22px; border:1px solid #221F19; border-radius:8px; background:#100E0B; font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.04em; margin-bottom:8px;">
+      <span style="color:#9A9384;">DISCOVER</span><span style="color:#3A352B;">→</span>
+      <span style="color:#9A9384;">REQUEST</span><span style="color:#3A352B;">→</span>
+      <span style="color:#C8A45D;">402 TOLL</span><span style="color:#3A352B;">→</span>
+      <span style="color:#9A9384;">SETTLE</span><span style="color:#3A352B;">→</span>
+      <span style="color:#5FA391;">UNLOCKED</span><span style="color:#3A352B;">→</span>
+      <span style="color:#9A9384;">SYNTHESIS</span>
+      <span style="margin-left:auto; color:#6B655A;">≈ 412ms end-to-end</span>
+    </div>
+  </div>
+  <!-- film strip -->
+  <div style="display:flex; gap:30px; overflow-x:auto; scroll-snap-type:x mandatory; padding:40px 48px 50px;">
+
+    <!-- 1 DISCOVER -->
+    <div style="flex:0 0 380px; scroll-snap-align:center; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'Cormorant',serif; font-size:36px; color:#C8A45D; line-height:1;">1</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#9A9384;">DISCOVER</span></div>
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; overflow:hidden; height:500px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid #1A1712;"><span style="width:7px;height:7px;border-radius:50%;background:#5FA391;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A;">stoa · markets</span></div>
+        <div style="padding:16px; flex:1; overflow:hidden;">
+          <div style="display:flex; gap:8px; margin-bottom:16px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; padding:4px 10px; border:1px solid rgba(95,163,145,0.4); border-radius:20px; color:#5FA391;">MACRO</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; padding:4px 10px; border:1px solid #2A2620; border-radius:20px; color:#6B655A;">CRYPTO</span></div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="padding:14px; border:1px solid #221F19; border-radius:5px; background:#0C0B09;"><div style="display:flex; justify-content:space-between; align-items:start; gap:8px;"><div style="font-size:13.5px; color:#E9E3D6; line-height:1.4;">Fed cuts ≥50bps by Sep?</div><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#C8A45D; border:1px solid rgba(200,164,93,0.4); padding:2px 6px; border-radius:3px; white-space:nowrap;">🔒 402</span></div><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6B655A; margin-top:8px;">polymarket · vol $4.2M</div></div>
+            <div style="padding:14px; border:1px solid #221F19; border-radius:5px; background:#0C0B09;"><div style="display:flex; justify-content:space-between; align-items:start; gap:8px;"><div style="font-size:13.5px; color:#E9E3D6; line-height:1.4;">BTC &gt; $120k by Q3 close?</div><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#C8A45D; border:1px solid rgba(200,164,93,0.4); padding:2px 6px; border-radius:3px; white-space:nowrap;">🔒 402</span></div><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6B655A; margin-top:8px;">polymarket · vol $9.1M</div></div>
+            <div style="padding:14px; border:1px solid #221F19; border-radius:5px; background:#0C0B09;"><div style="display:flex; justify-content:space-between; align-items:start; gap:8px;"><div style="font-size:13.5px; color:#E9E3D6; line-height:1.4;">US recession called in 2026?</div><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#C8A45D; border:1px solid rgba(200,164,93,0.4); padding:2px 6px; border-radius:3px; white-space:nowrap;">🔒 402</span></div><div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6B655A; margin-top:8px;">polymarket · vol $2.7M</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2 REQUEST -->
+    <div style="flex:0 0 380px; scroll-snap-align:center; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'Cormorant',serif; font-size:36px; color:#C8A45D; line-height:1;">2</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#9A9384;">REQUEST</span></div>
+      <div style="background:#0A0908; border:1px solid #221F19; border-radius:8px; overflow:hidden; height:500px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid #1A1712;"><span style="width:7px;height:7px;border-radius:50%;background:#6B655A;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A;">bot · shell</span></div>
+        <div style="padding:18px 16px; font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.9; flex:1;">
+          <div style="color:#5FA391;">$ curl https://feed.stoa.xyz/macro</div>
+          <div style="color:#6B655A; margin-top:14px;">&gt; HTTP/1.1 <span style="color:#C8A45D;">402 Payment Required</span></div>
+          <div style="color:#6B655A;">&gt; x-402-toll: <span style="color:#E9E3D6;">0.005</span></div>
+          <div style="color:#6B655A;">&gt; x-402-asset: <span style="color:#E9E3D6;">USDC</span></div>
+          <div style="color:#6B655A;">&gt; x-402-chain: <span style="color:#E9E3D6;">arc</span></div>
+          <div style="color:#6B655A;">&gt; x-402-pay-to: <span style="color:#E9E3D6;">0xTreasury…9f</span></div>
+          <div style="color:#4A453C; margin-top:16px;"># no key. no login.</div>
+          <div style="color:#4A453C;"># the wallet answers.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 402 GATE -->
+    <div style="flex:0 0 380px; scroll-snap-align:center; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'Cormorant',serif; font-size:36px; color:#C8A45D; line-height:1;">3</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#9A9384;">THE TOLL</span></div>
+      <div style="background:#13100B; border:1px solid rgba(200,164,93,0.3); border-radius:8px; overflow:hidden; height:500px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid #221F19;"><span style="width:7px;height:7px;border-radius:50%;background:#C8A45D;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#C8A45D;">402 · payment required</span></div>
+        <div style="padding:28px 22px; flex:1; display:flex; flex-direction:column; justify-content:center; text-align:center;">
+          <div style="font-family:'Cormorant',serif; font-size:66px; color:#C8A45D; line-height:1; margin-bottom:6px;">$0.005</div>
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#6B655A; margin-bottom:30px;">USDC · ONE READ</div>
+          <div style="display:flex; flex-direction:column; gap:1px; background:#221F19; border:1px solid #221F19; border-radius:5px; overflow:hidden; text-align:left;">
+            <div style="display:flex; justify-content:space-between; padding:12px 14px; background:#13100B; font-family:'IBM Plex Mono',monospace; font-size:11.5px;"><span style="color:#6B655A;">RAIL</span><span style="color:#E9E3D6;">x402</span></div>
+            <div style="display:flex; justify-content:space-between; padding:12px 14px; background:#13100B; font-family:'IBM Plex Mono',monospace; font-size:11.5px;"><span style="color:#6B655A;">CHAIN</span><span style="color:#E9E3D6;">Circle · Arc</span></div>
+            <div style="display:flex; justify-content:space-between; padding:12px 14px; background:#13100B; font-family:'IBM Plex Mono',monospace; font-size:11.5px;"><span style="color:#6B655A;">PAY-TO</span><span style="color:#E9E3D6;">Stoa Treasury</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 PAY -->
+    <div style="flex:0 0 380px; scroll-snap-align:center; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'Cormorant',serif; font-size:36px; color:#C8A45D; line-height:1;">4</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#9A9384;">SETTLE</span></div>
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; overflow:hidden; height:500px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid #1A1712;"><span style="width:7px;height:7px;border-radius:50%;background:#5FA391; animation:livePulse 2s infinite;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A;">wallet · autonomous</span></div>
+        <div style="padding:22px 18px; flex:1; display:flex; flex-direction:column;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A; margin-bottom:8px;">NANOPAYMENT</div>
+          <div style="font-family:'Cormorant',serif; font-size:40px; color:#E9E3D6;">0.005 <span style="font-size:20px; color:#9A9384;">USDC</span></div>
+          <div style="margin-top:26px; height:6px; border-radius:3px; background:#1A1712; overflow:hidden;"><div style="height:100%; width:100%; background:linear-gradient(90deg,#5FA391,#74B7A4);"></div></div>
+          <div style="display:flex; justify-content:space-between; margin-top:10px; font-family:'IBM Plex Mono',monospace; font-size:11px;"><span style="color:#5FA391;">SETTLED</span><span style="color:#9A9384;">412ms</span></div>
+          <div style="margin-top:auto; display:flex; flex-direction:column; gap:1px; background:#1A1712; border:1px solid #221F19; border-radius:5px; overflow:hidden;">
+            <div style="display:flex; justify-content:space-between; padding:11px 13px; background:#0C0B09; font-family:'IBM Plex Mono',monospace; font-size:11px;"><span style="color:#6B655A;">TX</span><span style="color:#E9E3D6;">0xa3f…d20</span></div>
+            <div style="display:flex; justify-content:space-between; padding:11px 13px; background:#0C0B09; font-family:'IBM Plex Mono',monospace; font-size:11px;"><span style="color:#6B655A;">STATUS</span><span style="color:#5FA391;">✓ confirmed</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5 FEED -->
+    <div style="flex:0 0 380px; scroll-snap-align:center; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'Cormorant',serif; font-size:36px; color:#C8A45D; line-height:1;">5</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#9A9384;">UNLOCKED</span></div>
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; overflow:hidden; height:500px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid #1A1712;"><span style="width:7px;height:7px;border-radius:50%;background:#5FA391;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A;">feed · macro · 200</span></div>
+        <div style="padding:16px; flex:1; display:flex; flex-direction:column; gap:11px;">
+          <div style="padding:14px; border:1px solid rgba(95,163,145,0.25); border-radius:5px; background:rgba(95,163,145,0.03);"><div style="font-size:13px; color:#E9E3D6; line-height:1.4; margin-bottom:10px;">Fed cuts ≥50bps by Sep?</div><div style="display:flex; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:11px;"><span style="color:#6B655A;">p <span style="color:#E9E3D6;">0.37</span></span><span style="color:#6B655A;">edge <span style="color:#C8A45D;">-0.06</span></span><span style="color:#6B655A;">stance <span style="color:#5FA391;">fade</span></span></div></div>
+          <div style="padding:14px; border:1px solid #221F19; border-radius:5px;"><div style="font-size:13px; color:#E9E3D6; line-height:1.4; margin-bottom:10px;">BTC &gt; $120k by Q3 close?</div><div style="display:flex; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:11px;"><span style="color:#6B655A;">p <span style="color:#E9E3D6;">0.58</span></span><span style="color:#6B655A;">edge <span style="color:#5FA391;">+0.09</span></span><span style="color:#6B655A;">stance <span style="color:#5FA391;">back</span></span></div></div>
+          <div style="padding:14px; border:1px solid #221F19; border-radius:5px;"><div style="font-size:13px; color:#E9E3D6; line-height:1.4; margin-bottom:10px;">US recession called in 2026?</div><div style="display:flex; gap:14px; font-family:'IBM Plex Mono',monospace; font-size:11px;"><span style="color:#6B655A;">p <span style="color:#E9E3D6;">0.21</span></span><span style="color:#6B655A;">edge <span style="color:#C8A45D;">-0.03</span></span><span style="color:#6B655A;">stance <span style="color:#6B655A;">hold</span></span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6 SYNTHESIS -->
+    <div style="flex:0 0 380px; scroll-snap-align:center; display:flex; flex-direction:column; gap:16px;">
+      <div style="display:flex; align-items:center; gap:12px;"><span style="font-family:'Cormorant',serif; font-size:36px; color:#C8A45D; line-height:1;">6</span><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.14em; color:#9A9384;">SYNTHESIS</span></div>
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; overflow:hidden; height:500px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid #1A1712;"><span style="width:7px;height:7px;border-radius:50%;background:#C8A45D;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A;">trace · 0x7a…e1</span></div>
+        <div style="padding:18px 16px; flex:1; display:flex; flex-direction:column;">
+          <div style="font-family:'Cormorant',serif; font-size:22px; color:#E9E3D6; line-height:1.2; margin-bottom:16px;">Fed cuts ≥50bps by Sep?</div>
+          <div style="display:flex; flex-direction:column; gap:9px; margin-bottom:16px;">
+            <div style="display:flex; align-items:center; gap:8px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A; width:62px;">QUANTEC</span><div style="flex:1; height:5px; background:#1A1712; border-radius:3px; overflow:hidden;"><div style="height:100%; width:71%; background:#5FA391;"></div></div><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9A9384;">.71</span></div>
+            <div style="display:flex; align-items:center; gap:8px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A; width:62px;">BAYESIAN</span><div style="flex:1; height:5px; background:#1A1712; border-radius:3px; overflow:hidden;"><div style="height:100%; width:66%; background:#5FA391;"></div></div><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9A9384;">.66</span></div>
+            <div style="display:flex; align-items:center; gap:8px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#C8A45D; width:62px;">CALIBR.</span><div style="flex:1; height:5px; background:#1A1712; border-radius:3px; overflow:hidden;"><div style="height:100%; width:100%; background:#C8A45D;"></div></div><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#C8A45D;">1.0</span></div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:#1A1712; border:1px solid #221F19; border-radius:5px; overflow:hidden; margin-bottom:14px;">
+            <div style="background:#0C0B09; padding:12px 8px; text-align:center;"><div style="font-family:'Cormorant',serif; font-size:24px; color:#E9E3D6;">0.37</div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B655A;">P</div></div>
+            <div style="background:#0C0B09; padding:12px 8px; text-align:center;"><div style="font-family:'Cormorant',serif; font-size:24px; color:#C8A45D;">-.06</div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B655A;">EDGE</div></div>
+            <div style="background:#0C0B09; padding:12px 8px; text-align:center;"><div style="font-family:'Cormorant',serif; font-size:24px; color:#5FA391;">.083</div><div style="font-family:'IBM Plex Mono',monospace; font-size:9px; color:#6B655A;">½-KELLY</div></div>
+          </div>
+          <div style="margin-top:auto; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px; border:1px solid rgba(95,163,145,0.35); border-radius:5px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5FA391;">✓ VERIFY ON IRYS · ARC</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div style="max-width:1180px; margin:0 auto; padding:30px 48px 70px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#4A453C; border-top:1px solid #161310;">
+    <span style="color:#6B655A;">STOA · ΣΤΟΑ</span>
+    <a href="Stoa%20Landing.dc.html" style="color:#9A9384; text-decoration:none;">← BACK TO LANDING</a>
+    <span>APP FLOW · v1</span>
+  </div>
+<!--SECTIONS-->
+</div>
+</x-dc>
+</body>
+</html>

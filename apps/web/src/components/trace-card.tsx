@@ -62,7 +62,7 @@ export function TraceCard({ trace, index, venue }: TraceCardProps) {
 
             {/* Agent + timestamp line */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-              <span className="text-amber-500/70">{truncateAddress(trace.agentId)}</span>
+              <span className="text-gold/70">{truncateAddress(trace.agentId)}</span>
               <span className="text-border">·</span>
               <span>{formatTimestamp(trace.timestamp)}</span>
             </div>
@@ -76,7 +76,7 @@ export function TraceCard({ trace, index, venue }: TraceCardProps) {
             <span className="text-[11px] font-mono text-muted-foreground">
               {Math.round(trace.confidenceBps / 100)}%
             </span>
-            <span className="text-[10px] font-mono text-amber-500/60 group-hover:text-amber-400 transition-colors">
+            <span className="text-[10px] font-mono text-gold/60 group-hover:text-gold transition-colors">
               + read
             </span>
           </div>
