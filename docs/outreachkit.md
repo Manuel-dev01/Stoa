@@ -5,6 +5,57 @@
 
 You are no longer selling to "crypto bros." You are selling to quantitative developers and open-source data hoarders.
 
+---
+
+## Quickstart — consume the feed in 5 minutes
+
+Lead every conversation with this. It's the whole pitch: a developer goes from zero to ingesting cross-calibrated alpha in four commands.
+
+**1. Taste it free — no wallet, no key.** The latest syntheses, ungated:
+
+```bash
+curl https://stoa-agents.vercel.app/api/v1/feeds/preview
+```
+
+Returns the 3 most recent items — market, rating, confidence, Kelly fraction, and the Irys hash for each. The full feed is gated; this sample is free so the schema can be inspected before wiring payment.
+
+**2. Hit the gate.** The full feed answers with HTTP 402 + payment terms:
+
+```bash
+curl -i https://stoa-agents.vercel.app/api/v1/feeds/macro-alpha
+# HTTP/1.1 402 Payment Required
+# { "payment_terms": { "amount": "0.005", "asset": "USDC",
+#   "network": "arc-testnet", "pay_to": "0xdf642780…3bb7" } }
+```
+
+**3. Pay the toll, unlock the feed.** The whole client is ~20 lines — `examples/byo-bot/consume_feed.py`:
+
+```bash
+pip install requests web3
+export ARC_RPC="https://rpc.testnet.arc-node…"   # Arc testnet RPC
+export BOT_PRIVATE_KEY="0x…"                       # funded with a little Arc USDC
+python consume_feed.py
+```
+
+Expected output:
+
+```
+402 → paying 0.005 USDC to 0xdf642780…3bb7 on Arc…
+paid: 0x4778…922c
+Unlocked 10 alpha items:
+  SELL -2 · 65% · Will Bitcoin hit $150k by December 31, 2026?
+    rating=-2 conf=65% kelly=0  irys=29kYhM4kMW…
+  …
+```
+
+The bot hits the 402, autonomously pays the sub-cent toll on Arc, retries with the receipt header, and ingests the Kelly fractions. Receipts are single-use and verified on-chain.
+
+**4. Verify anything.** Every item carries an Irys hash and an Arc tx. Open `https://gateway.irys.xyz/<hash>` to read the exact reasoning, walk the loop at [`/flow`](https://stoa-agents.vercel.app/flow), or browse every published synthesis at [`/traces`](https://stoa-agents.vercel.app/traces).
+
+> Need testnet USDC to try the paid path? Ping us — we'll fund your wallet to cover the first 1,000 pulls.
+
+---
+
 ## Channel 1: Algo-Trading Subreddits (`r/algotrading`, `r/CryptoCurrency`, `r/quant`)
 
 Quant devs hate marketing. They love clean data.
