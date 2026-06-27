@@ -46,6 +46,17 @@ export function SiteNav() {
           >
             GITHUB&nbsp;↗
           </a>
+          <Link
+            href="/flow"
+            className="inline-flex items-center gap-[7px] whitespace-nowrap rounded-[2px] border border-gold/40 px-[11px] py-[5px] text-gold"
+            title="The feed is live and gated by the x402 toll"
+          >
+            <span
+              className="h-[5px] w-[5px] rounded-full bg-verdigris"
+              style={{ animation: "livePulse 2.4s infinite" }}
+            />
+            402 LIVE
+          </Link>
         </nav>
       </div>
     </header>
