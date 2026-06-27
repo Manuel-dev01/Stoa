@@ -4,10 +4,9 @@ import { paymentTerms } from "@/lib/x402"
 import { FeedPreview } from "@/components/feed-preview"
 import { CodeBlock } from "@/components/code-block"
 import { TriadMark } from "@/components/triad-mark"
+import { FEED_URL, GITHUB_URL } from "@/lib/site"
 
 export const dynamic = "force-dynamic"
-
-const GITHUB = "https://github.com/Manuel-dev01/Stoa"
 
 const TRIAD = [
   {
@@ -38,7 +37,7 @@ const NOT = [
 const BOT_SNIPPET = `import os, requests
 from web3 import Web3
 
-FEED = "https://<your-stoa-domain>/api/v1/feeds/macro-alpha"
+FEED = "${FEED_URL}"
 w3 = Web3(Web3.HTTPProvider(os.environ["ARC_RPC"]))
 acct = w3.eth.account.from_key(os.environ["BOT_PRIVATE_KEY"])
 
@@ -237,7 +236,7 @@ export default async function Home() {
               <span className="text-gold">gold</span> = money ·{" "}
               <span className="text-verdigris">verdigris</span> = the machine
             </span>
-            <a href={GITHUB} target="_blank" rel="noreferrer" className="text-ash hover:text-marble">
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer" className="text-ash hover:text-marble">
               GITHUB ↗
             </a>
           </div>

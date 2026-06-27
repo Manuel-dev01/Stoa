@@ -3,6 +3,7 @@ import { getPreviewItems, getLatestReceipt } from "@/lib/preview"
 import { paymentTerms } from "@/lib/x402"
 import { stanceWord, confidencePct, shortHash, irysUrl } from "@/lib/format"
 import { CodeTabs } from "@/components/code-tabs"
+import { FEED_URL } from "@/lib/site"
 
 export const dynamic = "force-dynamic"
 
@@ -342,14 +343,14 @@ function codeTabs(payTo: string) {
       id: "curl",
       label: "curl",
       code: `# 1. hit the feed — no receipt, you get a 402
-$ curl https://<stoa>/api/v1/feeds/macro-alpha
+$ curl ${FEED_URL}
 > HTTP/1.1 402 Payment Required
 { "payment_terms": { "amount": "0.005", "asset": "USDC",
   "network": "arc-testnet", "pay_to": "${shortHash(payTo, 8, 4)}" } }
 
 # 2. pay 0.005 USDC to pay_to on Arc, then retry with the tx hash
 $ curl -H "X-402-Payment-Receipt: 0x<txhash>" \\
-       https://<stoa>/api/v1/feeds/macro-alpha
+       ${FEED_URL}
 > HTTP/1.1 200 OK   { "items": [ … ] }`,
     },
     {
@@ -358,7 +359,7 @@ $ curl -H "X-402-Payment-Receipt: 0x<txhash>" \\
       code: `import os, requests
 from web3 import Web3
 
-FEED = "https://<stoa>/api/v1/feeds/macro-alpha"
+FEED = "${FEED_URL}"
 w3 = Web3(Web3.HTTPProvider(os.environ["ARC_RPC"]))
 acct = w3.eth.account.from_key(os.environ["BOT_PRIVATE_KEY"])
 
@@ -377,7 +378,7 @@ for item in resp.json()["items"]:
     {
       id: "ts",
       label: "typescript",
-      code: `const FEED = "https://<stoa>/api/v1/feeds/macro-alpha"
+      code: `const FEED = "${FEED_URL}"
 
 let res = await fetch(FEED)
 if (res.status === 402) {
