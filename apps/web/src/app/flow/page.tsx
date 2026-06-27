@@ -93,7 +93,7 @@ export default async function FlowPage() {
       </div>
 
       {/* FILM STRIP */}
-      <div className="-mx-6 flex snap-x snap-mandatory gap-[30px] overflow-x-auto px-6 py-10 sm:-mx-12 sm:px-12">
+      <div className="x-scroll -mx-6 flex snap-x snap-mandatory gap-[30px] overflow-x-auto px-6 py-10 sm:-mx-12 sm:px-12">
         {/* 1 DISCOVER */}
         <div className="flex w-[380px] flex-none snap-center flex-col gap-4">
           <StepHead n={1} label={STEPS[0]} />

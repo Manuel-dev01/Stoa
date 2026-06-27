@@ -188,6 +188,27 @@
   .dialog-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(20 4% 32%);
   }
+
+  /* Thin brand scrollbar for horizontal scroll areas (e.g. the /flow film
+     strip) — replaces the jarring default grey browser bar. */
+  .x-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #2A2620 transparent;
+  }
+  .x-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+  .x-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 0 12px;
+  }
+  .x-scroll::-webkit-scrollbar-thumb {
+    background: #2A2620;
+    border-radius: 4px;
+  }
+  .x-scroll::-webkit-scrollbar-thumb:hover {
+    background: #C8A45D;
+  }
 }
 
 /* Landing keyframes (Stoa Landing.dc.html) — global scope so inline-style

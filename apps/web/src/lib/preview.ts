@@ -8,7 +8,6 @@
  */
 import { createClient } from "@supabase/supabase-js"
 import { getFeedItems } from "./feed"
-import { getAgents, getTraces } from "./supabase"
 
 export interface PreviewItem {
   id: string
@@ -52,10 +51,13 @@ export async function getLatestReceipt(): Promise<ReceiptRow | null> {
   return (data?.[0] as ReceiptRow) ?? null
 }
 
-/** Per-architect real metrics for the Triad astrolabe. Keyed by architect
- *  ("quantec"|"bayesian"|"calibrator"), matched on the agent's display_handle.
- *  Only TRACES / AVG CONF / LATEST are real — hit-rate and edge aren't computed
- *  anywhere, so the UI shows these real fields instead. */
+/** Per-architect real metrics for the Triad astrolabe, derived from the
+ *  feed_items the pipeline actually produces. Each synthesis carries an
+ *  `agent_breakdown` with all three agents' real confidence, so this is the
+ *  meaningful source (only the Calibrator publishes on-chain, so per-agent
+ *  `traces` table counts are unreliable). TRACES = syntheses the agent read,
+ *  AVG CONF = mean of its agent_breakdown confidence, LATEST = newest item.
+ *  Hit-rate and edge aren't computed anywhere, so they're never shown. */
 export interface ArchitectStats {
   traces: number
   avgConfidenceBps: number | null
@@ -65,33 +67,47 @@ export type TriadStats = Record<"quantec" | "bayesian" | "calibrator", Architect
 
 const EMPTY_STATS: ArchitectStats = { traces: 0, avgConfidenceBps: null, latestAt: null }
 
+interface RawFeedRow {
+  published_at: string
+  synthesis: {
+    agent_breakdown?: Record<string, { confidence_bps?: number }>
+  } | null
+}
+
 export async function getTriadStats(): Promise<TriadStats> {
   const result: TriadStats = {
     quantec: { ...EMPTY_STATS },
     bayesian: { ...EMPTY_STATS },
     calibrator: { ...EMPTY_STATS },
   }
-  const [agents, traces] = await Promise.all([getAgents(), getTraces()])
-  if (agents.length === 0) return result
-
-  // Map each architect key to the agent_id whose handle contains it.
-  const idFor: Partial<Record<keyof TriadStats, string>> = {}
-  for (const key of Object.keys(result) as (keyof TriadStats)[]) {
-    const match = agents.find((a) => (a.display_handle ?? "").toLowerCase().includes(key))
-    if (match) idFor[key] = match.agent_id.toLowerCase()
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return result
+  const sb = createClient(url, key)
+  const { data, error } = await sb
+    .from("feed_items")
+    .select("published_at, synthesis")
+    .order("published_at", { ascending: false })
+    .limit(300)
+  if (error) {
+    console.error("[preview] getTriadStats:", error.message)
+    return result
   }
+  const rows = (data ?? []) as RawFeedRow[]
 
-  for (const key of Object.keys(result) as (keyof TriadStats)[]) {
-    const id = idFor[key]
-    if (!id) continue
-    const mine = traces.filter((t) => t.agent_id.toLowerCase() === id)
-    if (mine.length === 0) continue
-    const sumConf = mine.reduce((s, t) => s + (t.confidence_bps || 0), 0)
-    const latest = mine.reduce((a, b) => (a.published_at > b.published_at ? a : b)).published_at
-    result[key] = {
-      traces: mine.length,
-      avgConfidenceBps: Math.round(sumConf / mine.length),
-      latestAt: latest,
+  for (const k of Object.keys(result) as (keyof TriadStats)[]) {
+    let count = 0
+    let sumConf = 0
+    let latest: string | null = null
+    for (const row of rows) {
+      const a = row.synthesis?.agent_breakdown?.[k]
+      if (!a || typeof a.confidence_bps !== "number") continue
+      count++
+      sumConf += a.confidence_bps
+      if (!latest || row.published_at > latest) latest = row.published_at
+    }
+    if (count > 0) {
+      result[k] = { traces: count, avgConfidenceBps: Math.round(sumConf / count), latestAt: latest }
     }
   }
   return result
