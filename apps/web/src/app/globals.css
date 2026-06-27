@@ -190,6 +190,43 @@
   }
 }
 
+/* Landing keyframes (Stoa Landing.dc.html) — global scope so inline-style
+   animations on the astrolabe / hero handshake can reference them. */
+@keyframes sweep {
+  0% { transform: translateX(-30%); opacity: 0; }
+  30% { opacity: 0.9; }
+  70% { opacity: 0.9; }
+  100% { transform: translateX(130%); opacity: 0; }
+}
+@keyframes stepPulse {
+  0%, 100% { border-color: #221F19; background: rgba(255,255,255,0.005); }
+  8%, 20% { border-color: rgba(200,164,93,0.6); background: rgba(200,164,93,0.06); }
+}
+@keyframes stepDot {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  8%, 20% { opacity: 1; transform: scale(1.25); }
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(95,163,145,0.5); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(95,163,145,0); }
+}
+@keyframes goldShimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
+}
+
 /* Animation keyframes */
 @keyframes fade-in-up {
   from {

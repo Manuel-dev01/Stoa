@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:#0C0B09; color:#E9E3D6; font-family:'Hanken Grotesk',sans-serif; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  ::selection{ background:rgba(200,164,93,0.3); color:#F4EEE2; }
+  @keyframes sweep{ 0%{ transform:translateX(-30%); opacity:0; } 30%{ opacity:0.9; } 70%{ opacity:0.9; } 100%{ transform:translateX(130%); opacity:0; } }
+  @keyframes stepPulse{ 0%,100%{ border-color:#221F19; background:rgba(255,255,255,0.005); } 8%,20%{ border-color:rgba(200,164,93,0.6); background:rgba(200,164,93,0.06); } }
+  @keyframes stepDot{ 0%,100%{ opacity:0.25; transform:scale(1); } 8%,20%{ opacity:1; transform:scale(1.25); } }
+  @keyframes livePulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(95,163,145,0.5); } 50%{ opacity:0.6; box-shadow:0 0 0 6px rgba(95,163,145,0); } }
+  @keyframes goldShimmer{ 0%{ background-position:0% 50%; } 100%{ background-position:200% 50%; } }
+  @keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-10px); } }
+  @keyframes spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  @keyframes glowPulse{ 0%,100%{ opacity:0.5; } 50%{ opacity:0.85; } }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:#0C0B09; overflow-x:hidden;">
+
+  <!-- NAV -->
+  <nav style="position:sticky; top:0; z-index:40; display:flex; align-items:center; justify-content:space-between; padding:18px 40px; background:rgba(12,11,9,0.82); backdrop-filter:blur(14px); border-bottom:1px solid #1A1712;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="8" cy="22" r="2.6" fill="#5FA391"></circle>
+        <circle cx="24" cy="22" r="2.6" fill="#5FA391"></circle>
+        <circle cx="16" cy="6" r="2.6" fill="#5FA391"></circle>
+        <circle cx="16" cy="24.5" r="3.2" fill="#C8A45D"></circle>
+        <path d="M8 22 L16 24.5 M24 22 L16 24.5 M16 6 L16 24.5" stroke="#3A352B" stroke-width="1.1"></path>
+      </svg>
+      <span style="font-family:'Cormorant',serif; font-weight:600; font-size:22px; letter-spacing:0.32em; color:#E9E3D6; padding-left:4px;">STOA</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:26px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.08em; color:#9A9384;">
+      <a href="#thesis" style="color:#9A9384; text-decoration:none;">THESIS</a>
+      <a href="#triad" style="color:#9A9384; text-decoration:none;">TRIAD</a>
+      <a href="#trace" style="color:#9A9384; text-decoration:none;">TRACE</a>
+      <a href="Stoa%20App%20Flow.dc.html" style="color:#9A9384; text-decoration:none;">APP&nbsp;FLOW&nbsp;↗</a>
+      <a href="Stoa%20Brand%20Board.dc.html" style="color:#9A9384; text-decoration:none;">BRAND&nbsp;↗</a>
+      <span style="display:inline-flex; white-space:nowrap; align-items:center; gap:7px; padding:5px 11px; border:1px solid rgba(200,164,93,0.4); border-radius:2px; color:#C8A45D;"><span style="width:5px; height:5px; border-radius:50%; background:#5FA391; animation:livePulse 2.4s infinite;"></span>402 LIVE</span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header style="position:relative; min-height:92vh; display:flex; flex-direction:column; justify-content:center; padding:80px 40px 60px; overflow:hidden;">
+    <div style="position:absolute; inset:0; pointer-events:none; perspective:600px; opacity:0.9;">
+      <div style="position:absolute; inset:-10% -5% 0; background:repeating-linear-gradient(90deg, transparent 0 92px, rgba(233,227,214,0.045) 92px 94px); transform:rotateX(34deg) scale(1.6); transform-origin:center 80%; mask-image:radial-gradient(120% 80% at 50% 18%, #000 10%, transparent 72%); -webkit-mask-image:radial-gradient(120% 80% at 50% 18%, #000 10%, transparent 72%);"></div>
+      <div style="position:absolute; top:0; bottom:0; width:42%; background:linear-gradient(90deg, transparent, rgba(200,164,93,0.05), transparent); animation:sweep 16s linear infinite;"></div>
+    </div>
+    <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(80% 55% at 50% 30%, transparent 40%, rgba(12,11,9,0.7) 100%);"></div>
+
+    <div style="position:relative; max-width:1180px; margin:0 auto; width:100%;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.34em; color:#5FA391; margin-bottom:30px;">ΣΤΟΑ &nbsp;·&nbsp; MACHINE&#8209;PAYABLE MARKET REASONING</div>
+      <h1 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(48px,8.2vw,124px); line-height:0.96; letter-spacing:-0.01em; margin:0; color:#E9E3D6; max-width:14ch;">The trace is the product.<br>And <span style="font-style:italic; background:linear-gradient(90deg,#C8A45D,#E0C079,#C8A45D); background-size:200% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation:goldShimmer 6s linear infinite;">machines pay</span> for it.</h1>
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-end; gap:48px; margin-top:46px;">
+        <p style="max-width:46ch; font-size:17px; line-height:1.6; color:#9A9384; margin:0;">A machine-readable feed of cross-calibrated macro &amp; crypto market reasoning. Gated behind an HTTP&nbsp;402 toll — a bot hits the endpoint, autonomously pays a sub&#8209;cent USDC nanopayment on Arc, and unlocks the feed in under 500ms.</p>
+        <div style="position:relative; flex:1; min-width:340px; max-width:440px; background:#100E0B; border:1px solid #221F19; border-radius:4px; box-shadow:0 30px 80px -30px rgba(0,0,0,0.9); animation:floatY 7s ease-in-out infinite;">
+          <div style="display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid #1A1712;">
+            <span style="width:8px; height:8px; border-radius:50%; background:#5FA391; animation:livePulse 2.4s infinite;"></span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.12em; color:#6B655A;">x402 handshake</span>
+            <span style="margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A;">arc · usdc</span>
+          </div>
+          <div style="padding:6px 0;">
+            <div style="display:flex; align-items:center; gap:14px; padding:13px 16px; margin:0 8px; border:1px solid #221F19; border-radius:3px; animation:stepPulse 6.4s infinite; animation-delay:0s;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9A9384; width:34px;">GET</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#E9E3D6; flex:1;">/feed/macro</span>
+              <span style="width:7px; height:7px; border-radius:50%; background:#9A9384; animation:stepDot 6.4s infinite; animation-delay:0s;"></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; padding:13px 16px; margin:6px 8px; border:1px solid #221F19; border-radius:3px; animation:stepPulse 6.4s infinite; animation-delay:1.6s;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#C8A45D; width:34px;">402</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#E9E3D6; flex:1;">Payment Required <span style="color:#6B655A;">· 0.005 USDC</span></span>
+              <span style="width:7px; height:7px; border-radius:50%; background:#C8A45D; animation:stepDot 6.4s infinite; animation-delay:1.6s;"></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; padding:13px 16px; margin:6px 8px; border:1px solid #221F19; border-radius:3px; animation:stepPulse 6.4s infinite; animation-delay:3.2s;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#9A9384; width:34px;">PAY</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#E9E3D6; flex:1;">settle <span style="color:#6B655A;">· &lt;500ms · Treasury</span></span>
+              <span style="width:7px; height:7px; border-radius:50%; background:#9A9384; animation:stepDot 6.4s infinite; animation-delay:3.2s;"></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:14px; padding:13px 16px; margin:6px 8px; border:1px solid #221F19; border-radius:3px; animation:stepPulse 6.4s infinite; animation-delay:4.8s;">
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5FA391; width:34px;">200</span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:#E9E3D6; flex:1;">feed unlocked <span style="color:#6B655A;">· trace ↓</span></span>
+              <span style="width:7px; height:7px; border-radius:50%; background:#5FA391; animation:stepDot 6.4s infinite; animation-delay:4.8s;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute; bottom:26px; left:50%; transform:translateX(-50%); font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.3em; color:#4A453C;">SCROLL ↓ THE PORCH WHERE MACHINES READ</div>
+  </header>
+
+  <!-- THESIS -->
+  <section id="thesis" style="position:relative; padding:120px 40px; border-top:1px solid #161310;">
+    <div style="max-width:1180px; margin:0 auto;">
+      <div style="display:flex; align-items:baseline; gap:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#5FA391; margin-bottom:34px;">
+        <span style="color:#C8A45D;">01</span><span style="flex:1; height:1px; background:#221F19; max-width:80px;"></span><span>THE THESIS</span>
+      </div>
+      <h2 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(34px,5vw,68px); line-height:1.02; letter-spacing:-0.01em; margin:0 0 28px; max-width:18ch;">It intercepts the open feed. Then it charges admission.</h2>
+      <p style="max-width:60ch; font-size:17px; line-height:1.65; color:#9A9384; margin:0 0 70px;">Quant developers already aggregate market data through the open-source feed ecosystem. Stoa is the missing middleware — a premium upstream route that wraps clean, structured market reasoning and meters it per request. No marketplace to bootstrap. No cold-start liquidity. One defensible engine, one toll.</p>
+      <div style="display:flex; align-items:stretch; gap:0; flex-wrap:wrap; border:1px solid #221F19; border-radius:5px; overflow:hidden; background:#100E0B;">
+        <div style="flex:1; min-width:160px; padding:26px 24px; border-right:1px solid #1A1712;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A; margin-bottom:12px;">SOURCE</div>
+          <div style="font-family:'Cormorant',serif; font-size:25px; color:#E9E3D6; margin-bottom:8px;">The bot</div>
+          <div style="font-size:13.5px; line-height:1.5; color:#7C7567;">Aggregates feeds via RSSHub. Wants signal, not prose.</div>
+        </div>
+        <div style="display:flex; align-items:center; padding:0 4px; color:#3A352B; font-family:'IBM Plex Mono',monospace;">→</div>
+        <div style="flex:1; min-width:160px; padding:26px 24px; border-right:1px solid #1A1712; border-left:1px solid #1A1712; background:rgba(95,163,145,0.04);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5FA391; margin-bottom:12px;">UPSTREAM</div>
+          <div style="font-family:'Cormorant',serif; font-size:25px; color:#E9E3D6; margin-bottom:8px;">Stoa route</div>
+          <div style="font-size:13.5px; line-height:1.5; color:#7C7567;">Premium upstream wraps the Triad's synthesis into the feed.</div>
+        </div>
+        <div style="display:flex; align-items:center; padding:0 4px; color:#3A352B; font-family:'IBM Plex Mono',monospace;">→</div>
+        <div style="flex:1; min-width:160px; padding:26px 24px; border-right:1px solid #1A1712; border-left:1px solid #1A1712; background:rgba(200,164,93,0.05);">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#C8A45D; margin-bottom:12px;">402 GATE</div>
+          <div style="font-family:'Cormorant',serif; font-size:25px; color:#E9E3D6; margin-bottom:8px;">The toll</div>
+          <div style="font-size:13.5px; line-height:1.5; color:#7C7567;">≈$0.005 USDC. Paid autonomously on Arc via x402.</div>
+        </div>
+        <div style="display:flex; align-items:center; padding:0 4px; color:#3A352B; font-family:'IBM Plex Mono',monospace;">→</div>
+        <div style="flex:1; min-width:160px; padding:26px 24px; border-left:1px solid #1A1712;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A; margin-bottom:12px;">UNLOCK</div>
+          <div style="font-family:'Cormorant',serif; font-size:25px; color:#E9E3D6; margin-bottom:8px;">The trace</div>
+          <div style="font-size:13.5px; line-height:1.5; color:#7C7567;">Verifiable synthesis delivered. Settled in &lt;500ms.</div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:1px; background:#1A1712; border:1px solid #221F19; border-top:none;">
+        <div style="background:#0C0B09; padding:30px 24px;"><div style="font-family:'Cormorant',serif; font-style:italic; font-size:30px; color:#C8A45D; margin-bottom:6px;">No subscription</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6B655A; letter-spacing:0.05em;">PAY PER REQUEST, NOT PER MONTH</div></div>
+        <div style="background:#0C0B09; padding:30px 24px;"><div style="font-family:'Cormorant',serif; font-style:italic; font-size:30px; color:#C8A45D; margin-bottom:6px;">No API key</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6B655A; letter-spacing:0.05em;">THE WALLET IS THE CREDENTIAL</div></div>
+        <div style="background:#0C0B09; padding:30px 24px;"><div style="font-family:'Cormorant',serif; font-style:italic; font-size:30px; color:#C8A45D; margin-bottom:6px;">No friction</div><div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6B655A; letter-spacing:0.05em;">20 LINES OF CLIENT CODE</div></div>
+      </div>
+    </div>
+  </section>
+  <!-- TRIAD (astrolabe) -->
+  <section id="triad" style="position:relative; padding:120px 40px; border-top:1px solid #161310; background:linear-gradient(180deg,#0C0B09,#0A0908);">
+    <div style="max-width:1180px; margin:0 auto;">
+      <div style="display:flex; align-items:baseline; gap:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#5FA391; margin-bottom:34px;">
+        <span style="color:#C8A45D;">02</span><span style="height:1px; background:#221F19; width:80px;"></span><span>THE TRIAD</span>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:24px; margin-bottom:44px;">
+        <h2 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(34px,5vw,68px); line-height:1.02; letter-spacing:-0.01em; margin:0; max-width:16ch;">Three architects. One synthesis per market.</h2>
+        <p style="max-width:38ch; font-size:15.5px; line-height:1.6; color:#9A9384; margin:0;">Not a prompt with three names. Three architecturally distinct, persistent-memory engines that argue, then reconcile — each a calibrated instrument of its own discipline.</p>
+      </div>
+
+      <!-- featured architect -->
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.05fr); border:1px solid #221F19; border-radius:8px; overflow:hidden; background:#0A0908; box-shadow:0 50px 110px -60px rgba(0,0,0,0.95);">
+
+        <!-- DIAL -->
+        <div style="position:relative; min-height:540px; border-right:1px solid #1A1712; background:radial-gradient(circle at 50% 46%, rgba(200,164,93,0.16), rgba(8,7,6,0) 58%), #08070; overflow:hidden;">
+          <div style="position:absolute; top:22px; left:24px; right:24px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:0.14em; z-index:3;">
+            <span style="color:#6B655A;">ARCHITECT&nbsp;·&nbsp;<span style="color:#C8A45D;">{{ name }}</span></span>
+            <span style="color:#6B655A; text-align:right; line-height:1.7;">EDGE <span style="color:#C8A45D;">{{ edge }}</span><br>HIT <span style="color:#5FA391;">{{ hit }}</span></span>
+          </div>
+
+          <svg viewBox="0 0 400 400" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-52%); width:90%; max-width:460px; height:auto;">
+            <circle cx="200" cy="200" r="192" stroke="#1E1B16" stroke-width="1"></circle>
+            <g style="transform-box:fill-box; transform-origin:center; animation:spin 120s linear infinite;">
+              <circle cx="200" cy="200" r="178" stroke="#2A2620" stroke-width="0.7" stroke-dasharray="1.4 7"></circle>
+            </g>
+            <circle cx="200" cy="200" r="150" stroke="rgba(200,164,93,0.18)" stroke-width="0.7"></circle>
+            <g style="transform-box:fill-box; transform-origin:center; animation:spin 90s linear infinite reverse;">
+              <circle cx="200" cy="200" r="120" stroke="#241F18" stroke-width="0.7" stroke-dasharray="1 15"></circle>
+            </g>
+            <circle cx="200" cy="200" r="96" stroke="rgba(200,164,93,0.13)" stroke-width="0.7"></circle>
+            <line x1="200" y1="8" x2="200" y2="392" stroke="#1A1712" stroke-width="0.5"></line>
+            <line x1="8" y1="200" x2="392" y2="200" stroke="#1A1712" stroke-width="0.5"></line>
+            <!-- faint constellation -->
+            <path d="M150 120 L186 158 L228 132 L268 170" stroke="rgba(200,164,93,0.22)" stroke-width="0.6" fill="none"></path>
+            <circle cx="150" cy="120" r="1.6" fill="rgba(233,227,214,0.5)"></circle>
+            <circle cx="186" cy="158" r="1.4" fill="rgba(233,227,214,0.4)"></circle>
+            <circle cx="228" cy="132" r="1.6" fill="rgba(233,227,214,0.5)"></circle>
+            <circle cx="268" cy="170" r="1.3" fill="rgba(233,227,214,0.35)"></circle>
+            <circle cx="120" cy="250" r="1.2" fill="rgba(233,227,214,0.3)"></circle>
+            <circle cx="290" cy="262" r="1.2" fill="rgba(233,227,214,0.3)"></circle>
+            <!-- roman numerals -->
+            <g fill="rgba(200,164,93,0.5)" font-family="Cormorant, serif" font-style="italic" font-size="13" text-anchor="middle" dominant-baseline="central">
+              <text x="200" y="35">XII</text>
+              <text x="282.5" y="57.1">I</text>
+              <text x="342.9" y="117.5">II</text>
+              <text x="365" y="200">III</text>
+              <text x="342.9" y="282.5">IV</text>
+              <text x="282.5" y="342.9">V</text>
+              <text x="200" y="365">VI</text>
+              <text x="117.5" y="342.9">VII</text>
+              <text x="57.1" y="282.5">VIII</text>
+              <text x="35" y="200">IX</text>
+              <text x="57.1" y="117.5">X</text>
+              <text x="117.5" y="57.1">XI</text>
+            </g>
+          </svg>
+
+          <!-- central Triad mark -->
+          <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-55%); z-index:2; pointer-events:none; filter:drop-shadow(0 0 22px rgba(200,164,93,0.45));">
+            <svg viewBox="0 0 32 34" width="172" height="183">
+              <circle cx="8" cy="22" r="2.6" fill="#5FA391"></circle>
+              <circle cx="24" cy="22" r="2.6" fill="#5FA391"></circle>
+              <circle cx="16" cy="6" r="2.6" fill="#5FA391"></circle>
+              <circle cx="16" cy="24.5" r="3.6" fill="#C8A45D"></circle>
+              <path d="M8 22 L16 24.5 M24 22 L16 24.5 M16 6 L16 24.5" stroke="#5A5040" stroke-width="0.8"></path>
+            </svg>
+          </div>
+
+          <div style="position:absolute; bottom:30px; left:0; right:0; text-align:center; z-index:3;">
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.34em; color:#6B655A; margin-bottom:6px;">{{ greekUpper }}</div>
+            <div style="font-family:'Cormorant',serif; font-style:italic; font-size:34px; color:#C8A45D;">{{ greekTitle }}</div>
+          </div>
+        </div>
+
+        <!-- DETAIL -->
+        <div style="padding:46px 44px; display:flex; flex-direction:column;">
+          <div style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.18em; margin-bottom:14px; color:rgba(200,164,93,0.78);">{{ discipline }}</div>
+          <h3 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(48px,6vw,76px); line-height:0.92; margin:0 0 8px; color:#E9E3D6;">{{ name }}</h3>
+          <div style="font-family:'Cormorant',serif; font-style:italic; font-size:23px; color:#9A9384; margin-bottom:24px;">“{{ engine }}”</div>
+          <p style="font-size:16px; line-height:1.65; color:#A39C8D; margin:0; max-width:48ch;">{{ desc }}</p>
+          <div style="border-left:2px solid rgba(200,164,93,0.6); padding-left:18px; font-family:'Cormorant',serif; font-style:italic; font-size:21px; line-height:1.4; color:#C9C2B2; margin:26px 0 30px;">{{ maxim }}</div>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#1A1712; border:1px solid #221F19; border-radius:5px; overflow:hidden; margin-top:auto;">
+            <div style="background:#0C0B09; padding:18px 16px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:#6B655A; margin-bottom:7px;">TRACES</div><div style="font-family:'Cormorant',serif; font-size:27px; color:#E9E3D6;">{{ traces }}</div></div>
+            <div style="background:#0C0B09; padding:18px 16px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:#6B655A; margin-bottom:7px;">HIT-RATE</div><div style="font-family:'Cormorant',serif; font-size:27px; color:#5FA391;">{{ hit }}</div></div>
+            <div style="background:#0C0B09; padding:18px 16px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:#6B655A; margin-bottom:7px;">EDGE</div><div style="font-family:'Cormorant',serif; font-size:27px; color:#C8A45D;">{{ edge }}</div></div>
+            <div style="background:#0C0B09; padding:18px 16px;"><div style="font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:0.1em; color:#6B655A; margin-bottom:7px;">METHOD</div><div style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#E9E3D6; padding-top:7px;">{{ method }}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- selector -->
+      <div style="display:flex; align-items:baseline; justify-content:space-between; margin:30px 0 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#6B655A;">
+        <span>THE TRIAD</span><span>SELECT AN ARCHITECT ↓</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px;">
+        <div onClick="{{ selQ }}" style="position:relative; display:flex; align-items:center; gap:14px; cursor:pointer; padding:16px 18px; border-radius:5px; border:1px solid #221F19; background:#0C0B09;">
+          <sc-if value="{{ isE0 }}" hint-placeholder-val="{{ false }}"><div style="position:absolute; inset:0; border-radius:5px; border:1px solid rgba(95,163,145,0.5); background:rgba(95,163,145,0.05); pointer-events:none;"></div></sc-if>
+          <div style="width:30px; height:30px; border-radius:50%; flex:0 0 30px; border:1px solid #5FA391; background:radial-gradient(circle at 50% 40%, rgba(95,163,145,0.45), transparent 70%);"></div>
+          <div>
+            <div style="font-family:'Cormorant',serif; font-size:21px; color:#E9E3D6; line-height:1;">Quantec</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#5FA391; margin-top:3px;">Δομή</div>
+          </div>
+        </div>
+        <div onClick="{{ selB }}" style="position:relative; display:flex; align-items:center; gap:14px; cursor:pointer; padding:16px 18px; border-radius:5px; border:1px solid #221F19; background:#0C0B09;">
+          <sc-if value="{{ isE1 }}" hint-placeholder-val="{{ false }}"><div style="position:absolute; inset:0; border-radius:5px; border:1px solid rgba(95,163,145,0.5); background:rgba(95,163,145,0.05); pointer-events:none;"></div></sc-if>
+          <div style="width:30px; height:30px; border-radius:50%; flex:0 0 30px; border:1px solid #5FA391; background:radial-gradient(circle at 50% 40%, rgba(95,163,145,0.45), transparent 70%);"></div>
+          <div>
+            <div style="font-family:'Cormorant',serif; font-size:21px; color:#E9E3D6; line-height:1;">Bayesian</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#5FA391; margin-top:3px;">Εἰκός</div>
+          </div>
+        </div>
+        <div onClick="{{ selC }}" style="position:relative; display:flex; align-items:center; gap:14px; cursor:pointer; padding:16px 18px; border-radius:5px; border:1px solid #221F19; background:#0C0B09;">
+          <sc-if value="{{ isE2 }}" hint-placeholder-val="{{ true }}"><div style="position:absolute; inset:0; border-radius:5px; border:1px solid rgba(200,164,93,0.55); background:rgba(200,164,93,0.07); pointer-events:none;"></div></sc-if>
+          <div style="width:30px; height:30px; border-radius:50%; flex:0 0 30px; border:1px solid #C8A45D; background:radial-gradient(circle at 50% 40%, rgba(200,164,93,0.5), transparent 70%);"></div>
+          <div>
+            <div style="font-family:'Cormorant',serif; font-size:21px; color:#E9E3D6; line-height:1;">Calibrator</div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.1em; color:#C8A45D; margin-top:3px;">Λόγος</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- convergence -->
+      <div style="display:flex; align-items:center; gap:18px; margin-top:24px; padding:22px 26px; border:1px solid #221F19; border-radius:6px; background:#100E0B;">
+        <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+          <circle cx="8" cy="10" r="2.4" fill="#5FA391"></circle>
+          <circle cx="8" cy="22" r="2.4" fill="#5FA391"></circle>
+          <circle cx="8" cy="16" r="2.4" fill="#C8A45D"></circle>
+          <circle cx="26" cy="16" r="3.2" fill="#C8A45D"></circle>
+          <path d="M8 10 L26 16 M8 22 L26 16 M8 16 L26 16" stroke="#3A352B" stroke-width="1.1"></path>
+        </svg>
+        <div style="font-size:15px; line-height:1.55; color:#9A9384;"><span style="color:#E9E3D6; font-family:'Cormorant',serif; font-size:20px; font-style:italic;">Cross-calibrated.</span> &nbsp;The three reconcile into a single, weighted synthesis per market — one rigorous answer, not three opinions.</div>
+      </div>
+    </div>
+  </section>
+  <!-- TRACE -->
+  <section id="trace" style="position:relative; padding:120px 40px; border-top:1px solid #161310;">
+    <div style="max-width:1180px; margin:0 auto;">
+      <div style="display:flex; align-items:baseline; gap:18px; font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.2em; color:#5FA391; margin-bottom:34px;">
+        <span style="color:#C8A45D;">03</span><span style="height:1px; background:#221F19; width:80px;"></span><span>THE TRACE</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1.15fr; gap:56px; align-items:start;">
+        <div>
+          <h2 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(32px,4.4vw,58px); line-height:1.04; letter-spacing:-0.01em; margin:0 0 24px; max-width:14ch;">Verify the reasoning by hash.</h2>
+          <p style="font-size:16px; line-height:1.65; color:#9A9384; margin:0 0 40px; max-width:46ch;">Every item is canonicalized, hashed, pinned to Irys, and anchored on Arc. To a skeptical quant this is the whole trust property: the synthesis isn't a newsletter you take on faith — it's data infrastructure you can check.</p>
+          <div style="display:flex; flex-direction:column; gap:0; border-left:1px solid #221F19;">
+            <div style="display:flex; gap:16px; padding:0 0 26px 22px; position:relative;">
+              <span style="position:absolute; left:-5px; top:3px; width:9px; height:9px; border-radius:50%; background:#5FA391;"></span>
+              <div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5FA391; letter-spacing:0.1em; margin-bottom:5px;">01 · CANONICALIZE</div><div style="font-size:13.5px; color:#8A8375; line-height:1.5;">Deterministic serialization. Same reasoning, same bytes, every time.</div></div>
+            </div>
+            <div style="display:flex; gap:16px; padding:0 0 26px 22px; position:relative;">
+              <span style="position:absolute; left:-5px; top:3px; width:9px; height:9px; border-radius:50%; background:#5FA391;"></span>
+              <div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5FA391; letter-spacing:0.1em; margin-bottom:5px;">02 · SHA&#8209;256</div><div style="font-size:13.5px; color:#8A8375; line-height:1.5;">An immutable fingerprint of the exact synthesis.</div></div>
+            </div>
+            <div style="display:flex; gap:16px; padding:0 0 26px 22px; position:relative;">
+              <span style="position:absolute; left:-5px; top:3px; width:9px; height:9px; border-radius:50%; background:#5FA391;"></span>
+              <div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5FA391; letter-spacing:0.1em; margin-bottom:5px;">03 · IRYS PIN</div><div style="font-size:13.5px; color:#8A8375; line-height:1.5;">Permanently stored, content-addressed, retrievable forever.</div></div>
+            </div>
+            <div style="display:flex; gap:16px; padding:0 0 2px 22px; position:relative;">
+              <span style="position:absolute; left:-5px; top:3px; width:9px; height:9px; border-radius:50%; background:#C8A45D;"></span>
+              <div><div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#C8A45D; letter-spacing:0.1em; margin-bottom:5px;">04 · ARC ANCHOR</div><div style="font-size:13.5px; color:#8A8375; line-height:1.5;">The hash is committed on-chain. Now it's tamper-evident.</div></div>
+            </div>
+          </div>
+        </div>
+        <div style="background:#0A0908; border:1px solid #221F19; border-radius:6px; overflow:hidden; box-shadow:0 40px 90px -50px rgba(0,0,0,0.9);">
+          <div style="display:flex; align-items:center; gap:10px; padding:13px 18px; border-bottom:1px solid #1A1712; background:#100E0B;">
+            <span style="width:8px; height:8px; border-radius:50%; background:#C8A45D;"></span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#9A9384; letter-spacing:0.06em;">GET /feed/macro · 200 OK</span>
+            <span style="margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#5FA391;">application/json</span>
+          </div>
+          <pre style="margin:0; padding:24px 22px; font-family:'IBM Plex Mono',monospace; font-size:13px; line-height:1.85; color:#8A8375; overflow-x:auto;"><span style="color:#4A453C;">{</span>
+  <span style="color:#9A9384;">"market"</span>: <span style="color:#E9E3D6;">"Fed cuts ≥50bps by Sep 2026?"</span>,
+  <span style="color:#9A9384;">"venue"</span>:  <span style="color:#E9E3D6;">"polymarket"</span>,
+  <span style="color:#9A9384;">"synthesis"</span>: <span style="color:#4A453C;">{</span>
+    <span style="color:#9A9384;">"p"</span>:           <span style="color:#5FA391;">0.37</span>,
+    <span style="color:#9A9384;">"edge_vs_mkt"</span>: <span style="color:#5FA391;">-0.06</span>,
+    <span style="color:#9A9384;">"stance"</span>:      <span style="color:#E9E3D6;">"fade"</span>
+  <span style="color:#4A453C;">}</span>,
+  <span style="color:#9A9384;">"stake"</span>: <span style="color:#4A453C;">{</span>
+    <span style="color:#9A9384;">"rule"</span>:     <span style="color:#C8A45D;">"fractional_kelly"</span>,
+    <span style="color:#9A9384;">"fraction"</span>: <span style="color:#5FA391;">0.5</span>,    <span style="color:#4A453C;">// half-Kelly</span>
+    <span style="color:#9A9384;">"cap"</span>:      <span style="color:#5FA391;">0.25</span>,
+    <span style="color:#9A9384;">"size"</span>:     <span style="color:#C8A45D;">0.083</span>
+  <span style="color:#4A453C;">}</span>,
+  <span style="color:#9A9384;">"trace"</span>: <span style="color:#4A453C;">{</span>
+    <span style="color:#9A9384;">"irys"</span>:   <span style="color:#E9E3D6;">"ar://Hx9…c4f2"</span>,
+    <span style="color:#9A9384;">"arc"</span>:    <span style="color:#E9E3D6;">"0x7a…e1"</span>,
+    <span style="color:#9A9384;">"sha256"</span>: <span style="color:#E9E3D6;">"e3b0…b855"</span>
+  <span style="color:#4A453C;">}</span>
+<span style="color:#4A453C;">}</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPLORE -->
+  <section style="position:relative; padding:100px 40px; border-top:1px solid #161310; background:linear-gradient(180deg,#0A0908,#0C0B09);">
+    <div style="max-width:1180px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:22px;">
+      <a href="Stoa%20App%20Flow.dc.html" style="text-decoration:none; display:block; padding:38px 36px; border:1px solid #221F19; border-radius:8px; background:#100E0B;" style-hover="border-color:rgba(95,163,145,0.4)">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#5FA391; margin-bottom:16px;">THE PRODUCT ↗</div>
+        <div style="font-family:'Cormorant',serif; font-size:34px; color:#E9E3D6; margin-bottom:10px;">Walk the full app flow</div>
+        <div style="font-size:14.5px; color:#8A8375; line-height:1.6;">Six screens, locked endpoint to verified trace — the entire loop a bot runs.</div>
+      </a>
+      <a href="Stoa%20Brand%20Board.dc.html" style="text-decoration:none; display:block; padding:38px 36px; border:1px solid #221F19; border-radius:8px; background:#100E0B;" style-hover="border-color:rgba(200,164,93,0.4)">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#C8A45D; margin-bottom:16px;">THE SYSTEM ↗</div>
+        <div style="font-family:'Cormorant',serif; font-size:34px; color:#E9E3D6; margin-bottom:10px;">Read the brand board</div>
+        <div style="font-size:14.5px; color:#8A8375; line-height:1.6;">Mark, palette, type, voice — and the negative identity that keeps Stoa honest.</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- CLOSING -->
+  <footer style="position:relative; padding:130px 40px 70px; border-top:1px solid #161310; overflow:hidden; text-align:center;">
+    <div style="position:absolute; inset:0; pointer-events:none; perspective:600px; opacity:0.7;"><div style="position:absolute; inset:-10% -5% 0; background:repeating-linear-gradient(90deg, transparent 0 92px, rgba(233,227,214,0.04) 92px 94px); transform:rotateX(40deg) scale(1.7); transform-origin:center 60%; mask-image:radial-gradient(110% 70% at 50% 30%, #000 5%, transparent 70%); -webkit-mask-image:radial-gradient(110% 70% at 50% 30%, #000 5%, transparent 70%);"></div></div>
+    <div style="position:relative; max-width:880px; margin:0 auto;">
+      <svg width="40" height="40" viewBox="0 0 32 32" fill="none" style="margin-bottom:34px;"><circle cx="8" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="24" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="6" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="24.5" r="3.4" fill="#C8A45D"></circle><path d="M8 22 L16 24.5 M24 22 L16 24.5 M16 6 L16 24.5" stroke="#3A352B" stroke-width="1.1"></path></svg>
+      <h2 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(36px,6vw,82px); line-height:1; letter-spacing:-0.01em; margin:0 0 30px;">The trace is the product.<br>And <span style="font-style:italic; color:#C8A45D;">machines pay</span> for it.</h2>
+      <div style="display:inline-flex; align-items:center; gap:12px; padding:11px 18px; border:1px solid #221F19; border-radius:4px; background:#100E0B; font-family:'IBM Plex Mono',monospace; font-size:13px; color:#9A9384;"><span style="width:6px; height:6px; border-radius:50%; background:#5FA391; animation:livePulse 2.4s infinite;"></span>GET feed.stoa.xyz/macro<span style="color:#C8A45D;">→ 402</span></div>
+    </div>
+    <div style="position:relative; max-width:1180px; margin:80px auto 0; padding-top:26px; border-top:1px solid #161310; display:flex; flex-wrap:wrap; justify-content:space-between; gap:16px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.08em; color:#4A453C;">
+      <span style="color:#6B655A;">STOA · ΣΤΟΑ</span>
+      <span>MACHINE-PAYABLE MARKET REASONING · x402 · ARC · IRYS</span>
+      <span>LANDING · v1</span>
+    </div>
+  </footer>
+<!--SECTIONS-->
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { active: 2 };
+  renderVals() {
+    const A = [
+      { name:'Quantec', discipline:'STRUCTURAL MARKET ANALYST', engine:'The Lattice Engine',
+        greekUpper:'ΔΟΜΗ', greekTitle:'Δομή',
+        desc:'Decomposes a market into its structural drivers — supply, positioning, regime — and maps the skeleton the others reason over.',
+        maxim:'Find the frame before you weigh the odds.',
+        traces:'1,284', hit:'64.2%', edge:'+8.1bp', method:'structural', accent:'#5FA391' },
+      { name:'Bayesian', discipline:'TIME-SERIES PROBABILITY ENGINE', engine:'The Posterior Engine',
+        greekUpper:'ΕΙΚΟΣ', greekTitle:'Εἰκός',
+        desc:'Holds a running posterior. Updates probability as evidence lands, weighting history against the present without overfitting noise.',
+        maxim:'Hold every belief at the strength the evidence earns.',
+        traces:'1,284', hit:'66.0%', edge:'+6.4bp', method:'time-series', accent:'#5FA391' },
+      { name:'Calibrator', discipline:'METACOGNITIVE CALIBRATION LAYER', engine:'The Apatheia Engine',
+        greekUpper:'ΛΟΓΟΣ', greekTitle:'Λόγος',
+        desc:'Sits above the other two. Scores their track record and penalizes prior-wrong agents before they speak — the rigor, not the confidence.',
+        maxim:'Trust the one who has been right; discount the one who has not.',
+        traces:'1,284', hit:'71.4%', edge:'+12.6bp', method:'meta', accent:'#C8A45D' }
+    ];
+    const i = this.state.active;
+    const a = A[i];
+    return {
+      name: a.name, discipline: a.discipline, engine: a.engine,
+      greekUpper: a.greekUpper, greekTitle: a.greekTitle,
+      desc: a.desc, maxim: a.maxim,
+      traces: a.traces, hit: a.hit, edge: a.edge, method: a.method,
+      isE0: i === 0, isE1: i === 1, isE2: i === 2,
+      selQ: () => this.setState({ active: 0 }),
+      selB: () => this.setState({ active: 1 }),
+      selC: () => this.setState({ active: 2 })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -8,6 +8,7 @@
  */
 import { createClient } from "@supabase/supabase-js"
 import { getFeedItems } from "./feed"
+import { getAgents, getTraces } from "./supabase"
 
 export interface PreviewItem {
   id: string
@@ -49,6 +50,51 @@ export async function getLatestReceipt(): Promise<ReceiptRow | null> {
     return null
   }
   return (data?.[0] as ReceiptRow) ?? null
+}
+
+/** Per-architect real metrics for the Triad astrolabe. Keyed by architect
+ *  ("quantec"|"bayesian"|"calibrator"), matched on the agent's display_handle.
+ *  Only TRACES / AVG CONF / LATEST are real — hit-rate and edge aren't computed
+ *  anywhere, so the UI shows these real fields instead. */
+export interface ArchitectStats {
+  traces: number
+  avgConfidenceBps: number | null
+  latestAt: string | null
+}
+export type TriadStats = Record<"quantec" | "bayesian" | "calibrator", ArchitectStats>
+
+const EMPTY_STATS: ArchitectStats = { traces: 0, avgConfidenceBps: null, latestAt: null }
+
+export async function getTriadStats(): Promise<TriadStats> {
+  const result: TriadStats = {
+    quantec: { ...EMPTY_STATS },
+    bayesian: { ...EMPTY_STATS },
+    calibrator: { ...EMPTY_STATS },
+  }
+  const [agents, traces] = await Promise.all([getAgents(), getTraces()])
+  if (agents.length === 0) return result
+
+  // Map each architect key to the agent_id whose handle contains it.
+  const idFor: Partial<Record<keyof TriadStats, string>> = {}
+  for (const key of Object.keys(result) as (keyof TriadStats)[]) {
+    const match = agents.find((a) => (a.display_handle ?? "").toLowerCase().includes(key))
+    if (match) idFor[key] = match.agent_id.toLowerCase()
+  }
+
+  for (const key of Object.keys(result) as (keyof TriadStats)[]) {
+    const id = idFor[key]
+    if (!id) continue
+    const mine = traces.filter((t) => t.agent_id.toLowerCase() === id)
+    if (mine.length === 0) continue
+    const sumConf = mine.reduce((s, t) => s + (t.confidence_bps || 0), 0)
+    const latest = mine.reduce((a, b) => (a.published_at > b.published_at ? a : b)).published_at
+    result[key] = {
+      traces: mine.length,
+      avgConfidenceBps: Math.round(sumConf / mine.length),
+      latestAt: latest,
+    }
+  }
+  return result
 }
 
 export async function getPreviewItems(n = 3): Promise<PreviewItem[]> {
