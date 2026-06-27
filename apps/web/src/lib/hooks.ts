@@ -1,12 +1,8 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { usePublicClient, useReadContract, useWriteContract } from "wagmi"
-import { getAgent, type TracePublishedEvent } from "./contracts"
-import { stoaTreasuryAbi } from "./shared/stoaTreasury"
+import { type TracePublishedEvent } from "./contracts"
 import { getTraces, getAgents, getAgentsWithTraceCounts, type TraceRow, type AgentRow, type AgentWithTraceCount } from "./supabase"
-
-const STOA_TREASURY = process.env.NEXT_PUBLIC_STOA_TREASURY_ADDRESS || "0x0000000000000000000000000000000000000000"
 
 /** Map a Supabase trace row into the on-chain-event shape the trace stream
  *  components consume. The chain is still the source of truth, but the
@@ -68,12 +64,16 @@ export function useAgentsWithTraceCounts() {
   })
 }
 
+/** Agent identity from the indexed `agents` table (no on-chain read needed —
+ *  the indexer mirrors the registry into Supabase). */
 export function useAgent(agentId: `0x${string}`) {
-  const client = usePublicClient()
-  return useQuery({
+  return useQuery<AgentRow | null>({
     queryKey: ["agent", agentId],
-    queryFn: () => getAgent(client!, agentId),
-    enabled: !!client,
+    queryFn: async () => {
+      const agents = await getAgents()
+      return agents.find((a) => a.agent_id.toLowerCase() === agentId.toLowerCase()) ?? null
+    },
+    enabled: !!agentId,
   })
 }
 
@@ -148,55 +148,5 @@ export function useMarket(conditionId: string | undefined) {
     enabled: !!conditionId && !!allMarkets,
     staleTime: 5 * 60_000,
   })
-}
-
-export function useTreasuryValue(agentId: `0x${string}` | undefined) {
-  const result = useReadContract({
-    address: STOA_TREASURY as `0x${string}`,
-    abi: stoaTreasuryAbi,
-    functionName: "agentValue",
-    args: agentId ? [agentId] : undefined,
-    query: { enabled: !!agentId && STOA_TREASURY !== "0x0000000000000000000000000000000000000000" },
-  })
-  return { ...result, refetch: result.refetch }
-}
-
-export function useTreasuryShares(agentId: `0x${string}` | undefined) {
-  const result = useReadContract({
-    address: STOA_TREASURY as `0x${string}`,
-    abi: stoaTreasuryAbi,
-    functionName: "agentShares",
-    args: agentId ? [agentId] : undefined,
-    query: { enabled: !!agentId && STOA_TREASURY !== "0x0000000000000000000000000000000000000000" },
-  })
-  return { ...result, refetch: result.refetch }
-}
-
-export function useTreasurySubscribe() {
-  const { writeContractAsync, isPending } = useWriteContract()
-  return {
-    subscribe: (agentId: `0x${string}`, amount: bigint) =>
-      writeContractAsync({
-        address: STOA_TREASURY as `0x${string}`,
-        abi: stoaTreasuryAbi,
-        functionName: "subscribe",
-        args: [agentId, amount],
-      }),
-    isPending,
-  }
-}
-
-export function useTreasuryRedeem() {
-  const { writeContractAsync, isPending } = useWriteContract()
-  return {
-    redeem: (agentId: `0x${string}`, shares: bigint) =>
-      writeContractAsync({
-        address: STOA_TREASURY as `0x${string}`,
-        abi: stoaTreasuryAbi,
-        functionName: "redeem",
-        args: [agentId, shares],
-      }),
-    isPending,
-  }
 }
 

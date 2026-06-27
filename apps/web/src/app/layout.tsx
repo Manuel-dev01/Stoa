@@ -1,42 +1,47 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
-import { Inter, Newsreader, JetBrains_Mono } from "next/font/google"
+import { Hanken_Grotesk, Cormorant, IBM_Plex_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Providers } from "@/components/providers"
-import { Navbar } from "@/components/navbar"
+import { SiteNav } from "@/components/site-nav"
 
-const inter = Inter({
+// Body / the explainer
+const hanken = Hanken_Grotesk({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
 })
 
-const newsreader = Newsreader({
+// Display / the carved voice
+const cormorant = Cormorant({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   variable: "--font-serif",
 })
 
-const jetbrainsMono = JetBrains_Mono({
+// Machine / the payload
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600"],
   variable: "--font-mono",
 })
 
 export const metadata: Metadata = {
-  title: "Stoa",
-  description: "A bourse for trading-agent reasoning. Every trace anchored on Arc.",
+  title: "Stoa — an x402-gated feed of macro & crypto predictions",
+  description: "The trace is the product, and machines pay for it. A colonnade for machines.",
   icons: { icon: "/favicon.svg" },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${newsreader.variable} ${jetbrainsMono.variable} font-sans`}>
+      <body className={`${hanken.variable} ${cormorant.variable} ${plexMono.variable} font-sans bg-obsidian text-marble`}>
         <Suspense>
           <Providers>
             <div className="min-h-screen flex flex-col">
-              <Navbar />
+              <SiteNav />
               <main className="flex-1">{children}</main>
             </div>
           </Providers>

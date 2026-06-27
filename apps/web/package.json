@@ -9,13 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@circle-fin/adapter-viem-v2": "^1.11.1",
-    "@circle-fin/app-kit": "^1.6.1",
-    "@dynamic-labs/ethereum": "^2.0.0",
-    "@dynamic-labs/sdk-react-core": "^2.0.0",
-    "@dynamic-labs/wagmi-connector": "^2.0.0",
-    "@polymarket/builder-relayer-client": "^0.0.9",
-    "@polymarket/builder-signing-sdk": "^1.0.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@stoa-agents/sdk": "workspace:*",
     "@stoa-agents/shared": "workspace:*",
@@ -31,8 +24,7 @@
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^2.6.0",
-    "viem": "2",
-    "wagmi": "2"
+    "viem": "2"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

@@ -1,481 +1,248 @@
-"use client"
-
-import { useMemo, useState } from "react"
-import { useTraces, useTraceBody, useMarket, useTracesFromDB } from "@/lib/hooks"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { Leaderboard } from "@/components/leaderboard"
-import { TraceCard } from "@/components/trace-card"
-import { truncateAddress, formatTimestamp, type TracePublishedEvent } from "@/lib/contracts"
-import { TeaserBlock } from "@/components/teaser-block"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import Link from "next/link"
+import { getPreviewItems } from "@/lib/preview"
+import { paymentTerms } from "@/lib/x402"
+import { FeedPreview } from "@/components/feed-preview"
+import { CodeBlock } from "@/components/code-block"
+import { TriadMark } from "@/components/triad-mark"
 
-// --- Section I: Pantheon ---
+export const dynamic = "force-dynamic"
 
-function PantheonSection() {
-  return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-muted-foreground tracking-widest">I.</span>
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">Pantheon · Top of the bourse</span>
-        </div>
-        <h2 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight leading-tight">
-          Agents in residence
-        </h2>
-        <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
-          Ranked by traces published. Each trace is signed, anchored on Arc, and permanently stored on Irys. Verification is the only metric that matters.
-        </p>
-      </div>
-      <Leaderboard mode="compact" />
-    </section>
-  )
-}
+const GITHUB = "https://github.com/Manuel-dev01/Stoa"
 
-// --- Section II: The Dialectic (featured trace) ---
+const TRIAD = [
+  {
+    name: "The Quantec",
+    role: "Structural",
+    body: "Reasons from order-book depth, funding rates, and macro actuals. Keeps an episodic memory of historical regime loops. Ignores narrative.",
+  },
+  {
+    name: "The Bayesian",
+    role: "Time-series",
+    body: "Technical and sentiment analysis, conditioned on a rolling pgvector memory of prompt→outcome states retrieved by similarity.",
+  },
+  {
+    name: "The Calibrator",
+    role: "Metacognitive",
+    body: "Reads each agent's historical error log, penalizes whichever was wrong before, reconciles the two reads, and sizes the stake with fractional Kelly.",
+  },
+]
 
-function DialecticSection({ traces }: { traces: TracePublishedEvent[] }) {
-  const featured = traces[traces.length - 1]
-  if (!featured) return null
+const NOT = [
+  "A trading platform or advisor",
+  "A persona marketplace",
+  "Builder fees or a fee rail",
+  "A token",
+  '"Six AI personalities"',
+]
 
-  return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-muted-foreground tracking-widest">II.</span>
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">The dialectic · Featured trace</span>
-        </div>
-        <h2 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight leading-tight">
-          Bull vs. Bear, in the agent&apos;s own words
-        </h2>
-        <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
-          The full reasoning behind the most recent published trace — bull case, bear case, and the agent&apos;s synthesis, verifiable on Irys.
-        </p>
-      </div>
-      <FeaturedTrace trace={featured} />
-    </section>
-  )
-}
+const BOT_SNIPPET = `import os, requests
+from web3 import Web3
 
-function FeaturedTrace({ trace }: { trace: TracePublishedEvent }) {
-  const { data: body, isLoading } = useTraceBody(trace.irysReceipt)
-  const { data: market } = useMarket(trace.marketId)
-  const { data: dbTraces } = useTracesFromDB()
+FEED = "https://<your-stoa-domain>/api/v1/feeds/macro-alpha"
+w3 = Web3(Web3.HTTPProvider(os.environ["ARC_RPC"]))
+acct = w3.eth.account.from_key(os.environ["BOT_PRIVATE_KEY"])
 
-  const ratingVariant = trace.rating > 0 ? "positive" : trace.rating < 0 ? "negative" : "neutral"
-  const ratingLabel = trace.rating > 0 ? "BUY" : trace.rating < 0 ? "SELL" : "HOLD"
-  const marketQuestion = market?.question || body?.market?.question
+resp = requests.get(FEED)
+if resp.status_code == 402:                      # 402 Payment Required
+    t = resp.json()["payment_terms"]             # 0.005 USDC on Arc
+    usdc = w3.eth.contract(address=ARC_USDC, abi=ERC20)
+    tx = usdc.functions.transfer(t["pay_to"], 5000).transact({"from": acct.address})
+    receipt = "0x" + w3.eth.wait_for_transaction_receipt(tx)["transactionHash"].hex()
+    resp = requests.get(FEED, headers={"X-402-Payment-Receipt": receipt})
 
-  const traceRow = dbTraces?.find(t => t.trace_hash?.toLowerCase() === trace.traceHash.toLowerCase())
-  // Supabase carries the authoritative venue (the daemon writes it at publish).
-  // Falling back to marketId-prefix only matters for pre-daemon legacy traces.
-  const dbVenue = traceRow?.venue
-  const isKalshi = dbVenue === "kalshi" || trace.marketId.toLowerCase().startsWith("kalshi:")
-  const venue = isKalshi ? "Kalshi" : "Polymarket"
+for item in resp.json()["items"]:                # unlocked
+    s = item["_stoa"]
+    print(s["rating"], s["confidence_bps"], s["kelly_fraction"], s["irys_hash"])`
+
+export default async function Home() {
+  const items = await getPreviewItems(3)
+  const terms = paymentTerms()
 
   return (
-    <Card className="border-border/60">
-      <CardContent className="pt-6 space-y-5">
-        {/* Meta line */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-mono uppercase tracking-[0.15em] text-muted-foreground">
-          <span>Prediction market</span>
-          <span className="text-border">·</span>
-          <span>{venue}</span>
-          <span className="text-border">·</span>
-          <span className="text-amber-500/70">{truncateAddress(trace.traceHash)}</span>
-          <span className="text-border">·</span>
-          <span>Block {trace.blockNumber.toString()}</span>
-        </div>
-
-        {/* Rating badge */}
-        <div className="flex items-center gap-3">
-          <Badge variant={ratingVariant}>
-            {trace.rating > 0 ? `+${trace.rating}` : trace.rating} {ratingLabel}
-          </Badge>
-          <span className="text-xs text-muted-foreground font-mono">
-            {Math.round(trace.confidenceBps / 100)}% confidence
-          </span>
-        </div>
-
-        {/* Market question */}
-        <h3 className="text-xl md:text-2xl font-serif font-semibold leading-snug">
-          {marketQuestion || `Market ${trace.marketId.slice(0, 10)}...`}
-        </h3>
-
-        {/* Agent line */}
-        <p className="text-xs text-muted-foreground font-mono">
-          Reasoned by {truncateAddress(trace.agentId)} · {formatTimestamp(trace.timestamp)}
-        </p>
-
-        {/* Loading state */}
-        {isLoading && (
-          <div className="space-y-4 animate-fade-in">
-            <div className="flex items-center gap-2 text-xs text-amber-500/80 font-mono">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/80 animate-pulse" />
-              Fetching reasoning from Irys…
+    <div className="bg-[radial-gradient(120%_80%_at_50%_-10%,rgba(200,164,93,0.05),transparent_60%)]">
+      <div className="mx-auto max-w-[1180px] px-6 pb-24 sm:px-12">
+        {/* MASTHEAD */}
+        <section className="mt-12 grid items-stretch gap-0 overflow-hidden rounded-lg border border-hairline bg-[#0C0B09] lg:grid-cols-[1.5fr_1fr]">
+          <div className="border-hairline-soft p-10 sm:p-12 lg:border-r">
+            <div className="mb-7 font-mono text-[11px] tracking-[0.24em] text-verdigris">
+              ΣΤΟΑ &nbsp;·&nbsp; AN x402-GATED FEED
             </div>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="space-y-2 rounded-md border border-border/30 p-4">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-3.5 w-full" />
-                <Skeleton className="h-3.5 w-5/6" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Bull / Bear reasoning */}
-        {body?.reasoning && (
-          <div className="space-y-5 animate-fade-in-up">
-            <div className="grid md:grid-cols-2 gap-4">
-              {body.reasoning.bull && (
-                <TeaserBlock
-                  label="Bull case"
-                  colorClass="text-emerald-500/80"
-                  collapsedHeight={68}
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {body.reasoning.bull}
-                  </ReactMarkdown>
-                </TeaserBlock>
-              )}
-              {body.reasoning.bear && (
-                <TeaserBlock
-                  label="Bear case"
-                  colorClass="text-red-400/80"
-                  collapsedHeight={68}
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {body.reasoning.bear}
-                  </ReactMarkdown>
-                </TeaserBlock>
-              )}
+            <h1 className="font-serif text-[clamp(44px,6.5vw,82px)] font-medium leading-[0.95] tracking-tight">
+              A colonnade
+              <br />
+              for machines.
+            </h1>
+            <p className="mt-6 max-w-[46ch] text-[16px] leading-relaxed text-ash">
+              Three persistent-memory agents reason over the top macro &amp; crypto markets and
+              emit one cross-calibrated synthesis each — with a fractional-Kelly stake and an
+              immutable Irys trace. The feed is gated by a sub-cent USDC toll on Arc. The trace is
+              the product, and machines pay for it.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/flow"
+                className="rounded-md bg-gold px-5 py-2.5 font-mono text-[12px] font-medium text-obsidian transition-opacity hover:opacity-90"
+              >
+                READ THE FEED
+              </Link>
+              <Link
+                href="/traces"
+                className="rounded-md border border-hairline px-5 py-2.5 font-mono text-[12px] text-ash transition-colors hover:text-marble"
+              >
+                VERIFY A TRACE
+              </Link>
             </div>
-
-            {/* Synthesis */}
-            {body.reasoning.synthesis && (
-              <div className="border-t border-border/50 pt-4">
-                <TeaserBlock
-                  label="Synthesis"
-                  colorClass="text-amber-500/80"
-                  collapsedHeight={68}
-                >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {body.reasoning.synthesis}
-                  </ReactMarkdown>
-                </TeaserBlock>
-              </div>
-            )}
           </div>
-        )}
-
-        {/* Footer links */}
-        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-border/50">
-          <Link
-            href={`/agents/${trace.agentId}`}
-            className="text-xs font-mono text-amber-500/80 hover:text-amber-400 hover:underline underline-offset-4 transition-colors"
-          >
-            View agent →
-          </Link>
-          <a
-            href={`https://gateway.irys.xyz/${trace.irysReceipt}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Irys ↗
-          </a>
-          <a
-            href={`https://testnet.arcscan.app/tx/${trace.transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Arc ↗
-          </a>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-// --- Section III: Live traces ---
-
-function LiveTracesSection({ traces, isLoading }: { traces: TracePublishedEvent[]; isLoading: boolean }) {
-  const { data: dbTraces } = useTracesFromDB()
-  const [currentPage, setCurrentPage] = useState(0)
-  const [venueFilter, setVenueFilter] = useState<string>("all")
-  const pageSize = 5
-
-  // trace_hash → venue. The on-chain TracePublishedEvent has the marketId as
-  // raw bytes32, so we can't tell Kalshi from Polymarket from the on-chain
-  // shape once Kalshi IDs are hashed. Supabase stores the venue alongside
-  // each trace_hash (written by the daemon at publish time); we look it up.
-  const traceVenueMap = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const t of dbTraces ?? []) {
-      if (t.trace_hash && t.venue) map.set(t.trace_hash.toLowerCase(), t.venue.toLowerCase())
-    }
-    return map
-  }, [dbTraces])
-
-  function venueFor(t: TracePublishedEvent): string {
-    const v = traceVenueMap.get(t.traceHash.toLowerCase())
-    if (v) return v
-    return t.marketId.toLowerCase().startsWith("kalshi:") ? "kalshi" : "polymarket"
-  }
-
-  const reversed = useMemo(
-    () => [...traces].reverse(),
-    [traces],
-  )
-
-  const filtered = useMemo(() => {
-    return reversed.filter((t) => {
-      if (venueFilter !== "all") {
-        if (venueFor(t) !== venueFilter) return false
-      }
-      return true
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reversed, venueFilter, traceVenueMap])
-
-  const totalPages = Math.ceil(filtered.length / pageSize)
-  const pageTraces = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
-
-  return (
-    <section className="space-y-6">
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-muted-foreground tracking-widest">III.</span>
-          <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-500/70">Live traces · Ordered by time</span>
-        </div>
-        <h2 className="text-2xl md:text-3xl font-serif font-semibold tracking-tight leading-tight">
-          The unfolding ledger
-        </h2>
-        <p className="text-sm text-muted-foreground italic font-serif leading-relaxed max-w-prose">
-          Each trace is signed, anchored on Arc, and immutable. The reasoning is the product.
-        </p>
-      </div>
-
-      {/* Filters */}
-      <div className="space-y-3">
-        {/* Venue filter */}
-        <div className="flex flex-wrap gap-2">
-          <span className="text-[10px] font-mono uppercase tracking-[0.12em] text-muted-foreground/60 self-center mr-1">Venue:</span>
-          {["all", "polymarket", "kalshi"].map((v) => (
-            <button
-              key={v}
-              onClick={() => { setVenueFilter(v); setCurrentPage(0) }}
-              className={`px-3 py-1 text-[10px] font-mono uppercase tracking-[0.12em] rounded-sm border transition-colors ${
-                venueFilter === v
-                  ? "bg-amber-600/20 border-amber-500/50 text-amber-400"
-                  : "border-border/40 text-muted-foreground hover:text-foreground hover:border-border"
-              }`}
+          <div className="relative min-h-[300px] overflow-hidden bg-[radial-gradient(circle_at_50%_45%,rgba(200,164,93,0.16),transparent_62%)]">
+            <svg
+              viewBox="0 0 400 400"
+              className="absolute left-1/2 top-1/2 h-auto w-[115%] -translate-x-1/2 -translate-y-1/2"
             >
-              {v === "all" ? "All" : v === "polymarket" ? "Polymarket" : "Kalshi"}
-            </button>
-          ))}
-        </div>
-        {venueFilter !== "all" && (
-          <p className="text-[10px] font-mono text-muted-foreground/60">
-            {filtered.length} trace{filtered.length !== 1 ? "s" : ""} matching filters
-          </p>
-        )}
-      </div>
-
-      {isLoading ? (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-xs text-amber-500/80 font-mono">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/80 animate-pulse" />
-            Loading on-chain traces…
+              <circle cx="200" cy="200" r="190" stroke="#1E1B16" strokeWidth="1" fill="none" />
+              <g className="origin-center animate-spin-slow [transform-box:fill-box]">
+                <circle
+                  cx="200"
+                  cy="200"
+                  r="172"
+                  stroke="#2A2620"
+                  strokeWidth="0.7"
+                  strokeDasharray="1.4 7"
+                  fill="none"
+                />
+              </g>
+              <circle cx="200" cy="200" r="140" stroke="rgba(200,164,93,0.16)" strokeWidth="0.7" fill="none" />
+            </svg>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 [filter:drop-shadow(0_0_22px_rgba(200,164,93,0.5))]">
+              <TriadMark size={140} />
+            </div>
           </div>
-          {[1, 2, 3].map((i) => (
-            <TraceCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : reversed.length > 0 ? (
-        <>
-          <div className="space-y-4 trace-list">
-            {pageTraces.map((trace, i) => (
-              <TraceCard
-                key={trace.transactionHash}
-                trace={trace}
-                index={currentPage * pageSize + i + 1}
-                venue={venueFor(trace) === "kalshi" ? "Kalshi" : "Polymarket"}
-              />
+        </section>
+
+        {/* THESIS */}
+        <section className="mt-6 rounded-lg border border-hairline bg-panel p-8 sm:p-10">
+          <h2 className="font-serif text-[28px] italic text-gold">
+            One engine. One toll. One verifiable trace.
+          </h2>
+          <p className="mt-4 max-w-[70ch] text-[15px] leading-relaxed text-ash">
+            Quant developers need clean, structured market reasoning, but LLM keys are expensive and
+            subscriptions are friction. Stoa is the middleware: an RSSHub-compatible feed gated by
+            HTTP 402. No receipt header, you get a 402 with payment terms; pay ~$0.005 USDC to the
+            Treasury on Arc, retry with the tx hash, and the feed unlocks. Receipts are single-use
+            and verified on-chain.
+          </p>
+        </section>
+
+        {/* LIVE PREVIEW */}
+        <section className="mt-16">
+          <div className="mb-5 flex items-baseline justify-between">
+            <h2 className="font-mono text-[11px] tracking-[0.2em] text-verdigris">
+              LIVE · LATEST SYNTHESES
+            </h2>
+            <span className="hidden font-mono text-[11px] text-mono-dim sm:inline">
+              the numbers are free · the reasoning is the toll
+            </span>
+          </div>
+          <FeedPreview initialItems={items} />
+        </section>
+
+        {/* THE TRIAD */}
+        <section className="mt-16">
+          <div className="mb-6 flex items-center gap-4">
+            <TriadMark size={34} />
+            <h2 className="font-serif text-[34px] leading-none">The Triad</h2>
+          </div>
+          <p className="mb-6 max-w-[64ch] text-[15px] leading-relaxed text-ash">
+            Three verdigris nodes converge along structural lines into a single gold node — the
+            synthesis the machine pays for. Three architecturally distinct, persistent-memory
+            engines. Exactly three. No catalog, no personas.
+          </p>
+          <div className="grid gap-4 md:grid-cols-3">
+            {TRIAD.map((a) => (
+              <div key={a.name} className="rounded-lg border border-hairline bg-panel p-6">
+                <div className="mb-1 font-mono text-[11px] tracking-[0.14em] text-verdigris">
+                  {a.role.toUpperCase()}
+                </div>
+                <div className="mb-3 font-serif text-[24px]">{a.name}</div>
+                <p className="text-[14px] leading-relaxed text-ash">{a.body}</p>
+              </div>
             ))}
           </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2 text-xs font-mono text-muted-foreground">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
-                disabled={currentPage === 0}
-                className="px-2 py-1 hover:text-amber-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                ← Prev
-              </button>
-              <span className="text-[10px] uppercase tracking-[0.15em]">
-                Page {currentPage + 1} of {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={currentPage >= totalPages - 1}
-                className="px-2 py-1 hover:text-amber-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                Next →
-              </button>
-            </div>
-          )}
-        </>
-      ) : (
-        <p className="text-muted-foreground text-sm">No traces published yet</p>
-      )}
-    </section>
-  )
-}
+        </section>
 
-function TraceCardSkeleton() {
-  return (
-    <div className="border-b border-border/30 py-5">
-      <div className="flex items-start gap-4">
-        <Skeleton className="h-4 w-6 shrink-0" />
-        <div className="flex-1 space-y-2">
-          <Skeleton className="h-3 w-24" />
-          <Skeleton className="h-5 w-3/4" />
-          <Skeleton className="h-3 w-48" />
-        </div>
-        <div className="flex flex-col items-end gap-2 shrink-0">
-          <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-3 w-8" />
-        </div>
+        {/* HOW THE TOLL WORKS */}
+        <section className="mt-16 rounded-lg border border-hairline bg-panel p-8 sm:p-10">
+          <h2 className="font-serif text-[30px]">How the toll works</h2>
+          <div className="mt-6 flex flex-wrap items-center gap-2 font-mono text-[11.5px]">
+            <span className="text-ash">REQUEST</span>
+            <span className="text-mono-faint">→</span>
+            <span className="text-gold">402 · {terms.amount} USDC</span>
+            <span className="text-mono-faint">→</span>
+            <span className="text-ash">PAY ON ARC</span>
+            <span className="text-mono-faint">→</span>
+            <span className="text-verdigris">200 · UNLOCKED</span>
+          </div>
+          <div className="mt-6 grid gap-px overflow-hidden rounded-md border border-hairline bg-hairline sm:grid-cols-3">
+            {[
+              ["RAIL", "x402"],
+              ["CHAIN", "Circle · Arc"],
+              ["PAY-TO", `${terms.pay_to.slice(0, 10)}…${terms.pay_to.slice(-4)}`],
+            ].map(([k, v]) => (
+              <div key={k} className="flex items-center justify-between bg-panel px-4 py-3 font-mono text-[11.5px]">
+                <span className="text-mono-dim">{k}</span>
+                <span className="text-marble">{v}</span>
+              </div>
+            ))}
+          </div>
+          <Link
+            href="/flow"
+            className="mt-6 inline-block font-mono text-[12px] text-ash transition-colors hover:text-gold"
+          >
+            see the full loop, step by step ↗
+          </Link>
+        </section>
+
+        {/* BRING YOUR OWN BOT */}
+        <section className="mt-16">
+          <div className="mb-5 flex items-baseline justify-between">
+            <h2 className="font-serif text-[30px]">Bring your own bot</h2>
+            <span className="hidden font-mono text-[11px] text-mono-dim sm:inline">
+              ~20 lines · no key, no login
+            </span>
+          </div>
+          <CodeBlock code={BOT_SNIPPET} label="consume_feed.py" />
+        </section>
+
+        {/* WHAT STOA IS NOT */}
+        <section className="mt-16 rounded-lg border border-gold/20 bg-[#0C0B09] p-8 sm:p-10">
+          <div className="mb-5 font-mono text-[11px] tracking-[0.16em] text-gold">
+            WHAT STOA IS NOT
+          </div>
+          <div className="flex flex-col gap-3">
+            {NOT.map((n) => (
+              <div key={n} className="flex items-center gap-3 text-[15px] text-ash">
+                <span className="font-mono text-mono-dim">✕</span> {n}
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 border-t border-hairline-soft pt-5 font-serif text-[19px] italic text-gold">
+            One engine. One toll. One verifiable trace.
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-hairline-soft pt-8 font-mono text-[11px] tracking-[0.08em] text-mono-faint">
+          <span className="text-mono-dim">STOA · ΣΤΟΑ</span>
+          <div className="flex items-center gap-5">
+            <span className="hidden sm:inline">
+              <span className="text-gold">gold</span> = money ·{" "}
+              <span className="text-verdigris">verdigris</span> = the machine
+            </span>
+            <a href={GITHUB} target="_blank" rel="noreferrer" className="text-ash hover:text-marble">
+              GITHUB ↗
+            </a>
+          </div>
+        </footer>
       </div>
     </div>
-  )
-}
-
-// --- Page ---
-
-export default function Home() {
-  const { data: traces, isLoading } = useTraces()
-
-  const stats = useMemo(() => {
-    if (!traces) return { traceCount: 0, agentCount: 0 }
-    const agents = new Set(traces.map((t) => t.agentId.toLowerCase()))
-    return { traceCount: traces.length, agentCount: agents.size }
-  }, [traces])
-
-  return (
-    <>
-    <div className="browse-bg" aria-hidden="true">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/stoa-elevation.svg" alt="" />
-    </div>
-    <div className="container mx-auto px-4 py-8 space-y-16 max-w-4xl relative z-10">
-      {/* Header */}
-      <header className="space-y-3">
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-prose">
-          A machine-readable feed of cross-calibrated macro & crypto market predictions, gated by an x402 nanopayment toll on Arc. The trace is the product — and machines pay for it.
-        </p>
-        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground font-mono">
-          {isLoading ? (
-            <Card className="w-full animate-pulse">
-              <CardContent className="py-3 px-4 flex items-center gap-3">
-                <Skeleton className="h-4 w-28" />
-                <span className="text-border">·</span>
-                <Skeleton className="h-4 w-16" />
-                <span className="text-border">·</span>
-                <Skeleton className="h-4 w-24" />
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <span>{stats.traceCount} trace{stats.traceCount !== 1 ? "s" : ""} published</span>
-              <span className="text-border">·</span>
-              <span>{stats.agentCount} agent{stats.agentCount !== 1 ? "s" : ""}</span>
-              <span className="text-border">·</span>
-              <span>anchored on Arc</span>
-            </>
-          )}
-        </div>
-      </header>
-
-      {/* I. Pantheon */}
-      <PantheonSection />
-
-      {/* II. The Dialectic */}
-      {traces && traces.length > 0 && <DialecticSection traces={traces} />}
-
-      {/* III. Live traces */}
-      <LiveTracesSection
-        traces={traces || []}
-        isLoading={isLoading}
-      />
-
-      {/* How it works */}
-      <details className="group">
-        <summary className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none text-muted-foreground hover:text-foreground transition-colors">
-          <svg
-            className="w-3 h-3 transition-transform duration-200 group-open:rotate-90"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-          How it works
-        </summary>
-        <div className="details-body">
-          <ol className="mt-3 space-y-2 text-sm text-muted-foreground list-decimal list-inside leading-relaxed">
-            <li>The Triad — Quantec, Bayesian, Calibrator — reasons about a top macro/crypto market and outputs a cross-calibrated synthesis with a fractional-Kelly stake.</li>
-            <li>The full reasoning is hashed onto Arc for ~$0.01 and stored permanently on Irys.</li>
-            <li>A trading bot hits the feed, gets an HTTP 402, pays a sub-cent USDC toll on Arc, and ingests the alpha.</li>
-          </ol>
-        </div>
-      </details>
-
-      {/* Footer */}
-      <footer className="border-t border-border pt-8 pb-12 space-y-4">
-        <p className="text-xs text-muted-foreground font-serif italic leading-relaxed max-w-prose">
-          &ldquo;All things that are exchanged must be somehow comparable.&rdquo; — Aristotle, <em>Nicomachean Ethics</em> V.5
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Stoa anchors trading-agent reasoning on Arc. The trace is the product.
-        </p>
-        <div className="flex gap-4 text-xs text-muted-foreground font-mono">
-          <a
-            href="https://github.com/Manuel-dev01/Stoa"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-amber-500/80 hover:text-amber-400 transition-colors"
-          >
-            GitHub
-          </a>
-          <a
-            href="https://github.com/Manuel-dev01/Stoa/blob/master/docs/thesis.md"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-amber-500/80 hover:text-amber-400 transition-colors"
-          >
-            Thesis
-          </a>
-          <a
-            href="https://discord.com/invite/thecanteen"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-amber-500/80 hover:text-amber-400 transition-colors"
-          >
-            Canteen Discord
-          </a>
-        </div>
-      </footer>
-    </div>
-    </>
   )
 }

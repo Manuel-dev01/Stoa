@@ -1,13 +1,11 @@
 "use client"
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { WagmiProvider } from "wagmi"
-import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core"
-import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector"
-import { dynamicSettings, dynamicTheme } from "@/lib/dynamic"
-import { getConfig } from "@/lib/wagmi"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
+// The feed is machine-paid over x402 — no human connects a wallet. The only
+// client-side concern is live refetch of the feed/traces, so React Query is the
+// whole provider stack now. (Dynamic / wagmi / Circle App Kit were removed.)
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
@@ -16,22 +14,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   )
 
-  const config = useMemo(() => getConfig(), [])
-
-  // Always mount DynamicContextProvider so every useDynamicContext() consumer
-  // (navbar, funding-dialog, treasury-actions) has its context — even when
-  // NEXT_PUBLIC_DYNAMIC_ENV_ID is absent (e.g. Preview builds). Skipping the
-  // provider made the hook throw during static prerender and failed the build;
-  // an empty environmentId just yields a non-authenticating provider.
-  return (
-    <DynamicContextProvider settings={dynamicSettings} theme={dynamicTheme}>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          <DynamicWagmiConnector>
-            {children}
-          </DynamicWagmiConnector>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </DynamicContextProvider>
-  )
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }

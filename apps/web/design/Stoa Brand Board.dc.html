@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background:#08070; color:#E9E3D6; font-family:'Hanken Grotesk',sans-serif; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  ::selection{ background:rgba(200,164,93,0.3); color:#F4EEE2; }
+  @keyframes spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  @keyframes livePulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(95,163,145,0.5); } 50%{ opacity:0.6; box-shadow:0 0 0 6px rgba(95,163,145,0); } }
+</style>
+</helmet>
+
+<div style="min-height:100vh; background:radial-gradient(120% 80% at 50% -10%, rgba(200,164,93,0.05), transparent 60%), #0A0908; padding:0 0 60px;">
+
+  <!-- TOP BAR -->
+  <div style="display:flex; align-items:center; justify-content:space-between; padding:22px 48px; border-bottom:1px solid #1A1712; position:sticky; top:0; z-index:30; background:rgba(10,9,8,0.85); backdrop-filter:blur(12px);">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none"><circle cx="8" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="24" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="6" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="24.5" r="3.2" fill="#C8A45D"></circle><path d="M8 22 L16 24.5 M24 22 L16 24.5 M16 6 L16 24.5" stroke="#3A352B" stroke-width="1.1"></path></svg>
+      <span style="font-family:'Cormorant',serif; font-weight:600; font-size:20px; letter-spacing:0.32em; padding-left:3px;">STOA</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:24px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em; color:#9A9384;">
+      <a href="Stoa%20Landing.dc.html" style="color:#9A9384; text-decoration:none;">← LANDING</a>
+      <a href="Stoa%20App%20Flow.dc.html" style="color:#9A9384; text-decoration:none;">APP&nbsp;FLOW&nbsp;↗</a>
+      <span style="color:#C8A45D;">BRAND&nbsp;BOARD</span>
+    </div>
+  </div>
+
+  <div style="max-width:1280px; margin:0 auto; padding:0 48px;">
+
+    <!-- MASTHEAD -->
+    <div style="display:grid; grid-template-columns:1.5fr 1fr; gap:0; border:1px solid #221F19; border-radius:8px; overflow:hidden; margin-top:48px; background:#0C0B09;">
+      <div style="padding:54px 50px; border-right:1px solid #1A1712;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.24em; color:#5FA391; margin-bottom:30px;">ΣΤΟΑ &nbsp;·&nbsp; BRAND SYSTEM &nbsp;·&nbsp; v1</div>
+        <h1 style="font-family:'Cormorant',serif; font-weight:500; font-size:clamp(44px,6.5vw,86px); line-height:0.95; letter-spacing:-0.01em; margin:0 0 22px;">A colonnade<br>for machines.</h1>
+        <p style="font-size:16px; line-height:1.6; color:#9A9384; max-width:46ch; margin:0;">Classical gravitas meets a quant terminal. The reasoning is carved in stone; the toll is paid in gold. Everything below is the system that keeps that promise consistent.</p>
+      </div>
+      <div style="position:relative; background:radial-gradient(circle at 50% 45%, rgba(200,164,93,0.16), transparent 62%), #08070; min-height:320px; overflow:hidden;">
+        <svg viewBox="0 0 400 400" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:115%; height:auto;">
+          <circle cx="200" cy="200" r="190" stroke="#1E1B16" stroke-width="1"></circle>
+          <g style="transform-box:fill-box; transform-origin:center; animation:spin 120s linear infinite;"><circle cx="200" cy="200" r="172" stroke="#2A2620" stroke-width="0.7" stroke-dasharray="1.4 7"></circle></g>
+          <circle cx="200" cy="200" r="140" stroke="rgba(200,164,93,0.16)" stroke-width="0.7"></circle>
+        </svg>
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-54%); filter:drop-shadow(0 0 22px rgba(200,164,93,0.5));">
+          <svg viewBox="0 0 32 34" width="150" height="159"><circle cx="8" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="24" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="6" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="24.5" r="3.6" fill="#C8A45D"></circle><path d="M8 22 L16 24.5 M24 22 L16 24.5 M16 6 L16 24.5" stroke="#5A5040" stroke-width="0.8"></path></svg>
+        </div>
+      </div>
+    </div>
+    <!-- MARK -->
+    <div style="display:grid; grid-template-columns:1.1fr 1fr; gap:22px; margin-top:22px;">
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; padding:36px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#6B655A; margin-bottom:26px;">THE MARK · CONSTRUCTION</div>
+        <div style="display:flex; align-items:center; gap:44px; flex-wrap:wrap;">
+          <svg width="150" height="150" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="15" stroke="#1E1B16" stroke-width="0.5"></circle>
+            <line x1="8" y1="10" x2="16" y2="24.5" stroke="#2A2620" stroke-width="0.6"></line>
+            <line x1="24" y1="10" x2="16" y2="24.5" stroke="#2A2620" stroke-width="0.6"></line>
+            <line x1="16" y1="6" x2="16" y2="24.5" stroke="#2A2620" stroke-width="0.6"></line>
+            <path d="M8 10 L16 24.5 M24 10 L16 24.5 M16 6 L16 24.5" stroke="#3A352B" stroke-width="0.9"></path>
+            <circle cx="8" cy="10" r="2.4" fill="#5FA391"></circle>
+            <circle cx="24" cy="10" r="2.4" fill="#5FA391"></circle>
+            <circle cx="16" cy="6" r="2.4" fill="#5FA391"></circle>
+            <circle cx="16" cy="24.5" r="3.4" fill="#C8A45D"></circle>
+          </svg>
+          <div style="flex:1; min-width:180px;">
+            <div style="font-family:'Cormorant',serif; font-size:25px; color:#E9E3D6; margin-bottom:12px;">Three become one.</div>
+            <p style="font-size:14px; line-height:1.6; color:#8A8375; margin:0;">Three verdigris nodes — the Triad — converge along structural lines into a single gold node: the synthesis the machine pays for. The toll is always the gold point. The reasoning is always the green.</p>
+          </div>
+        </div>
+      </div>
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; padding:36px; display:flex; flex-direction:column; justify-content:space-between;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#6B655A;">LOCKUP &amp; VARIANTS</div>
+        <div style="display:flex; flex-direction:column; gap:26px; padding:20px 0;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <svg width="30" height="30" viewBox="0 0 32 32" fill="none"><circle cx="8" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="24" cy="22" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="6" r="2.6" fill="#5FA391"></circle><circle cx="16" cy="24.5" r="3.2" fill="#C8A45D"></circle><path d="M8 22 L16 24.5 M24 22 L16 24.5 M16 6 L16 24.5" stroke="#3A352B" stroke-width="1.1"></path></svg>
+            <span style="font-family:'Cormorant',serif; font-weight:600; font-size:30px; letter-spacing:0.3em;">STOA</span>
+          </div>
+          <div style="display:flex; gap:14px; align-items:center;">
+            <span style="font-family:'Cormorant',serif; font-size:42px; color:#C8A45D; line-height:1;">Σ</span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6B655A; line-height:1.5;">Sigma monogram —<br>sum of the Triad. Favicon / coin.</span>
+          </div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#4A453C;">CLEAR SPACE = HEIGHT OF THE GOLD NODE, ALL SIDES</div>
+      </div>
+    </div>
+
+    <!-- COLOR -->
+    <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; padding:36px; margin-top:22px;">
+      <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#6B655A; margin-bottom:24px;">PALETTE</div>
+      <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:14px;">
+        <div><div style="height:80px; border-radius:6px; background:#0C0B09; border:1px solid #2A2620; margin-bottom:10px;"></div><div style="font-size:13px;">Obsidian</div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A;">#0C0B09 · base</div></div>
+        <div><div style="height:80px; border-radius:6px; background:#16130F; border:1px solid #2A2620; margin-bottom:10px;"></div><div style="font-size:13px;">Basalt</div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A;">#16130F · panel</div></div>
+        <div><div style="height:80px; border-radius:6px; background:#E9E3D6; margin-bottom:10px;"></div><div style="font-size:13px;">Marble</div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A;">#E9E3D6 · text</div></div>
+        <div><div style="height:80px; border-radius:6px; background:#9A9384; margin-bottom:10px;"></div><div style="font-size:13px;">Ash</div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A;">#9A9384 · muted</div></div>
+        <div><div style="height:80px; border-radius:6px; background:#C8A45D; margin-bottom:10px;"></div><div style="font-size:13px; color:#C8A45D;">Gold</div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A;">#C8A45D · the toll</div></div>
+        <div><div style="height:80px; border-radius:6px; background:#5FA391; margin-bottom:10px;"></div><div style="font-size:13px; color:#5FA391;">Verdigris</div><div style="font-family:'IBM Plex Mono',monospace; font-size:10px; color:#6B655A;">#5FA391 · signal</div></div>
+      </div>
+      <p style="font-size:13.5px; line-height:1.6; color:#7C7567; margin:24px 0 0; max-width:74ch;"><span style="color:#C8A45D;">Gold is reserved for money</span> — the 402, the toll, the stake, the synthesis node. <span style="color:#5FA391;">Verdigris is reserved for the live machine layer</span> — agents, status, the feed. Never decorative. If it's gold, a payment is involved.</p>
+    </div>
+
+    <!-- TYPE -->
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:22px;">
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; padding:32px;">
+        <div style="font-family:'Cormorant',serif; font-size:66px; line-height:1; margin-bottom:18px;">Aa</div>
+        <div style="font-family:'Cormorant',serif; font-size:20px; margin-bottom:6px;">Cormorant</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6B655A; line-height:1.6;">DISPLAY · CARVED VOICE<br>Headlines, philosophy, numbers of consequence.</div>
+      </div>
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; padding:32px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-weight:500; font-size:56px; line-height:1; color:#C8A45D; margin-bottom:28px;">Aa</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:18px; margin-bottom:6px;">IBM Plex Mono</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6B655A; line-height:1.6;">MACHINE · THE PAYLOAD<br>Endpoints, hashes, JSON, tolls, labels.</div>
+      </div>
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; padding:32px;">
+        <div style="font-family:'Hanken Grotesk',sans-serif; font-weight:600; font-size:56px; line-height:1; margin-bottom:28px;">Aa</div>
+        <div style="font-family:'Hanken Grotesk',sans-serif; font-size:18px; margin-bottom:6px;">Hanken Grotesk</div>
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#6B655A; line-height:1.6;">BODY · THE EXPLAINER<br>Paragraphs, descriptions, plain reading.</div>
+      </div>
+    </div>
+
+    <!-- VOICE + NEGATIVE -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:22px;">
+      <div style="background:#100E0B; border:1px solid #221F19; border-radius:8px; padding:36px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#5FA391; margin-bottom:22px;">VOICE</div>
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div><div style="font-family:'Cormorant',serif; font-style:italic; font-size:24px; margin-bottom:4px;">Stoic, not salesy.</div><div style="font-size:13.5px; color:#8A8375; line-height:1.5;">State the property. Let rigor do the persuading. No hype, no exclamation.</div></div>
+          <div><div style="font-family:'Cormorant',serif; font-style:italic; font-size:24px; margin-bottom:4px;">Show the payload.</div><div style="font-size:13.5px; color:#8A8375; line-height:1.5;">Prefer the JSON to the adjective. The proof is structured, so show structure.</div></div>
+          <div><div style="font-family:'Cormorant',serif; font-style:italic; font-size:24px; margin-bottom:4px;">Built for the skeptic.</div><div style="font-size:13.5px; color:#8A8375; line-height:1.5;">Write for the quant who assumes you're wrong. Give them the hash.</div></div>
+        </div>
+      </div>
+      <div style="background:#0C0B09; border:1px solid rgba(200,164,93,0.18); border-radius:8px; padding:36px;">
+        <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em; color:#C8A45D; margin-bottom:22px;">WHAT STOA IS NOT</div>
+        <div style="display:flex; flex-direction:column; gap:13px;">
+          <div style="display:flex; align-items:center; gap:12px; font-size:15px; color:#9A9384;"><span style="color:#6B655A; font-family:'IBM Plex Mono',monospace;">✕</span> A trading platform or advisor</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:15px; color:#9A9384;"><span style="color:#6B655A; font-family:'IBM Plex Mono',monospace;">✕</span> A persona marketplace</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:15px; color:#9A9384;"><span style="color:#6B655A; font-family:'IBM Plex Mono',monospace;">✕</span> Builder fees or a fee rail</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:15px; color:#9A9384;"><span style="color:#6B655A; font-family:'IBM Plex Mono',monospace;">✕</span> A token</div>
+          <div style="display:flex; align-items:center; gap:12px; font-size:15px; color:#9A9384;"><span style="color:#6B655A; font-family:'IBM Plex Mono',monospace;">✕</span> "Six AI personalities"</div>
+        </div>
+        <div style="margin-top:24px; padding-top:20px; border-top:1px solid #1A1712; font-family:'Cormorant',serif; font-style:italic; font-size:19px; color:#C8A45D; line-height:1.4;">One engine. One toll. One verifiable trace.</div>
+      </div>
+    </div>
+<!--SECTIONS-->
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

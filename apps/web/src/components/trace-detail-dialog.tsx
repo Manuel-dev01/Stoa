@@ -51,8 +51,8 @@ export function TraceDetailDialog({
 
         {isLoading && (
           <div className="space-y-4 py-2 animate-fade-in">
-            <div className="flex items-center gap-2 text-xs text-amber-500/80 font-mono mb-2">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500/80 animate-pulse" />
+            <div className="flex items-center gap-2 text-xs text-gold/80 font-mono mb-2">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold/80 animate-pulse" />
               Fetching trace from Irys…
             </div>
             <Skeleton className="h-5 w-3/4" />
@@ -135,7 +135,7 @@ export function TraceDetailDialog({
             {body.reasoning?.synthesis && (
               <TeaserBlock
                 label="Synthesis"
-                colorClass="text-amber-500/80"
+                colorClass="text-gold/80"
                 collapsedHeight={64}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -167,7 +167,7 @@ export function TraceDetailDialog({
                   href={`https://gateway.irys.xyz/${irysReceipt}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-amber-500/80 hover:text-amber-400 transition-colors"
+                  className="text-gold/80 hover:text-gold transition-colors"
                 >
                   Irys ↗
                 </a>
@@ -175,7 +175,7 @@ export function TraceDetailDialog({
                   href={`https://testnet.arcscan.app/tx/${transactionHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-amber-500/80 hover:text-amber-400 transition-colors"
+                  className="text-gold/80 hover:text-gold transition-colors"
                 >
                   Arc ↗
                 </a>
@@ -183,7 +183,7 @@ export function TraceDetailDialog({
                   href="https://github.com/Manuel-dev01/Stoa/blob/master/docs/verification.md"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-amber-500/80 hover:text-amber-400 transition-colors"
+                  className="text-gold/80 hover:text-gold transition-colors"
                 >
                   Verify yourself ↗
                 </a>
